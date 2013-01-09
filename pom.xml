@@ -9,6 +9,7 @@
     <properties>
         <spring.version>3.1.1.RELEASE</spring.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding> <!--  included due to some plugins comes with warnings for missing encoding -->
     </properties>
 
     <scm>
@@ -178,6 +179,29 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.13</version>
+                <configuration>
+                    <excludes>
+                        <exclude>**/integrationtest/**</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>surefire-it</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>**/integrationtest/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>            
+                </plugin>
 			<plugin>
 		        <groupId>org.codehaus.mojo</groupId>
         		<artifactId>cobertura-maven-plugin</artifactId>
@@ -204,7 +228,21 @@
 						</goals>
 					</execution>
 				</executions>		        
-      		</plugin>            
+      		</plugin>
+		    <plugin>
+		        <artifactId>maven-failsafe-plugin</artifactId>
+		        <version>2.12</version>
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

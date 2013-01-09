@@ -24,32 +24,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package dk.nsi.haiba.lprimporter.config;
+package dk.nsi.haiba.lprimporter.exception;
 
-import javax.sql.DataSource;
+@SuppressWarnings("serial")
+public class DAOException extends RuntimeException {
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
+	public DAOException(String message) {
+		super(message);
+	}
 
-import dk.sdsd.nsp.slalog.api.SLALogger;
-
-import static org.mockito.Mockito.mock;
-
-@Configuration
-@EnableTransactionManagement
-@PropertySource("test.properties")
-public class LPRTestConfiguration extends LPRConfiguration {
-    //Make sure to override all methods on LPRConfiguration with mock methods
-
-    @Bean
-    public DataSource lprDataSource() {
-        return mock(DataSource.class);
-    }
-
-	@Bean
-	public SLALogger slaLogger() {
-		return mock(SLALogger.class);
+	public DAOException(String message, Throwable t) {
+		super(message, t);
+	}
+	
+	public DAOException(Throwable t) {
+		super(t.getMessage(), t);
 	}
 }

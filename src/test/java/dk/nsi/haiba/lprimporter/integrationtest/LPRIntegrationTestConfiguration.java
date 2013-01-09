@@ -24,48 +24,57 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package dk.nsi.haiba.lprimporter.config;
+package dk.nsi.haiba.lprimporter.integrationtest;
 
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.CustomScopeConfigurer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.jndi.JndiObjectFactoryBean;
+import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-/**
- * Configuration class 
- * providing the common infrastructure.
- */
-public abstract class LPRConfiguration {
-	@Value("${jdbc.JNDIName}")
-	private String jdbcJNDIName;
+import com.mysql.jdbc.Driver;
 
-	// this is not automatically registered, see https://jira.springsource.org/browse/SPR-8539
+import dk.nsi.haiba.lprimporter.config.LPRConfiguration;
+import dk.sdsd.nsp.slalog.api.SLALogger;
+import dk.sdsd.nsp.slalog.impl.SLALoggerDummyImpl;
+
+@Configuration
+@EnableTransactionManagement
+@PropertySource("test.properties")
+public class LPRIntegrationTestConfiguration extends LPRConfiguration {
+	@Value("${test.mysql.port}")
+	private int mysqlPort;
+	@Value("${test.mysql.lprdbname}")
+	private String testLPRDbName;
+	@Value("${test.mysql.lprdbusername}")
+	private String testLPRDbUsername;
+	@Value("${test.mysql.lprdbpassword}")
+	private String testLPRDbPassword;
+
 	@Bean
-	public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
-		PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer = new PropertySourcesPlaceholderConfigurer();
-		propertySourcesPlaceholderConfigurer.setIgnoreResourceNotFound(true);
-		propertySourcesPlaceholderConfigurer.setIgnoreUnresolvablePlaceholders(false);
-
-		propertySourcesPlaceholderConfigurer.setLocations(new Resource[]{new ClassPathResource("default-config.properties"), new ClassPathResource("config.properties")});
-
-		return propertySourcesPlaceholderConfigurer;
+	public static PropertySourcesPlaceholderConfigurer properties(){
+		return new PropertySourcesPlaceholderConfigurer();
 	}
 
 	@Bean
-	public DataSource lprDataSource() throws Exception {
-		JndiObjectFactoryBean factory = new JndiObjectFactoryBean();
-		factory.setJndiName(jdbcJNDIName);
-		factory.setExpectedType(DataSource.class);
-		factory.afterPropertiesSet();
-		return (DataSource) factory.getObject();
+	public DataSource lprDataSource() throws Exception{
+		String jdbcUrlPrefix = "jdbc:mysql://127.0.0.1:" + mysqlPort + "/";
+
+		// TODO Create at test version of the database only used in integrationtests.
+
+		return new SimpleDriverDataSource(new Driver(), jdbcUrlPrefix + testLPRDbName + "?createDatabaseIfNotExist=true", testLPRDbUsername, testLPRDbPassword);
+	}
+
+	@Bean
+	public JdbcTemplate jdbcTemplate(DataSource ds) {
+		return new JdbcTemplate(ds);
 	}
 
 	@Bean
@@ -74,14 +83,7 @@ public abstract class LPRConfiguration {
 	}
 
 	@Bean
-	public JdbcTemplate jdbcTemplate(DataSource dataSource) {
-		return new JdbcTemplate(dataSource);
-	}
-
-	// This needs the static modifier due to https://jira.springsource.org/browse/SPR-8269. If not static, field jdbcJndiName
-	// will not be set when trying to instantiate the DataSource
-	@Bean
-	public static CustomScopeConfigurer scopeConfigurer() {
-		return new SimpleThreadScopeConfigurer();
+	public SLALogger slaLogger() {
+		return new SLALoggerDummyImpl();
 	}
 }

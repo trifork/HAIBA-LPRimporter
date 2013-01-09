@@ -24,32 +24,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package dk.nsi.haiba.lprimporter.config;
+package dk.nsi.haiba.lprimporter.dao.impl;
 
-import javax.sql.DataSource;
+import java.util.List;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 
-import dk.sdsd.nsp.slalog.api.SLALogger;
+import dk.nsi.haiba.lprimporter.dao.LPRDAO;
+import dk.nsi.haiba.lprimporter.exception.DAOException;
+import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 
-import static org.mockito.Mockito.mock;
+public class LPRDAOImpl implements LPRDAO {
 
-@Configuration
-@EnableTransactionManagement
-@PropertySource("test.properties")
-public class LPRTestConfiguration extends LPRConfiguration {
-    //Make sure to override all methods on LPRConfiguration with mock methods
+	@Autowired
+	JdbcTemplate jdbcTemplate;
 
-    @Bean
-    public DataSource lprDataSource() {
-        return mock(DataSource.class);
-    }
+	@Override
+	public List<Administration> getContactsByCPR(String CPR) throws DAOException {
 
-	@Bean
-	public SLALogger slaLogger() {
-		return mock(SLALogger.class);
+		// TODO Auto-generated method stub
+		return null;
 	}
+
 }

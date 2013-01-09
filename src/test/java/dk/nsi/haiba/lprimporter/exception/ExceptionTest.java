@@ -24,32 +24,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package dk.nsi.haiba.lprimporter.config;
+package dk.nsi.haiba.lprimporter.exception;
 
-import javax.sql.DataSource;
+import static org.junit.Assert.assertEquals;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.junit.Test;
 
-import dk.sdsd.nsp.slalog.api.SLALogger;
 
-import static org.mockito.Mockito.mock;
+public class ExceptionTest {
+	@Test
+	public void testDAOException() {
+		final String thrStr = "Throwable test";
+		final String exStr = "Test";
+		final String ex2Str = "Test2";
+		Exception thr = new Exception(thrStr);
+		DAOException ex = new DAOException(exStr);
+		DAOException ex2 = new DAOException(ex2Str, thr);
 
-@Configuration
-@EnableTransactionManagement
-@PropertySource("test.properties")
-public class LPRTestConfiguration extends LPRConfiguration {
-    //Make sure to override all methods on LPRConfiguration with mock methods
-
-    @Bean
-    public DataSource lprDataSource() {
-        return mock(DataSource.class);
-    }
-
-	@Bean
-	public SLALogger slaLogger() {
-		return mock(SLALogger.class);
+		assertEquals(exStr, ex.getMessage());
+		assertEquals(ex2Str, ex2.getMessage());
+		assertEquals(thrStr, ex2.getCause().getMessage());
 	}
 }

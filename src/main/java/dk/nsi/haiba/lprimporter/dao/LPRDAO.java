@@ -24,32 +24,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package dk.nsi.haiba.lprimporter.config;
+package dk.nsi.haiba.lprimporter.dao;
 
-import javax.sql.DataSource;
+import java.util.List;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
+import dk.nsi.haiba.lprimporter.exception.DAOException;
+import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 
-import dk.sdsd.nsp.slalog.api.SLALogger;
+public interface LPRDAO {
 
-import static org.mockito.Mockito.mock;
-
-@Configuration
-@EnableTransactionManagement
-@PropertySource("test.properties")
-public class LPRTestConfiguration extends LPRConfiguration {
-    //Make sure to override all methods on LPRConfiguration with mock methods
-
-    @Bean
-    public DataSource lprDataSource() {
-        return mock(DataSource.class);
-    }
-
-	@Bean
-	public SLALogger slaLogger() {
-		return mock(SLALogger.class);
-	}
+	/**
+	 * Fetches a List of {@link Administration} given the CPR number
+	 * 
+	 * @param CPR
+	 *            The CPR number of the LPR Contact
+	 * @return {@link Administration} A list of contacts for a given CPR number
+	 * @throws DAOException
+	 *             if something goes wrong in the process
+	 */
+	public List<Administration> getContactsByCPR(String CPR) throws DAOException;
 }

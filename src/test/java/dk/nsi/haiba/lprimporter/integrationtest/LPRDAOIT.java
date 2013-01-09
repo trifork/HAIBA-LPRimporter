@@ -24,32 +24,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package dk.nsi.haiba.lprimporter.config;
+package dk.nsi.haiba.lprimporter.integrationtest;
 
-import javax.sql.DataSource;
+import static org.junit.Assert.assertEquals;
 
-import org.springframework.context.annotation.Bean;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
+import org.springframework.transaction.annotation.Transactional;
 
-import dk.sdsd.nsp.slalog.api.SLALogger;
+@RunWith(SpringJUnit4ClassRunner.class)
+@Transactional
+@ContextConfiguration(loader = AnnotationConfigContextLoader.class)
+public class LPRDAOIT {
+	
+    @Configuration
+    @PropertySource("classpath:test.properties")
+    @Import(LPRIntegrationTestConfiguration.class)
+    static class ContextConfiguration {
 
-import static org.mockito.Mockito.mock;
-
-@Configuration
-@EnableTransactionManagement
-@PropertySource("test.properties")
-public class LPRTestConfiguration extends LPRConfiguration {
-    //Make sure to override all methods on LPRConfiguration with mock methods
-
-    @Bean
-    public DataSource lprDataSource() {
-        return mock(DataSource.class);
     }
 
-	@Bean
-	public SLALogger slaLogger() {
-		return mock(SLALogger.class);
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+    
+    @Test
+	public void dummy() {
+        assertEquals(0, jdbcTemplate.queryForInt("select count(*) from lpr_administration"));
 	}
+
 }
