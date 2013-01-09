@@ -26,6 +26,7 @@
  */
 package dk.nsi.haiba.lprimporter.dao.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,10 +42,15 @@ public class LPRDAOImpl implements LPRDAO {
 	JdbcTemplate jdbcTemplate;
 
 	@Override
-	public List<Administration> getContactsByCPR(String CPR) throws DAOException {
+	public List<Administration> getContactsByCPR(String cpr) throws DAOException {
 
-		// TODO Auto-generated method stub
-		return null;
+		List<Administration> lprContacts = new ArrayList<Administration>();
+	    try {
+		    lprContacts = jdbcTemplate.query("SELECT * FROM LPR_ADMINISTRATION WHERE cpr=?", new Object[]{cpr}, new LPRRowMapper());
+		    return lprContacts;
+        } catch (RuntimeException e) {
+            throw new DAOException("Error fetching contacts from LPR", e);
+        }
 	}
 
 }

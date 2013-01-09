@@ -27,10 +27,14 @@
 package dk.nsi.haiba.lprimporter.integrationtest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.util.List;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
@@ -39,6 +43,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.Transactional;
+
+import dk.nsi.haiba.lprimporter.dao.LPRDAO;
+import dk.nsi.haiba.lprimporter.dao.impl.LPRDAOImpl;
+import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @Transactional
@@ -49,15 +57,39 @@ public class LPRDAOIT {
     @PropertySource("classpath:test.properties")
     @Import(LPRIntegrationTestConfiguration.class)
     static class ContextConfiguration {
+        @Bean
+        public LPRDAO lprdao() {
+            return new LPRDAOImpl();
+        }
 
     }
 
     @Autowired
     JdbcTemplate jdbcTemplate;
     
+    @Autowired
+    LPRDAO lprdao;
+    
+    /*
+     * Inserts and fetches a single contact into the LPR_administration table
+     * Spring transaction ensures rollback after test is finished
+     */
     @Test
-	public void dummy() {
-        assertEquals(0, jdbcTemplate.queryForInt("select count(*) from lpr_administration"));
+	public void fetchSingleContact() {
+    	
+    	assertNotNull(lprdao);
+    	
+    	String cpr = "1111111111";
+
+    	jdbcTemplate.update("insert into lpr_administration (recordnummer, cpr) values (1234, ?)", cpr);
+    	
+    	List<Administration> contactsByCPR = lprdao.getContactsByCPR(cpr);
+    	assertEquals(1, contactsByCPR.size());
+    	
+    	Administration adm = contactsByCPR.get(0);
+    	
+    	assertEquals(cpr, adm.getCpr());
+    	
 	}
 
 }
