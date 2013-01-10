@@ -46,7 +46,7 @@ public class LPRDAOImpl implements LPRDAO {
 
 		List<Administration> lprContacts = new ArrayList<Administration>();
 	    try {
-		    lprContacts = jdbcTemplate.query("SELECT * FROM LPR_ADMINISTRATION WHERE cpr=?", new Object[]{cpr}, new LPRRowMapper());
+		    lprContacts = jdbcTemplate.query("SELECT * FROM LPR_Administration WHERE cpr=?", new Object[]{cpr}, new LPRRowMapper());
 		    return lprContacts;
         } catch (RuntimeException e) {
             throw new DAOException("Error fetching contacts from LPR", e);

@@ -81,7 +81,7 @@ public class LPRDAOIT {
     	
     	String cpr = "1111111111";
 
-    	jdbcTemplate.update("insert into lpr_administration (recordnummer, cpr) values (1234, ?)", cpr);
+    	jdbcTemplate.update("insert into LPR_Administration (recordnummer, cpr) values (1234, ?)", cpr);
     	
     	List<Administration> contactsByCPR = lprdao.getContactsByCPR(cpr);
     	assertEquals(1, contactsByCPR.size());
