@@ -18,7 +18,10 @@ CREATE TABLE IF NOT EXISTS T_DIAG (
        V_RECNUM bigint(15) NULL,
        C_DIAG varchar(10) NULL,
        C_TILDIAG varchar(10) NULL,
-       C_DIAGTYPE varchar(1) NOT NULL
+       C_DIAGTYPE varchar(1) NOT NULL,
+
+       FOREIGN KEY (V_RECNUM) REFERENCES T_ADM(K_RECNUM)
+       
 ) ENGINE=InnoDB COLLATE=utf8_bin;
 
 CREATE TABLE IF NOT EXISTS T_PROCEDURER(
@@ -29,5 +32,8 @@ CREATE TABLE IF NOT EXISTS T_PROCEDURER(
        D_ODTO datetime NULL,
        V_OTIME int NULL,
        C_OSGH varchar(4) NULL,
-       C_OAFD varchar(3) NULL
+       C_OAFD varchar(3) NULL,
+       
+       FOREIGN KEY (V_RECNUM) REFERENCES T_ADM(K_RECNUM)
+       
 ) ENGINE=InnoDB COLLATE=utf8_bin;
