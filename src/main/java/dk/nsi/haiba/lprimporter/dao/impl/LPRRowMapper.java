@@ -39,7 +39,7 @@ class LPRRowMapper implements RowMapper<Administration> {
 		
 			Administration adm = new Administration();
 			
-			adm.setCpr(rs.getString("cpr"));
+			adm.setCpr(rs.getString("v_cpr"));
 			
 			// TODO implement all 
 			return adm;

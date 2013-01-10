@@ -19,11 +19,11 @@
     </scm>
     <issueManagement>
         <system>JIRA</system>
-        <url>https://jira.trifork.com/browse/NSPSUPPORT</url>
+        <url>https://jira.trifork.com/</url>
     </issueManagement>
     <ciManagement>
         <system>Jenkins</system>
-        <url>https://ci02.trifork.com:8443/</url>
+        <url>https://ci82.trifork.com/</url>
     </ciManagement>
 
     <prerequisites>
