@@ -24,24 +24,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package dk.nsi.haiba.lprimporter.dao.impl;
-
-import java.util.Date;
-
-import org.joda.time.DateTime;
+package dk.nsi.haiba.lprimporter.model.lpr;
 
 /*
- * Contains common methods for the LPR rowmappers
+ * Model object for a Diagnosis from the LPR datamodel
  */
-public class LPRRowMapper {
+public class LPRDiagnose {
 	
-	protected Date addHoursToDate(Date d, int hour) {
-		if(hour > 0 && hour < 24) {
-			DateTime dt = new DateTime(d.getTime());
-			DateTime plusHours = dt.plusHours(hour);
-			d = plusHours.toDate();
-		}
-		return d;
+	long recordNumber;
+	String diagnoseCode;
+	String diagnoseType;
+	String tillaegsDiagnose;
+	
+	public long getRecordNumber() {
+		return recordNumber;
+	}
+	public void setRecordNumber(long recordNumber) {
+		this.recordNumber = recordNumber;
+	}
+	public String getDiagnoseCode() {
+		return diagnoseCode;
+	}
+	public void setDiagnoseCode(String diagnoseCode) {
+		this.diagnoseCode = diagnoseCode;
+	}
+	public String getDiagnoseType() {
+		return diagnoseType;
+	}
+	public void setDiagnoseType(String diagnoseType) {
+		this.diagnoseType = diagnoseType;
+	}
+	public String getTillaegsDiagnose() {
+		return tillaegsDiagnose;
+	}
+	public void setTillaegsDiagnose(String tillaegsDiagnose) {
+		this.tillaegsDiagnose = tillaegsDiagnose;
 	}
 
 }

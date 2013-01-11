@@ -26,22 +26,23 @@
  */
 package dk.nsi.haiba.lprimporter.dao.impl;
 
-import java.util.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-import org.joda.time.DateTime;
+import org.springframework.jdbc.core.RowMapper;
 
-/*
- * Contains common methods for the LPR rowmappers
- */
-public class LPRRowMapper {
-	
-	protected Date addHoursToDate(Date d, int hour) {
-		if(hour > 0 && hour < 24) {
-			DateTime dt = new DateTime(d.getTime());
-			DateTime plusHours = dt.plusHours(hour);
-			d = plusHours.toDate();
-		}
+import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
+
+class LPRDiagnosisRowMapper extends LPRRowMapper implements RowMapper<LPRDiagnose> {
+	@Override
+	public LPRDiagnose mapRow(ResultSet rs, int rowNum) throws SQLException {
+		
+		LPRDiagnose d = new LPRDiagnose();
+			
+		d.setRecordNumber(rs.getLong("v_recnum"));
+		d.setDiagnoseCode(rs.getString("c_diag"));
+		d.setTillaegsDiagnose(rs.getString("c_tildiag"));
+		d.setDiagnoseType(rs.getString("c_diagtype"));
 		return d;
 	}
-
 }

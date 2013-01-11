@@ -26,22 +26,29 @@
  */
 package dk.nsi.haiba.lprimporter.dao.impl;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 
-import org.joda.time.DateTime;
+import org.springframework.jdbc.core.RowMapper;
 
-/*
- * Contains common methods for the LPR rowmappers
- */
-public class LPRRowMapper {
-	
-	protected Date addHoursToDate(Date d, int hour) {
-		if(hour > 0 && hour < 24) {
-			DateTime dt = new DateTime(d.getTime());
-			DateTime plusHours = dt.plusHours(hour);
-			d = plusHours.toDate();
-		}
-		return d;
+import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
+
+class LPRProcedureRowMapper extends LPRRowMapper implements RowMapper<LPRProcedure> {
+	@Override
+	public LPRProcedure mapRow(ResultSet rs, int rowNum) throws SQLException {
+		
+		LPRProcedure p = new LPRProcedure();
+			
+		p.setRecordNumber(rs.getLong("v_recnum"));
+		p.setProcedureCode(rs.getString("c_opr"));
+		p.setTillaegsProcedureCode(rs.getString("c_tilopr"));
+		p.setProcedureType(rs.getString("c_oprart"));
+		p.setSygehusCode(rs.getString("c_osgh"));
+		p.setAfdelingsCode(rs.getString("c_oafd"));
+		Date oprDate = rs.getDate("d_odto");
+		int oprHour = rs.getInt("v_otime");
+		p.setProcedureDatetime(addHoursToDate(oprDate, oprHour));
+		return p;
 	}
-
 }

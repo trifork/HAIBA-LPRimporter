@@ -26,22 +26,33 @@
  */
 package dk.nsi.haiba.lprimporter.dao.impl;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 
-import org.joda.time.DateTime;
+import org.springframework.jdbc.core.RowMapper;
 
-/*
- * Contains common methods for the LPR rowmappers
- */
-public class LPRRowMapper {
+import dk.nsi.haiba.lprimporter.model.lpr.Administration;
+
+class LPRContactRowMapper extends LPRRowMapper implements RowMapper<Administration> {
 	
-	protected Date addHoursToDate(Date d, int hour) {
-		if(hour > 0 && hour < 24) {
-			DateTime dt = new DateTime(d.getTime());
-			DateTime plusHours = dt.plusHours(hour);
-			d = plusHours.toDate();
-		}
-		return d;
-	}
+	@Override
+	public Administration mapRow(ResultSet rs, int rowNum) throws SQLException {
+		
+			Administration adm = new Administration();
+			
+			adm.setRecordNumber(rs.getLong("k_recnum"));
+			adm.setSygehusCode(rs.getString("c_sgh"));
+			adm.setAfdelingsCode(rs.getString("c_afd"));
+			adm.setCpr(rs.getString("v_cpr"));
 
+			Date in = rs.getDate("d_inddto");
+			int inHour = rs.getInt("v_indtime");
+			adm.setIndlaeggelsesDatetime(addHoursToDate(in,  inHour));
+			
+			Date out = rs.getDate("d_uddto");
+			int outHour = rs.getInt("v_udtime");
+			adm.setUdskrivningsDatetime(addHoursToDate(out,  outHour));
+			return adm;
+	}
 }

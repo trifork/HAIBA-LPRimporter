@@ -35,21 +35,46 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.exception.DAOException;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
+import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
+import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 
 public class LPRDAOImpl implements LPRDAO {
 
 	@Autowired
 	JdbcTemplate jdbcTemplate;
 
+	// TODO - select SQL from the chosen dialect
+
 	@Override
 	public List<Administration> getContactsByCPR(String cpr) throws DAOException {
-
 		List<Administration> lprContacts = new ArrayList<Administration>();
 	    try {
-		    lprContacts = jdbcTemplate.query("SELECT * FROM T_ADM WHERE v_cpr=?", new Object[]{cpr}, new LPRRowMapper());
+		    lprContacts = jdbcTemplate.query("SELECT * FROM T_ADM WHERE v_cpr=?", new Object[]{cpr}, new LPRContactRowMapper());
 		    return lprContacts;
         } catch (RuntimeException e) {
             throw new DAOException("Error fetching contacts from LPR", e);
+        }
+	}
+
+	@Override
+	public List<LPRDiagnose> getDiagnosesByRecordnummer(long recordnummer) throws DAOException {
+		List<LPRDiagnose> lprDiagnoses = new ArrayList<LPRDiagnose>();
+	    try {
+	    	lprDiagnoses = jdbcTemplate.query("SELECT * FROM T_DIAG WHERE v_recnum=?", new Object[]{recordnummer}, new LPRDiagnosisRowMapper());
+		    return lprDiagnoses;
+        } catch (RuntimeException e) {
+            throw new DAOException("Error fetching diagnoses from LPR", e);
+        }
+	}
+
+	@Override
+	public List<LPRProcedure> getProceduresByRecordnummer(long recordnummer) throws DAOException {
+		List<LPRProcedure> lprProcedures = new ArrayList<LPRProcedure>();
+	    try {
+	    	lprProcedures = jdbcTemplate.query("SELECT * FROM T_PROCEDURER WHERE v_recnum=?", new Object[]{recordnummer}, new LPRProcedureRowMapper());
+		    return lprProcedures;
+        } catch (RuntimeException e) {
+            throw new DAOException("Error fetching diagnoses from LPR", e);
         }
 	}
 

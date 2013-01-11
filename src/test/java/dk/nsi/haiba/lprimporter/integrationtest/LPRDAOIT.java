@@ -28,9 +28,12 @@ package dk.nsi.haiba.lprimporter.integrationtest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 
+import org.joda.time.DateTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +50,13 @@ import org.springframework.transaction.annotation.Transactional;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.dao.impl.LPRDAOImpl;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
+import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
+import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 
+/*
+ * Tests the LPRDAO class
+ * Spring transaction ensures rollback after test is finished
+ */
 @RunWith(SpringJUnit4ClassRunner.class)
 @Transactional
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class)
@@ -71,8 +80,7 @@ public class LPRDAOIT {
     LPRDAO lprdao;
     
     /*
-     * Inserts and fetches a single contact into the LPR_administration table
-     * Spring transaction ensures rollback after test is finished
+     * Inserts a single contact into the T_ADM table, and tests data is fetched correct from the DAO
      */
     @Test
 	public void fetchSingleContact() {
@@ -80,16 +88,135 @@ public class LPRDAOIT {
     	assertNotNull(lprdao);
     	
     	String cpr = "1111111111";
+    	long recordNummer = 1234;
+    	String sygehusCode = "csgh";
+    	String afdelingCode = "afd";
+    	DateTime in = new DateTime(2010, 5, 3, 0, 0, 0);
+    	int inHour = 8;
+    	DateTime out = new DateTime(2010, 6, 4, 0, 0, 0);
+    	int outHour = 16;
 
-    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr) values (1234, ?)", cpr);
+    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr, c_sgh, c_afd, d_inddto, v_indtime, d_uddto, v_udtime) values (?, ?, ?, ?, ?, ?, ?, ?)", new Long(recordNummer), cpr, sygehusCode, afdelingCode, in.toDate(), inHour, out.toDate(), outHour);
     	
     	List<Administration> contactsByCPR = lprdao.getContactsByCPR(cpr);
+    	assertNotNull("Expected 1 contact from LPR", contactsByCPR);
     	assertEquals(1, contactsByCPR.size());
     	
     	Administration adm = contactsByCPR.get(0);
-    	
-    	assertEquals(cpr, adm.getCpr());
-    	
-	}
 
+    	assertEquals(recordNummer, adm.getRecordNumber());
+    	assertEquals(cpr, adm.getCpr());
+    	assertEquals(sygehusCode, adm.getSygehusCode());
+    	assertEquals(afdelingCode, adm.getAfdelingsCode());
+    	assertEquals(in.plusHours(inHour).toDate(), adm.getIndlaeggelsesDatetime());
+    	assertEquals(out.plusHours(outHour).toDate(), adm.getUdskrivningsDatetime());
+	}
+    
+    /*
+     * Inserts 2 diagnoses into the T_DIAG table, and tests data is fetched correct from the DAO
+     */
+    @Test
+    public void fetchDiagnosesFromContact() {
+
+        long recordNumber = 1234;
+    	String cpr = "1111111111";
+    	String diagnosisCode1 = "J03.9";
+    	String diagnosisCode2 = "F00.9";
+    	String diagnosisType1 = "A";
+    	String diagnosisType2 = "B";
+    	String extraDiagnosisCode1 = "tilA";
+    	String extraDiagnosisCode2 = "tilB";
+    	
+    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr) values (?, ?)", new Long(recordNumber), cpr);
+    	jdbcTemplate.update("insert into T_DIAG (v_recnum, c_diag, c_diagtype, c_tildiag) values (?, ?, ?, ?)", new Long(recordNumber), diagnosisCode1, diagnosisType1, extraDiagnosisCode1);
+    	jdbcTemplate.update("insert into T_DIAG (v_recnum, c_diag, c_diagtype, c_tildiag) values (?, ?, ?, ?)", new Long(recordNumber), diagnosisCode2, diagnosisType2, extraDiagnosisCode2);
+
+    	Administration contact = lprdao.getContactsByCPR(cpr).get(0);
+    	
+    	List<LPRDiagnose> diagnoses = lprdao.getDiagnosesByRecordnummer(contact.getRecordNumber());
+    	
+    	assertNotNull("Expected 2 diagnoses from LPR", diagnoses);
+    	assertEquals(2, diagnoses.size());
+
+    	boolean diagnosis1checked = false;
+    	boolean diagnosis2checked = false;
+    	for (LPRDiagnose d : diagnoses) {
+    		if(diagnosisCode1.equals(d.getDiagnoseCode())) {
+    			assertEquals(diagnosisType1, d.getDiagnoseType());
+    			assertEquals(extraDiagnosisCode1, d.getTillaegsDiagnose());
+    			diagnosis1checked = true;
+    		} else if(diagnosisCode2.equals(d.getDiagnoseCode())) {
+    			assertEquals(diagnosisType2, d.getDiagnoseType());
+    			assertEquals(extraDiagnosisCode2, d.getTillaegsDiagnose());
+    			diagnosis2checked = true;
+    		} else {
+    			fail("did not expect an diagnosis with code: "+d.getDiagnoseCode());
+    		}
+		}
+		assertTrue(diagnosis1checked);
+		assertTrue(diagnosis2checked);
+    }
+    
+    /*
+     * Inserts 2 procedures into the T_PROCEDURER table, and tests data is fetched correct from the DAO
+     */
+    @Test
+    public void fetchProceduresFromContact() {
+
+        long recordNumber = 1234;
+    	String cpr = "1111111111";
+    	String oprCode1 = "J03.9";
+    	String oprCode2 = "F00.9";
+    	String oprType1 = "A";
+    	String oprType2 = "B";
+    	String extraOprCode1 = "tilA";
+    	String extraOprCode2 = "tilB";
+    	String sygehusCode1 = "sgh1";
+    	String sygehusCode2 = "sgh2";
+    	String afdelingCode1 = "af1";
+    	String afdelingCode2 = "af2";
+    	DateTime op1 = new DateTime(2010, 5, 3, 0, 0, 0);
+    	DateTime op2 = new DateTime(2010, 5, 3, 0, 0, 0);
+    	int opHour1 = 8;
+    	int opHour2 = 8;
+    	
+    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr) values (?, ?)", new Long(recordNumber), cpr);
+    	jdbcTemplate.update("insert into T_PROCEDURER (v_recnum, c_opr, c_oprart, c_tilopr, c_osgh, c_oafd, d_odto, v_otime) values (?, ?, ?, ?, ?, ?, ?, ?)", new Long(recordNumber), oprCode1, oprType1, extraOprCode1, sygehusCode1, afdelingCode1, op1.toDate(), opHour1);
+    	jdbcTemplate.update("insert into T_PROCEDURER (v_recnum, c_opr, c_oprart, c_tilopr, c_osgh, c_oafd, d_odto, v_otime) values (?, ?, ?, ?, ?, ?, ?, ?)", new Long(recordNumber), oprCode2, oprType2, extraOprCode2, sygehusCode2, afdelingCode2, op2.toDate(), opHour2);
+
+    	Administration contact = lprdao.getContactsByCPR(cpr).get(0);
+    	
+    	List<LPRProcedure> procedures = lprdao.getProceduresByRecordnummer(contact.getRecordNumber());
+    	
+    	assertNotNull("Expected 2 procedures from LPR", procedures);
+    	assertEquals(2, procedures.size());
+
+    	boolean procedure1checked = false;
+    	boolean procedure2checked = false;
+    	for (LPRProcedure p : procedures) {
+    		
+    		if(oprCode1.equals(p.getProcedureCode())) {
+    			assertEquals(oprType1, p.getProcedureType());
+    			assertEquals(extraOprCode1, p.getTillaegsProcedureCode());
+    			assertEquals(sygehusCode1, p.getSygehusCode());
+    			assertEquals(afdelingCode1, p.getAfdelingsCode());
+    	    	assertEquals(op1.plusHours(opHour1).toDate(), p.getProcedureDatetime());
+    			procedure1checked = true;
+    		} else if(oprCode2.equals(p.getProcedureCode())) {
+    			assertEquals(oprType2, p.getProcedureType());
+    			assertEquals(extraOprCode2, p.getTillaegsProcedureCode());
+    			assertEquals(sygehusCode2, p.getSygehusCode());
+    			assertEquals(afdelingCode2, p.getAfdelingsCode());
+    	    	assertEquals(op2.plusHours(opHour2).toDate(), p.getProcedureDatetime());
+    			procedure2checked = true;
+    		} else {
+    			fail("did not expect an proceudre with code: "+p.getProcedureCode());
+    		}
+		}
+		assertTrue(procedure1checked);
+		assertTrue(procedure2checked);
+    }
+
+    
+    
 }

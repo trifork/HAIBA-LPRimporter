@@ -30,11 +30,13 @@ import java.util.List;
 
 import dk.nsi.haiba.lprimporter.exception.DAOException;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
+import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
+import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 
 public interface LPRDAO {
 
 	/**
-	 * Fetches a List of {@link Administration} given the CPR number
+	 * Fetches a list of {@link Administration} given the CPR number
 	 * 
 	 * @param CPR
 	 *            The CPR number of the LPR Contact
@@ -43,4 +45,27 @@ public interface LPRDAO {
 	 *             if something goes wrong in the process
 	 */
 	public List<Administration> getContactsByCPR(String CPR) throws DAOException;
+
+	/**
+	 * Fetches a list of {@link LPRDiagnose} given the recordnummer number
+	 * 
+	 * @param 
+	 *            The recordnummer from the LPR Contact
+	 * @return {@link LPRDiagnose} A list of diagnoses for a given CPR number
+	 * @throws DAOException
+	 *             if something goes wrong in the process
+	 */
+	public List<LPRDiagnose> getDiagnosesByRecordnummer(long recordnummer) throws DAOException;
+
+	/**
+	 * Fetches a list of {@link LPRProcedure} given the recordnummer number
+	 * 
+	 * @param 
+	 *            The recordnummer from the LPR Contact
+	 * @return {@link LPRProcedure} A list of procedures for a given CPR number
+	 * @throws DAOException
+	 *             if something goes wrong in the process
+	 */
+	public List<LPRProcedure> getProceduresByRecordnummer(long recordnummer) throws DAOException;
+
 }
