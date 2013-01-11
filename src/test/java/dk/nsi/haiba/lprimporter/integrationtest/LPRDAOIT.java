@@ -113,6 +113,29 @@ public class LPRDAOIT {
 	}
     
     /*
+     * Inserts a single contact into the T_ADM table with processed date set, and tests that it is not fetched again by DAO
+     */
+    @Test
+	public void doNotfetchContactThatHasBeenImported() {
+    	
+    	String cpr = "1111111111";
+    	long recordNummer = 1234;
+    	String sygehusCode = "csgh";
+    	String afdelingCode = "afd";
+    	DateTime in = new DateTime(2010, 5, 3, 0, 0, 0);
+    	int inHour = 8;
+    	DateTime out = new DateTime(2010, 6, 4, 0, 0, 0);
+    	int outHour = 16;
+    	DateTime processed = new DateTime(2012, 12, 31, 11, 59, 23);
+
+    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr, c_sgh, c_afd, d_inddto, v_indtime, d_uddto, v_udtime, d_importdto) values (?, ?, ?, ?, ?, ?, ?, ?, ?)", new Long(recordNummer), cpr, sygehusCode, afdelingCode, in.toDate(), inHour, out.toDate(), outHour, processed.toDate());
+    	
+    	List<Administration> contactsByCPR = lprdao.getContactsByCPR(cpr);
+    	assertNotNull("Expected 0 contact from LPR", contactsByCPR);
+    	assertEquals(0, contactsByCPR.size());
+	}
+
+    /*
      * Inserts 2 diagnoses into the T_DIAG table, and tests data is fetched correct from the DAO
      */
     @Test

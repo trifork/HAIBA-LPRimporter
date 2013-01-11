@@ -49,7 +49,7 @@ public class LPRDAOImpl implements LPRDAO {
 	public List<Administration> getContactsByCPR(String cpr) throws DAOException {
 		List<Administration> lprContacts = new ArrayList<Administration>();
 	    try {
-		    lprContacts = jdbcTemplate.query("SELECT * FROM T_ADM WHERE v_cpr=?", new Object[]{cpr}, new LPRContactRowMapper());
+		    lprContacts = jdbcTemplate.query("SELECT * FROM T_ADM WHERE v_cpr=? AND D_IMPORTDTO IS NULL", new Object[]{cpr}, new LPRContactRowMapper());
 		    return lprContacts;
         } catch (RuntimeException e) {
             throw new DAOException("Error fetching contacts from LPR", e);

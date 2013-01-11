@@ -37,6 +37,7 @@ public interface LPRDAO {
 
 	/**
 	 * Fetches a list of {@link Administration} given the CPR number
+	 * But only contacts that have not been processed (Where the Import date is empty)
 	 * 
 	 * @param CPR
 	 *            The CPR number of the LPR Contact
