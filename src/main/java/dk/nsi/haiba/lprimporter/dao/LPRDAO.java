@@ -36,8 +36,17 @@ import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 public interface LPRDAO {
 
 	/**
+	 * Fetches a list of CPRnumbers that have not been processed (Where the Import date is empty)
+	 * 
+	 * @return A list of CPRnumbers as String
+	 * @throws DAOException
+	 *             if something goes wrong in the process
+	 */
+	public List<String> getUnprocessedCPRnumbers() throws DAOException;
+
+	/**
 	 * Fetches a list of {@link Administration} given the CPR number
-	 * But only contacts that have not been processed (Where the Import date is empty)
+	 * Fetches all contacts for the CPR number, as they all have to be re-processed
 	 * 
 	 * @param CPR
 	 *            The CPR number of the LPR Contact

@@ -46,10 +46,21 @@ public class LPRDAOImpl implements LPRDAO {
 	// TODO - select SQL from the chosen dialect
 
 	@Override
+	public List<String> getUnprocessedCPRnumbers() throws DAOException {
+		List<String> unprocessedCPRNumbers = new ArrayList<String>();
+	    try {
+	    	unprocessedCPRNumbers = jdbcTemplate.queryForList("SELECT v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL GROUP BY v_cpr", String.class);
+		    return unprocessedCPRNumbers;
+        } catch (RuntimeException e) {
+            throw new DAOException("Error fetching contacts from LPR", e);
+        }
+	}
+
+	@Override
 	public List<Administration> getContactsByCPR(String cpr) throws DAOException {
 		List<Administration> lprContacts = new ArrayList<Administration>();
 	    try {
-		    lprContacts = jdbcTemplate.query("SELECT * FROM T_ADM WHERE v_cpr=? AND D_IMPORTDTO IS NULL", new Object[]{cpr}, new LPRContactRowMapper());
+		    lprContacts = jdbcTemplate.query("SELECT * FROM T_ADM WHERE v_cpr=?", new Object[]{cpr}, new LPRContactRowMapper());
 		    return lprContacts;
         } catch (RuntimeException e) {
             throw new DAOException("Error fetching contacts from LPR", e);

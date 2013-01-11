@@ -130,9 +130,9 @@ public class LPRDAOIT {
 
     	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr, c_sgh, c_afd, d_inddto, v_indtime, d_uddto, v_udtime, d_importdto) values (?, ?, ?, ?, ?, ?, ?, ?, ?)", new Long(recordNummer), cpr, sygehusCode, afdelingCode, in.toDate(), inHour, out.toDate(), outHour, processed.toDate());
     	
-    	List<Administration> contactsByCPR = lprdao.getContactsByCPR(cpr);
-    	assertNotNull("Expected 0 contact from LPR", contactsByCPR);
-    	assertEquals(0, contactsByCPR.size());
+    	List<String> unprocessedCPRNumbers = lprdao.getUnprocessedCPRnumbers();
+    	assertNotNull("Expected 0 contacts from LPR", unprocessedCPRNumbers);
+    	assertEquals(0, unprocessedCPRNumbers.size());
 	}
 
     /*

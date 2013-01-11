@@ -39,6 +39,10 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jndi.JndiObjectFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import dk.nsi.haiba.lprimporter.dao.LPRDAO;
+import dk.nsi.haiba.lprimporter.dao.impl.LPRDAOImpl;
+import dk.nsi.haiba.lprimporter.importer.ImportExecutor;
+
 /**
  * Configuration class 
  * providing the common infrastructure.
@@ -84,4 +88,14 @@ public abstract class LPRConfiguration {
 	public static CustomScopeConfigurer scopeConfigurer() {
 		return new SimpleThreadScopeConfigurer();
 	}
+	
+	@Bean
+	public ImportExecutor importExecutor() {
+		return new ImportExecutor();
+	}
+
+    @Bean
+    public LPRDAO lprdao() {
+        return new LPRDAOImpl();
+    }
 }
