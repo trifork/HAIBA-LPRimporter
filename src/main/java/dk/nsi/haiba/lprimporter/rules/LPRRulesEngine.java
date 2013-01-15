@@ -24,26 +24,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package dk.nsi.haiba.lprimporter.model.haiba;
+package dk.nsi.haiba.lprimporter.rules;
 
-import static org.junit.Assert.assertEquals;
+import java.util.List;
 
-import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
-public class DiagnoseTest {
+import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
+import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 
-	@Test
-	public void testDiagnoseFieldsAreCorrect() {
+/*
+ * Simple RulesEngine - enhance this in the next sprints by using Spring Integration
+ */
+public class LPRRulesEngine implements RulesEngine {
+
+	List<Administration> contacts;
 	
-		String diagnoseCode = "fdsa";
-		String diagnoseType = "zxcv";
-	    String tillaegsDiagnose = "poiu";
-		
-		Diagnose d = new Diagnose(diagnoseCode, diagnoseType, tillaegsDiagnose);
-		
-		assertEquals(diagnoseCode, d.getDiagnoseCode());
-		assertEquals(diagnoseType, d.getDiagnoseType());
-		assertEquals(tillaegsDiagnose, d.getTillaegsDiagnose());
-	}
+	@Autowired
+	LPRDateTimeRule lprDateTimeRule;
+	
+	@Override
+	public void processRuleChain(List<Administration> contacts) {
+		this.contacts = contacts;
 
+		lprDateTimeRule.setContacts(contacts);
+		
+		try {
+			LPRRule next = lprDateTimeRule.doProcessing();
+			while(next != null) {
+				next = next.doProcessing();
+			}
+		} catch(RuleAbortedException e) {
+			// TODO - handle this
+			e.printStackTrace();
+		}
+		
+	}
+	
 }

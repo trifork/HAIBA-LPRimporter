@@ -33,6 +33,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
+import dk.nsi.haiba.lprimporter.rules.RulesEngine;
 
 /*
  * Scheduled job, responsible for fetching new data from LPR, then send it to the RulesEngine for further processing
@@ -41,6 +42,9 @@ public class ImportExecutor {
 	
 	@Autowired
 	LPRDAO lprdao;
+
+	@Autowired
+	RulesEngine rulesEngine;
 	
 	@Scheduled(fixedDelay = 1000)
 	public void run() {
@@ -51,7 +55,8 @@ public class ImportExecutor {
 		if(unprocessedCPRnumbers.size() != 0) {
 			for (String cpr : unprocessedCPRnumbers) {
 				List<Administration> contactsByCPR = lprdao.getContactsByCPR(cpr);
-				// TODO - send to rulesEngine
+				// Process the LPR data according to the defined business rules
+				rulesEngine.processRuleChain(contactsByCPR);
 			}
 		}
 	}

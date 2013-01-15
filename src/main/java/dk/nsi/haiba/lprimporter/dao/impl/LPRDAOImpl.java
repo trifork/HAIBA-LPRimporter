@@ -61,10 +61,15 @@ public class LPRDAOImpl implements LPRDAO {
 		List<Administration> lprContacts = new ArrayList<Administration>();
 	    try {
 		    lprContacts = jdbcTemplate.query("SELECT * FROM T_ADM WHERE v_cpr=?", new Object[]{cpr}, new LPRContactRowMapper());
-		    return lprContacts;
         } catch (RuntimeException e) {
             throw new DAOException("Error fetching contacts from LPR", e);
         }
+	    
+	    for (Administration contact : lprContacts) {
+	    	contact.setLprDiagnoses(getDiagnosesByRecordnummer(contact.getRecordNumber()));
+	    	contact.setLprProcedures(getProceduresByRecordnummer(contact.getRecordNumber()));
+		}
+	    return lprContacts;
 	}
 
 	@Override

@@ -26,7 +26,9 @@
  */
 package dk.nsi.haiba.lprimporter.model.haiba;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /*
  * Model object for an Admission from the HAIBA datamodel
@@ -39,6 +41,9 @@ public class Indlaeggelse {
 	String afdelingsCode;
 	Date indlaeggelsesDatetime;
 	Date udskrivningsDatetime;
+	List<LPRReference> lprReferencer = new ArrayList<LPRReference>();
+	List<Diagnose> diagnoses = new ArrayList<Diagnose>();
+	List<Procedure> procedures = new ArrayList<Procedure>();
 
 	public Indlaeggelse() {
 		
@@ -103,5 +108,39 @@ public class Indlaeggelse {
 	public void setUdskrivningsDatetime(Date udskrivningsDatetime) {
 		this.udskrivningsDatetime = udskrivningsDatetime;
 	}
+	
+	
+	public List<LPRReference> getLprReferencer() {
+		return lprReferencer;
+	}
+	public void setLprReferencer(List<LPRReference> lprReferencer) {
+		this.lprReferencer = lprReferencer;
+	}
+	public void addLPRReference(LPRReference lprReference) {
+		lprReferencer.add(lprReference);
+	}
 
+	public List<Diagnose> getDiagnoses() {
+		return diagnoses;
+	}
+
+	public void setDiagnoses(List<Diagnose> diagnoses) {
+		this.diagnoses = diagnoses;
+	}
+
+	public void addDiagnose(Diagnose d) {
+		diagnoses.add(d);
+	}
+
+	public List<Procedure> getProcedures() {
+		return procedures;
+	}
+
+	public void setProcedures(List<Procedure> procedures) {
+		this.procedures = procedures;
+	}
+
+	public void addProcedure(Procedure p) {
+		procedures.add(p);
+	}
 }

@@ -28,8 +28,6 @@ package dk.nsi.haiba.lprimporter.model.haiba;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.List;
-
 import org.junit.Test;
 
 public class LPRReferenceTest {
@@ -38,13 +36,13 @@ public class LPRReferenceTest {
 	public void testLPRReferencesCanBeAddedToAnIndlaeggelse() {
 		
 		long lprReference = 7890;
+		LPRReference lpr = new LPRReference(7890);
+
+		Indlaeggelse indlaeggelse = new Indlaeggelse();
+		indlaeggelse.addLPRReference(lpr);
 		
-		LPRReference lpr = new LPRReference();
-		lpr.addLprReferenceNumber(lprReference);
-		
-		List<Long> lprReferenceList = lpr.getLprReferenceNumberList();
-		assertEquals(1, lprReferenceList.size());
-		assertEquals(lprReference, lprReferenceList.get(0).longValue());
+		assertEquals(1, indlaeggelse.getLprReferencer().size());
+		assertEquals(lprReference, indlaeggelse.getLprReferencer().get(0).getLprRecordNumber());
 	}
 
 }

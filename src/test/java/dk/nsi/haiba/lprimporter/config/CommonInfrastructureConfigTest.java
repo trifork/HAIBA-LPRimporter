@@ -50,7 +50,7 @@ public class CommonInfrastructureConfigTest {
     }
 
     @Test
-    public void canCreateStamdataConfiguration() throws Exception {
+    public void canCreateConfiguration() throws Exception {
         assertNotNull(datasource);
     }
 }

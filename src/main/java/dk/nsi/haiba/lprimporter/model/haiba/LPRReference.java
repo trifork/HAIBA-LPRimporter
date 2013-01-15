@@ -26,40 +26,28 @@
  */
 package dk.nsi.haiba.lprimporter.model.haiba;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /*
- * Model object for a series of LPR contacts attached to and admission from the HAIBA datamodel
+ * Model object for a LPR reference, an Indlaeggelse can have a series of these
  */
 public class LPRReference {
 	
-	long indlaeggelsesId;
-	List<Long> lprReferenceNumberList = new ArrayList<Long>();
+	private long lprRecordNumber;
+
+	public LPRReference() {
+		// empty default constructor
+	}
 	
-
-	public long getIndlaeggelsesId() {
-		return indlaeggelsesId;
+	public LPRReference(long lprRecordNumber) {
+		this.lprRecordNumber = lprRecordNumber;
 	}
 
-
-	public void setIndlaeggelsesId(long indlaeggelsesId) {
-		this.indlaeggelsesId = indlaeggelsesId;
+	public long getLprRecordNumber() {
+		return lprRecordNumber;
 	}
 
-
-	public List<Long> getLprReferenceNumberList() {
-		return lprReferenceNumberList;
-	}
-
-
-	public void setLprReferenceNumberList(List<Long> lprReferenceNumberList) {
-		this.lprReferenceNumberList = lprReferenceNumberList;
-	}
-
-
-	public void addLprReferenceNumber(long lprReferenceNumber) {
-		lprReferenceNumberList.add(new Long(lprReferenceNumber));
+	public void setLprRecordNumber(long lprRecordNumber) {
+		this.lprRecordNumber = lprRecordNumber;
 	}
 
 }

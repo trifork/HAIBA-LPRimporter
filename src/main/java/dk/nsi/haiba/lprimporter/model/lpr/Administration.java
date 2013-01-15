@@ -27,6 +27,7 @@
 package dk.nsi.haiba.lprimporter.model.lpr;
 
 import java.util.Date;
+import java.util.List;
 
 /*
  * Model object for a Contact to the healthsystem from the LPR datamodel
@@ -40,6 +41,8 @@ public class Administration {
 	String afdelingsCode;
 	Date indlaeggelsesDatetime;
 	Date udskrivningsDatetime;
+	List<LPRDiagnose> lprDiagnoses;
+	List<LPRProcedure> lprProcedures; 
 	
 	public long getRecordNumber() {
 		return recordNumber;
@@ -84,6 +87,19 @@ public class Administration {
 	}
 	public void setUdskrivningsDatetime(Date udskrivningsDatetime) {
 		this.udskrivningsDatetime = udskrivningsDatetime;
+	}
+
+	public List<LPRDiagnose> getLprDiagnoses() {
+		return lprDiagnoses;
+	}
+	public void setLprDiagnoses(List<LPRDiagnose> lprDiagnoses) {
+		this.lprDiagnoses = lprDiagnoses;
+	}
+	public List<LPRProcedure> getLprProcedures() {
+		return lprProcedures;
+	}
+	public void setLprProcedures(List<LPRProcedure> lprProcedures) {
+		this.lprProcedures = lprProcedures;
 	}
 	
 	

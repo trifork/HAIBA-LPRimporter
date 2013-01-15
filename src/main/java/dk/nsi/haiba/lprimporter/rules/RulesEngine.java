@@ -24,26 +24,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package dk.nsi.haiba.lprimporter.model.haiba;
+package dk.nsi.haiba.lprimporter.rules;
 
-import static org.junit.Assert.assertEquals;
+import java.util.List;
 
-import org.junit.Test;
+import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 
-public class DiagnoseTest {
-
-	@Test
-	public void testDiagnoseFieldsAreCorrect() {
+public interface RulesEngine {
 	
-		String diagnoseCode = "fdsa";
-		String diagnoseType = "zxcv";
-	    String tillaegsDiagnose = "poiu";
-		
-		Diagnose d = new Diagnose(diagnoseCode, diagnoseType, tillaegsDiagnose);
-		
-		assertEquals(diagnoseCode, d.getDiagnoseCode());
-		assertEquals(diagnoseType, d.getDiagnoseType());
-		assertEquals(tillaegsDiagnose, d.getTillaegsDiagnose());
-	}
+	public void processRuleChain(List<Administration> contactsByCPR);
 
 }

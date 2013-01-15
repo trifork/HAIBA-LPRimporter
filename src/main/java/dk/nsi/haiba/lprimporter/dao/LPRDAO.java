@@ -46,7 +46,7 @@ public interface LPRDAO {
 
 	/**
 	 * Fetches a list of {@link Administration} given the CPR number
-	 * Fetches all contacts for the CPR number, as they all have to be re-processed
+	 * Fetches all contacts for the CPR number, as they all have to be re-processed every time there is a change
 	 * 
 	 * @param CPR
 	 *            The CPR number of the LPR Contact

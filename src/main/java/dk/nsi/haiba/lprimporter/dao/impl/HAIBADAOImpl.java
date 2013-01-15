@@ -24,26 +24,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package dk.nsi.haiba.lprimporter.model.haiba;
+package dk.nsi.haiba.lprimporter.dao.impl;
 
-import static org.junit.Assert.assertEquals;
+import java.util.List;
 
-import org.junit.Test;
+import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
+import dk.nsi.haiba.lprimporter.exception.DAOException;
+import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 
-public class DiagnoseTest {
+public class HAIBADAOImpl implements HAIBADAO {
 
-	@Test
-	public void testDiagnoseFieldsAreCorrect() {
-	
-		String diagnoseCode = "fdsa";
-		String diagnoseType = "zxcv";
-	    String tillaegsDiagnose = "poiu";
-		
-		Diagnose d = new Diagnose(diagnoseCode, diagnoseType, tillaegsDiagnose);
-		
-		assertEquals(diagnoseCode, d.getDiagnoseCode());
-		assertEquals(diagnoseType, d.getDiagnoseType());
-		assertEquals(tillaegsDiagnose, d.getTillaegsDiagnose());
+	@Override
+	public void saveIndlaeggelsesForloeb(List<Indlaeggelse> indlaeggelser)
+			throws DAOException {
+		// TODO Auto-generated method stub
 	}
 
 }

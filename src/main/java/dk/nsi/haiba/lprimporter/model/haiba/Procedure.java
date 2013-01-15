@@ -33,7 +33,6 @@ import java.util.Date;
  */
 public class Procedure {
 	
-	long indlaeggelsesId;
 	String procedureCode;
 	String procedureType;
 	String tillaegsProcedureCode;
@@ -43,10 +42,9 @@ public class Procedure {
 	
 	public Procedure() {}
 	
-	public Procedure(long indlaeggelsesId, String procedureCode,
+	public Procedure(String procedureCode,
 			String procedureType, String tillaegsProcedureCode,
 			String sygehusCode, String afdelingsCode, Date procedureDatetime) {
-		this.indlaeggelsesId = indlaeggelsesId;
 		this.procedureCode = procedureCode;
 		this.procedureType = procedureType;
 		this.tillaegsProcedureCode = tillaegsProcedureCode;
@@ -55,12 +53,6 @@ public class Procedure {
 		this.procedureDatetime = procedureDatetime;
 	}
 
-	public long getIndlaeggelsesId() {
-		return indlaeggelsesId;
-	}
-	public void setIndlaeggelsesId(long indlaeggelsesId) {
-		this.indlaeggelsesId = indlaeggelsesId;
-	}
 	public String getProcedureCode() {
 		return procedureCode;
 	}
@@ -101,7 +93,5 @@ public class Procedure {
 	public void setProcedureDatetime(Date procedureDatetime) {
 		this.procedureDatetime = procedureDatetime;
 	}
-	
-	
 
 }

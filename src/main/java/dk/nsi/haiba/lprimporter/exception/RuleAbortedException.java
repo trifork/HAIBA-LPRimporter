@@ -24,26 +24,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package dk.nsi.haiba.lprimporter.model.haiba;
+package dk.nsi.haiba.lprimporter.exception;
 
-import static org.junit.Assert.assertEquals;
+@SuppressWarnings("serial")
+public class RuleAbortedException extends RuntimeException {
 
-import org.junit.Test;
-
-public class DiagnoseTest {
-
-	@Test
-	public void testDiagnoseFieldsAreCorrect() {
-	
-		String diagnoseCode = "fdsa";
-		String diagnoseType = "zxcv";
-	    String tillaegsDiagnose = "poiu";
-		
-		Diagnose d = new Diagnose(diagnoseCode, diagnoseType, tillaegsDiagnose);
-		
-		assertEquals(diagnoseCode, d.getDiagnoseCode());
-		assertEquals(diagnoseType, d.getDiagnoseType());
-		assertEquals(tillaegsDiagnose, d.getTillaegsDiagnose());
+	public RuleAbortedException(String message) {
+		super(message);
 	}
 
+	public RuleAbortedException(String message, Throwable t) {
+		super(message, t);
+	}
+	
+	public RuleAbortedException(Throwable t) {
+		super(t.getMessage(), t);
+	}
 }

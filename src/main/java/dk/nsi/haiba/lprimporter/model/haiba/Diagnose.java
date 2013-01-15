@@ -31,7 +31,6 @@ package dk.nsi.haiba.lprimporter.model.haiba;
  */
 public class Diagnose {
 	
-	long indlaeggelsesId;
 	String diagnoseCode;
 	String diagnoseType;
 	String tillaegsDiagnose;
@@ -39,20 +38,13 @@ public class Diagnose {
 	
 	public Diagnose() {};
 	
-	public Diagnose(long indlaeggelsesId, String diagnoseCode,
+	public Diagnose(String diagnoseCode,
 			String diagnoseType, String tillaegsDiagnose) {
-		this.indlaeggelsesId = indlaeggelsesId;
 		this.diagnoseCode = diagnoseCode;
 		this.diagnoseType = diagnoseType;
 		this.tillaegsDiagnose = tillaegsDiagnose;
 	}
 	
-	public long getIndlaeggelsesId() {
-		return indlaeggelsesId;
-	}
-	public void setIndlaeggelsesId(long indlaeggelsesId) {
-		this.indlaeggelsesId = indlaeggelsesId;
-	}
 	public String getDiagnoseCode() {
 		return diagnoseCode;
 	}

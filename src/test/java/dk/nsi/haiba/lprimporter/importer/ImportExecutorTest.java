@@ -43,6 +43,8 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
+import dk.nsi.haiba.lprimporter.model.lpr.Administration;
+import dk.nsi.haiba.lprimporter.rules.RulesEngine;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class)
@@ -52,12 +54,12 @@ public class ImportExecutorTest {
     @Import({LPRTestConfiguration.class})
 	static class TestConfiguration {
 		@Bean
-		public ImportExecutor executor() {
-			return new ImportExecutor();
-		}
-		@Bean
 		public LPRDAO lprdao() {
 			return Mockito.mock(LPRDAO.class);
+		}
+		@Bean
+		public RulesEngine rulesEngine() {
+			return Mockito.mock(RulesEngine.class);
 		}
 	}
 	
@@ -67,9 +69,13 @@ public class ImportExecutorTest {
 	@Autowired
 	LPRDAO lprdao;
 
+	@Autowired
+	RulesEngine rulesEngine;
+
 	@Before
 	public void resetMocks() {
 		Mockito.reset(lprdao);
+		Mockito.reset(rulesEngine);
 	}
 
 	@Test
@@ -94,6 +100,7 @@ public class ImportExecutorTest {
 		
 		Mockito.verify(lprdao).getUnprocessedCPRnumbers();
 		Mockito.verify(lprdao, Mockito.atLeastOnce()).getContactsByCPR(cprList.get(0));
+		Mockito.verify(rulesEngine, Mockito.atLeastOnce()).processRuleChain(Mockito.anyListOf(Administration.class));
 	}
 
 }

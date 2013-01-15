@@ -39,9 +39,15 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jndi.JndiObjectFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
+import dk.nsi.haiba.lprimporter.dao.impl.HAIBADAOImpl;
 import dk.nsi.haiba.lprimporter.dao.impl.LPRDAOImpl;
 import dk.nsi.haiba.lprimporter.importer.ImportExecutor;
+import dk.nsi.haiba.lprimporter.rules.ContactToAdmissionRule;
+import dk.nsi.haiba.lprimporter.rules.LPRDateTimeRule;
+import dk.nsi.haiba.lprimporter.rules.LPRRulesEngine;
+import dk.nsi.haiba.lprimporter.rules.RulesEngine;
 
 /**
  * Configuration class 
@@ -94,8 +100,29 @@ public abstract class LPRConfiguration {
 		return new ImportExecutor();
 	}
 
-    @Bean
+	@Bean
+	public RulesEngine rulesEngine() {
+		return new LPRRulesEngine();
+	}
+
+	@Bean
     public LPRDAO lprdao() {
         return new LPRDAOImpl();
     }
+	
+	@Bean
+    public HAIBADAO haibaDao() {
+        return new HAIBADAOImpl();
+    }
+	
+	@Bean
+	public LPRDateTimeRule lprDateTimeRule() {
+		return new LPRDateTimeRule();
+	}
+	
+	@Bean
+	public ContactToAdmissionRule contactToAdmissionRule() {
+		return new ContactToAdmissionRule();
+	}
+	
 }

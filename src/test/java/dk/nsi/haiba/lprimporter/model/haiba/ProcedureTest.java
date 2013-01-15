@@ -39,7 +39,6 @@ public class ProcedureTest {
 	@Test
 	public void testProcedureFieldsAreCorrect() {
 
-		long indlaeggelsesId = 12345;
 		String procedureCode = "pCode";
 		String procedureType = "pType";
 		String tillaegsProcedureCode = "tpCode";
@@ -49,9 +48,8 @@ public class ProcedureTest {
 		Calendar calendar = new GregorianCalendar();
 		Date d1 = calendar.getTime();
 		
-		Procedure p = new Procedure(indlaeggelsesId,procedureCode,procedureType, tillaegsProcedureCode, sygehusCode, afdelingsCode, d1);
+		Procedure p = new Procedure(procedureCode,procedureType, tillaegsProcedureCode, sygehusCode, afdelingsCode, d1);
 		
-		assertEquals(indlaeggelsesId, p.getIndlaeggelsesId());
 		assertEquals(procedureCode, p.getProcedureCode());
 		assertEquals(procedureType, p.getProcedureType());
 		assertEquals(tillaegsProcedureCode, p.getTillaegsProcedureCode());
