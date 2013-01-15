@@ -48,7 +48,12 @@ public class LPRTestConfiguration extends LPRConfiguration {
         return mock(DataSource.class);
     }
 
-	@Bean
+    @Bean
+    public DataSource haibaDataSource() {
+        return mock(DataSource.class);
+    }
+
+    @Bean
 	public SLALogger slaLogger() {
 		return mock(SLALogger.class);
 	}

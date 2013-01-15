@@ -37,6 +37,7 @@ import org.joda.time.DateTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -58,7 +59,7 @@ import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
  * Spring transaction ensures rollback after test is finished
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@Transactional
+@Transactional("lprTransactionManager")
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class)
 public class LPRDAOIT {
 	

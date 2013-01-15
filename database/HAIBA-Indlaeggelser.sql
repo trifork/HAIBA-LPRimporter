@@ -2,7 +2,7 @@ CREATE DATABASE IF NOT EXISTS HAIBA;
 USE HAIBA;
  
 CREATE TABLE IF NOT EXISTS Indlaeggelser (
-    IndlaeggelsesID BIGINT(15) NOT NULL PRIMARY KEY,
+    IndlaeggelsesID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     CPR VARCHAR(10),
     Sygehuskode VARCHAR(10),
     Afdelingskode VARCHAR(10),
@@ -13,21 +13,27 @@ CREATE TABLE IF NOT EXISTS Indlaeggelser (
 ) ENGINE=InnoDB COLLATE=utf8_bin;
 
 CREATE TABLE IF NOT EXISTS Diagnoser (
-    InlaeggelsesID BIGINT(15) NOT NULL PRIMARY KEY,
+    IndlaeggelsesID BIGINT(15) NOT NULL,
     Diagnoseskode VARCHAR(10),
     Diagnosetype VARCHAR(10),
-    Tillaegsdiagnose VARCHAR(10)
+    Tillaegsdiagnose VARCHAR(10),
+    
+    FOREIGN KEY (IndlaeggelsesID) REFERENCES Indlaeggelser(IndlaeggelsesID)
+    
 ) ENGINE=InnoDB COLLATE=utf8_bin;
 
 CREATE TABLE IF NOT EXISTS Procedurer (
-    IndlaeggelsesID BIGINT(15) NOT NULL PRIMARY KEY,
+    IndlaeggelsesID BIGINT(15) NOT NULL,
     Procedurekode VARCHAR(10),
     Proceduretype VARCHAR(10),
     Tillaegsprocedurekode VARCHAR(10),
     Sygehuskode VARCHAR(10),
     Afdelingskode VARCHAR(10),
     Proceduredato VARCHAR(10),
-    Proceduretidspunkt VARCHAR(10)
+    Proceduretidspunkt VARCHAR(10),
+    
+    FOREIGN KEY (IndlaeggelsesID) REFERENCES Indlaeggelser(IndlaeggelsesID)
+    
 ) ENGINE=InnoDB COLLATE=utf8_bin;
 
 CREATE TABLE IF NOT EXISTS Indlaeggelsesforloeb (

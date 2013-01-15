@@ -28,6 +28,7 @@ package dk.nsi.haiba.lprimporter.config;
 
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.CustomScopeConfigurer;
 import org.springframework.context.annotation.Bean;
@@ -54,8 +55,11 @@ import dk.nsi.haiba.lprimporter.rules.RulesEngine;
  * providing the common infrastructure.
  */
 public abstract class LPRConfiguration {
-	@Value("${jdbc.JNDIName}")
-	private String jdbcJNDIName;
+	@Value("${jdbc.lprJNDIName}")
+	private String lprJdbcJNDIName;
+
+	@Value("${jdbc.haibaJNDIName}")
+	private String haibaJdbcJNDIName;
 
 	// this is not automatically registered, see https://jira.springsource.org/browse/SPR-8539
 	@Bean
@@ -70,22 +74,45 @@ public abstract class LPRConfiguration {
 	}
 
 	@Bean
+	@Qualifier("lprDataSource")
 	public DataSource lprDataSource() throws Exception {
 		JndiObjectFactoryBean factory = new JndiObjectFactoryBean();
-		factory.setJndiName(jdbcJNDIName);
+		factory.setJndiName(lprJdbcJNDIName);
 		factory.setExpectedType(DataSource.class);
 		factory.afterPropertiesSet();
 		return (DataSource) factory.getObject();
 	}
 
 	@Bean
-	public PlatformTransactionManager transactionManager(DataSource ds) {
+	@Qualifier("haibaDataSource")
+	public DataSource haibaDataSource() throws Exception {
+		JndiObjectFactoryBean factory = new JndiObjectFactoryBean();
+		factory.setJndiName(haibaJdbcJNDIName);
+		factory.setExpectedType(DataSource.class);
+		factory.afterPropertiesSet();
+		return (DataSource) factory.getObject();
+	}
+
+	@Bean
+	@Qualifier("lprTransactionManager")
+	public PlatformTransactionManager transactionManager(@Qualifier("lprDataSource") DataSource ds) {
 		return new DataSourceTransactionManager(ds);
 	}
 
 	@Bean
-	public JdbcTemplate jdbcTemplate(DataSource dataSource) {
+	public JdbcTemplate jdbcTemplate(@Qualifier("lprDataSource") DataSource dataSource) {
 		return new JdbcTemplate(dataSource);
+	}
+
+	@Bean
+	public JdbcTemplate haibaJdbcTemplate(@Qualifier("haibaDataSource") DataSource ds) {
+		return new JdbcTemplate(ds);
+	}
+
+	@Bean
+	@Qualifier("haibaTransactionManager")
+	public PlatformTransactionManager haibaTransactionManager(@Qualifier("haibaDataSource") DataSource ds) {
+		return new DataSourceTransactionManager(ds);
 	}
 
 	// This needs the static modifier due to https://jira.springsource.org/browse/SPR-8269. If not static, field jdbcJndiName

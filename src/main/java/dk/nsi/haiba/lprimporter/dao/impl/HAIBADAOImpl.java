@@ -26,7 +26,17 @@
  */
 package dk.nsi.haiba.lprimporter.dao.impl;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.exception.DAOException;
@@ -34,10 +44,45 @@ import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 
 public class HAIBADAOImpl implements HAIBADAO {
 
+	@Autowired
+	@Qualifier("haibaJdbcTemplate")
+	JdbcTemplate jdbc;
+
+	// TODO - select SQL from the chosen dialect
+
 	@Override
-	public void saveIndlaeggelsesForloeb(List<Indlaeggelse> indlaeggelser)
-			throws DAOException {
-		// TODO Auto-generated method stub
+	public void saveIndlaeggelsesForloeb(List<Indlaeggelse> indlaeggelser) throws DAOException {
+
+		for (Indlaeggelse indlaeggelse : indlaeggelser) {
+			
+			final String sql = "INSERT INTO Indlaeggelser (CPR, Sygehuskode, Afdelingskode, Indlaeggelsesdato, Indlaeggelsestidspunkt, Udskrivningsdato, Udskrivningstidspunkt) "
+					+"VALUES (?,?,?,?,?,?,?)";
+			final Object[] args = new Object[] {
+					indlaeggelse.getCpr(), 
+					indlaeggelse.getSygehusCode(),
+					indlaeggelse.getAfdelingsCode(),
+					"2010-12-13" /* TODO */,
+					"0" /* TODO*/,
+					"2010-12-14" /* TODO */,
+					"0" /* TODO*/};
+			
+			KeyHolder keyHolder = new GeneratedKeyHolder();
+
+	        jdbc.update(new PreparedStatementCreator() {
+	            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+	                PreparedStatement ps = connection.prepareStatement(sql, new String[] { "id" });
+	                for (int i = 0; i < args.length; i++) {
+	                    ps.setObject(i + 1, args[i]);
+	                }
+	                return ps;
+	            }
+	        }, keyHolder);
+
+	        int key = keyHolder.getKey().intValue();
+	        System.out.println("Generated Key: "+key);
+		}
+		
+		
 	}
 
 }

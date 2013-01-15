@@ -28,6 +28,7 @@ package dk.nsi.haiba.lprimporter.integrationtest;
 
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,6 +58,12 @@ public class LPRIntegrationTestConfiguration extends LPRConfiguration {
 	private String testLPRDbUsername;
 	@Value("${test.mysql.lprdbpassword}")
 	private String testLPRDbPassword;
+	@Value("${test.mysql.haibadbname}")
+	private String testHAIBADbName;
+	@Value("${test.mysql.haibadbusername}")
+	private String testHAIBADbUsername;
+	@Value("${test.mysql.haibadbpassword}")
+	private String testHAIBADbPassword;
 
 	@Bean
 	public static PropertySourcesPlaceholderConfigurer properties(){
@@ -64,6 +71,7 @@ public class LPRIntegrationTestConfiguration extends LPRConfiguration {
 	}
 
 	@Bean
+	@Qualifier("lprDataSource")
 	public DataSource lprDataSource() throws Exception{
 		String jdbcUrlPrefix = "jdbc:mysql://127.0.0.1:" + mysqlPort + "/";
 
@@ -73,12 +81,34 @@ public class LPRIntegrationTestConfiguration extends LPRConfiguration {
 	}
 
 	@Bean
-	public JdbcTemplate jdbcTemplate(DataSource ds) {
+	public JdbcTemplate jdbcTemplate(@Qualifier("lprDataSource") DataSource ds) {
 		return new JdbcTemplate(ds);
 	}
 
 	@Bean
-	public PlatformTransactionManager transactionManager(DataSource ds) {
+	@Qualifier("lprTransactionManager")
+	public PlatformTransactionManager transactionManager(@Qualifier("lprDataSource") DataSource ds) {
+		return new DataSourceTransactionManager(ds);
+	}
+
+	@Bean
+	@Qualifier("haibaDataSource")
+	public DataSource haibaDataSource() throws Exception{
+		String jdbcUrlPrefix = "jdbc:mysql://127.0.0.1:" + mysqlPort + "/";
+
+		// TODO Create at test version of the database only used in integrationtests.
+
+		return new SimpleDriverDataSource(new Driver(), jdbcUrlPrefix + testHAIBADbName + "?createDatabaseIfNotExist=true", testHAIBADbUsername, testHAIBADbPassword);
+	}
+
+	@Bean
+	public JdbcTemplate haibaJdbcTemplate(@Qualifier("haibaDataSource") DataSource ds) {
+		return new JdbcTemplate(ds);
+	}
+
+	@Bean
+	@Qualifier("haibaTransactionManager")
+	public PlatformTransactionManager haibaTransactionManager(@Qualifier("haibaDataSource") DataSource ds) {
 		return new DataSourceTransactionManager(ds);
 	}
 
