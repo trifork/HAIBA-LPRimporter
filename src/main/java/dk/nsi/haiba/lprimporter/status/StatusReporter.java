@@ -26,10 +26,13 @@
  */
 package dk.nsi.haiba.lprimporter.status;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -40,19 +43,56 @@ import org.springframework.web.bind.annotation.RequestMapping;
  */
 @Controller
 public class StatusReporter {
+	
+	@Autowired
+	@Qualifier("haibaJdbcTemplate")
+	JdbcTemplate haibaJdbc;
+
+	@Autowired
+	@Qualifier("jdbcTemplate")
+	JdbcTemplate lprJdbc;
 
 	@RequestMapping(value = "/status")
 	public ResponseEntity<String> reportStatus() {
 		HttpHeaders headers = new HttpHeaders();
 		String body = "OK";
-		HttpStatus status = HttpStatus.OK;
+		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 		body = "OK";
 		
-		// TODO - insert actual validation here, this is only a stub by now
+		try {
+			if (!isHAIBADBAlive()) {
+				body = "HAIBA Database is _NOT_ running correctly";
+			} else if (!isLPRDBAlive()) {
+				body = "LPR Database is _NOT_ running correctly";
+			} else {
+				status = HttpStatus.OK;
+			}
+		} catch (Exception e) {
+			body = e.getMessage();
+		}
 
 		headers.setContentType(MediaType.TEXT_PLAIN);
 		
 		return new ResponseEntity<String>(body, headers, status);
+	}
+	
+	
+	private boolean isHAIBADBAlive() {
+		try {
+			haibaJdbc.queryForObject("Select max(indlaeggelsesid) from Indlaeggelser", Long.class);
+		} catch (Exception someError) {
+			return false;
+		}
+		return true;
+	}
+	
+	private boolean isLPRDBAlive() {
+		try {
+			lprJdbc.queryForObject("Select max(recordnummer) from T_ADM", Long.class);
+		} catch (Exception someError) {
+			return false;
+		}
+		return true;
 	}
 
 }

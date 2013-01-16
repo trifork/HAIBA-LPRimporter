@@ -29,32 +29,65 @@ package dk.nsi.haiba.lprimporter.status;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import javax.sql.DataSource;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
+import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class)
 public class StatusReporterTest {
-    @Configuration
-    static class TestConfiguration {
 
+	@Configuration
+    @Import({LPRTestConfiguration.class})
+    static class TestConfiguration {
         @Bean
         public StatusReporter statusReporter() {
             return new StatusReporter();
         }
+        
+    	@Bean
+    	public JdbcTemplate jdbcTemplate(@Qualifier("lprDataSource") DataSource dataSource) {
+    		return Mockito.mock(JdbcTemplate.class);
+    	}
+
+    	@Bean
+    	public JdbcTemplate haibaJdbcTemplate(@Qualifier("haibaDataSource") DataSource ds) {
+    		return Mockito.mock(JdbcTemplate.class);
+    	}
     }
 
     @Autowired
     StatusReporter reporter;
+    
+    @Autowired
+    JdbcTemplate haibaJdbcTemplate;
 
-    @Test
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+
+	@Before
+	public void resetMocks() {
+		Mockito.reset(haibaJdbcTemplate);
+		Mockito.reset(jdbcTemplate);
+	}
+
+	@Test
     public void willReturn200underNormalCircumstances() throws Exception {
         final ResponseEntity<String> response = reporter.reportStatus();
 
@@ -62,4 +95,23 @@ public class StatusReporterTest {
         assertTrue(response.getBody().startsWith("OK"));
     }
 
+    @Test
+    public void willReturn500whenHAIBADBisDown() throws Exception {
+    	Mockito.when(haibaJdbcTemplate.queryForObject("Select max(indlaeggelsesid) from Indlaeggelser", Long.class)).thenThrow(Exception.class);
+    	
+        final ResponseEntity<String> response = reporter.reportStatus();
+
+        assertEquals(500, response.getStatusCode().value());
+        assertTrue(response.getBody().contains("HAIBA Database is _NOT_ running correctly"));
+    }
+
+    @Test
+    public void willReturn500whenLPRDBisDown() throws Exception {
+    	Mockito.when(jdbcTemplate.queryForObject("Select max(recordnummer) from T_ADM", Long.class)).thenThrow(Exception.class);
+    	
+        final ResponseEntity<String> response = reporter.reportStatus();
+
+        assertEquals(500, response.getStatusCode().value());
+        assertTrue(response.getBody().contains("LPR Database is _NOT_ running correctly"));
+    }
 }
