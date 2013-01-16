@@ -117,7 +117,7 @@ public class HAIBADAOIT {
 		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from Indlaeggelsesforloeb"));
 		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from LPR_Reference"));
 		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from Diagnoser"));
-		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from procedurer"));
+		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from Procedurer"));
 
 		assertEquals(sygehusCode, jdbc.queryForObject("select sygehuskode from Indlaeggelser", String.class));
 		
