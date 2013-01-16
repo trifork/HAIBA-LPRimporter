@@ -28,16 +28,14 @@ package dk.nsi.haiba.lprimporter.integrationtest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import org.joda.time.DateTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,13 +51,11 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.Transactional;
 
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
-import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.dao.impl.HAIBADAOImpl;
-import dk.nsi.haiba.lprimporter.dao.impl.LPRDAOImpl;
+import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
-import dk.nsi.haiba.lprimporter.model.lpr.Administration;
-import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
-import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
+import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
+import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
 
 /*
  * Tests the HAIBADAO class
@@ -89,29 +85,48 @@ public class HAIBADAOIT {
     HAIBADAO haibaDao;
     
     /*
-     * Inserts a single contact into the T_ADM table, and tests data is fetched correct from the DAO
+     * Inserts an IndlaeggelsesForloeb into the HAIBA db, and tests data is inserted correct by DAO
      */
     @Test
 	public void insertsSingleIndlaeggelse() {
     	
 		List<Indlaeggelse> indlaeggelser = new ArrayList<Indlaeggelse>();
-    	long id = 12345;
 		String cpr = "1234567890";
-		String sygehusCode = "qwerty";
-		String afdelingsCode = "asdf";
+		String sygehusCode = "qwer";
+		String afdelingsCode = "asd";
 		Calendar calendar = new GregorianCalendar();
 		Date d1 = calendar.getTime();
 		calendar.add(Calendar.DAY_OF_MONTH, 1);
 		Date d2 = calendar.getTime();
+		LPRReference lprRef = new LPRReference();
+		lprRef.setLprRecordNumber(99999);
+		Diagnose d = new Diagnose("d1", "A", "d2");
+		Procedure p = new Procedure("p1", "p", "p2", sygehusCode, afdelingsCode, d1);
 		
-		Indlaeggelse indlaeggelse = new Indlaeggelse(id,cpr,sygehusCode,afdelingsCode, d1, d2);
+		Indlaeggelse indlaeggelse = new Indlaeggelse(cpr,sygehusCode,afdelingsCode, d1, d2);
+		indlaeggelse.addLPRReference(lprRef);
+		indlaeggelse.addDiagnose(d);
+		indlaeggelse.addProcedure(p);
+		
 		indlaeggelser.add(indlaeggelse);
 		
     	assertNotNull(haibaDao);
 		haibaDao.saveIndlaeggelsesForloeb(indlaeggelser);
 		
 		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from Indlaeggelser"));
-    	
-	}
+		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from Indlaeggelsesforloeb"));
+		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from LPR_Reference"));
+		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from Diagnoser"));
+		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from procedurer"));
+
+		assertEquals(sygehusCode, jdbc.queryForObject("select sygehuskode from Indlaeggelser", String.class));
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.0");
+		assertEquals(sdf.format(d1), sdf.format(jdbc.queryForObject("select indlaeggelsesdatotid from Indlaeggelser", Date.class)));
+		assertEquals(sdf.format(d2), sdf.format(jdbc.queryForObject("select udskrivningsdatotid from Indlaeggelser", Date.class)));
+
+		assertEquals(sdf.format(d1), sdf.format(jdbc.queryForObject("select proceduredatotid from Procedurer", Date.class)));
+    
+    }
     
 }

@@ -29,6 +29,7 @@ package dk.nsi.haiba.lprimporter.dao.impl;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +41,10 @@ import org.springframework.jdbc.support.KeyHolder;
 
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.exception.DAOException;
+import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
+import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
+import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
 
 public class HAIBADAOImpl implements HAIBADAO {
 
@@ -53,18 +57,19 @@ public class HAIBADAOImpl implements HAIBADAO {
 	@Override
 	public void saveIndlaeggelsesForloeb(List<Indlaeggelse> indlaeggelser) throws DAOException {
 
+		List<Long> indlaeggelserInForloeb = new ArrayList<Long>();
+		
 		for (Indlaeggelse indlaeggelse : indlaeggelser) {
 			
-			final String sql = "INSERT INTO Indlaeggelser (CPR, Sygehuskode, Afdelingskode, Indlaeggelsesdato, Indlaeggelsestidspunkt, Udskrivningsdato, Udskrivningstidspunkt) "
-					+"VALUES (?,?,?,?,?,?,?)";
+			final String sql = "INSERT INTO Indlaeggelser (CPR, Sygehuskode, Afdelingskode, Indlaeggelsesdatotid, Udskrivningsdatotid) "
+					+"VALUES (?,?,?,?,?)";
+			
 			final Object[] args = new Object[] {
 					indlaeggelse.getCpr(), 
 					indlaeggelse.getSygehusCode(),
 					indlaeggelse.getAfdelingsCode(),
-					"2010-12-13" /* TODO */,
-					"0" /* TODO*/,
-					"2010-12-14" /* TODO */,
-					"0" /* TODO*/};
+					indlaeggelse.getIndlaeggelsesDatetime(),
+					indlaeggelse.getUdskrivningsDatetime()};
 			
 			KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -78,11 +83,64 @@ public class HAIBADAOImpl implements HAIBADAO {
 	            }
 	        }, keyHolder);
 
-	        int key = keyHolder.getKey().intValue();
-	        System.out.println("Generated Key: "+key);
+	        long indlaeggelsesId = keyHolder.getKey().longValue();
+	        indlaeggelserInForloeb.add(new Long(indlaeggelsesId));
+	        
+	        saveDiagnoses(indlaeggelse.getDiagnoses(), indlaeggelsesId);
+	        saveProcedures(indlaeggelse.getProcedures(), indlaeggelsesId);
+	        saveLPRReferences(indlaeggelse.getLprReferencer(), indlaeggelsesId);
 		}
+		saveForloeb(indlaeggelserInForloeb);
+	}
+	
+	
+	private void saveForloeb(List<Long> indlaeggelserInForloeb) {
+
+		String sql = "INSERT INTO Indlaeggelsesforloeb (IndlaeggelsesID) VALUES (?)";
 		
-		
+		for (Long indlaeggelsesId : indlaeggelserInForloeb) {
+			jdbc.update(sql, indlaeggelsesId);
+		}
 	}
 
+
+	private void saveLPRReferences(List<LPRReference> lprReferencer, long indlaeggelsesId) {
+		
+		String sql = "INSERT INTO LPR_Reference (IndlaeggelsesID, LPR_recordnummer) VALUES (?, ?)";
+		
+		for (LPRReference ref : lprReferencer) {
+			jdbc.update(sql, indlaeggelsesId, ref.getLprRecordNumber());
+		}
+	}
+
+
+	private void saveProcedures(List<Procedure> procedures, long indlaeggelsesId) {
+		
+		String sql = "INSERT INTO Procedurer (IndlaeggelsesID, Procedurekode, Proceduretype, Tillaegsprocedurekode, Sygehuskode, Afdelingskode, Proceduredatotid) VALUES (?, ?, ?, ?, ?, ?, ?)";
+		
+		for (Procedure p : procedures) {
+			jdbc.update(sql, 
+					indlaeggelsesId, 
+					p.getProcedureCode(),
+					p.getProcedureType(),
+					p.getTillaegsProcedureCode(),
+					p.getSygehusCode(),
+					p.getAfdelingsCode(),
+					p.getProcedureDatetime());
+		}
+	}
+
+
+	private void saveDiagnoses(List<Diagnose> diagnoses, long indlaeggelsesId) {
+		
+		String sql = "INSERT INTO Diagnoser (IndlaeggelsesID, Diagnoseskode, Diagnosetype, Tillaegsdiagnose) VALUES (?, ?, ?, ?)";
+
+		for (Diagnose d : diagnoses) {
+			jdbc.update(sql, 
+					indlaeggelsesId, 
+					d.getDiagnoseCode(),
+					d.getDiagnoseType(),
+					d.getTillaegsDiagnose());
+		}
+	}
 }

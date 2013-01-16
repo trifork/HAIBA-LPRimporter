@@ -35,7 +35,6 @@ import java.util.List;
  */
 public class Indlaeggelse {
 	
-	long id;
 	String cpr;
 	String sygehusCode;
 	String afdelingsCode;
@@ -49,10 +48,9 @@ public class Indlaeggelse {
 		
 	}
 
-	public Indlaeggelse(long id, String cpr, String sygehusCode,
+	public Indlaeggelse(String cpr, String sygehusCode,
 			String afdelingsCode, Date indlaeggelsesDatetime,
 			Date udskrivningsDatetime) {
-		this.id = id;
 		this.cpr = cpr;
 		this.sygehusCode = sygehusCode;
 		this.afdelingsCode = afdelingsCode;
@@ -60,13 +58,6 @@ public class Indlaeggelse {
 		this.udskrivningsDatetime = udskrivningsDatetime;
 	}
 
-
-	public long getId() {
-		return id;
-	}
-	public void setId(long id) {
-		this.id = id;
-	}
 
 	public String getCpr() {
 		return cpr;
