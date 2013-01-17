@@ -27,6 +27,7 @@
 package dk.nsi.haiba.lprimporter.dao.impl;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,6 +92,18 @@ public class LPRDAOImpl implements LPRDAO {
 		    return lprProcedures;
         } catch (RuntimeException e) {
             throw new DAOException("Error fetching diagnoses from LPR", e);
+        }
+	}
+
+	@Override
+	public void updateImportTime(long recordNumber) {
+		
+		String sql = "update T_ADM set D_IMPORTDTO = ? WHERE K_RECNUM = ?";
+
+	    try {
+	    	jdbcTemplate.update(sql, new Object[] {new Date(), new Long(recordNumber)});
+        } catch (RuntimeException e) {
+            throw new DAOException("Error updating import timestamp in LPR", e);
         }
 	}
 

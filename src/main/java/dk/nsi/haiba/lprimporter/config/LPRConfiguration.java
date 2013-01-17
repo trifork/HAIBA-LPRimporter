@@ -32,13 +32,16 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.CustomScopeConfigurer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jndi.JndiObjectFactoryBean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
@@ -54,7 +57,10 @@ import dk.nsi.haiba.lprimporter.rules.RulesEngine;
  * Configuration class 
  * providing the common infrastructure.
  */
-public abstract class LPRConfiguration {
+@Configuration
+@EnableScheduling
+@EnableTransactionManagement
+public class LPRConfiguration {
 	@Value("${jdbc.lprJNDIName}")
 	private String lprJdbcJNDIName;
 

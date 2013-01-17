@@ -45,12 +45,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class StatusReporter {
 	
 	@Autowired
-	@Qualifier("haibaJdbcTemplate")
-	JdbcTemplate haibaJdbc;
+	JdbcTemplate haibaJdbcTemplate;
 
 	@Autowired
-	@Qualifier("jdbcTemplate")
-	JdbcTemplate lprJdbc;
+	JdbcTemplate jdbcTemplate;
 
 	@RequestMapping(value = "/status")
 	public ResponseEntity<String> reportStatus() {
@@ -79,7 +77,7 @@ public class StatusReporter {
 	
 	private boolean isHAIBADBAlive() {
 		try {
-			haibaJdbc.queryForObject("Select max(indlaeggelsesid) from Indlaeggelser", Long.class);
+			haibaJdbcTemplate.queryForObject("Select max(indlaeggelsesid) from Indlaeggelser", Long.class);
 		} catch (Exception someError) {
 			return false;
 		}
@@ -88,7 +86,7 @@ public class StatusReporter {
 	
 	private boolean isLPRDBAlive() {
 		try {
-			lprJdbc.queryForObject("Select max(recordnummer) from T_ADM", Long.class);
+			jdbcTemplate.queryForObject("Select max(K_RECNUM) from T_ADM", Long.class);
 		} catch (Exception someError) {
 			return false;
 		}

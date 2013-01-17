@@ -78,4 +78,13 @@ public interface LPRDAO {
 	 */
 	public List<LPRProcedure> getProceduresByRecordnummer(long recordnummer) throws DAOException;
 
+	
+	/**
+	 * Updates the import timstamp in the T_ADM table for the given recordnummer number
+	 * 
+	 * @param  The recordnummer from the LPR Contact
+	 * @throws DAOException if something goes wrong in the process
+	 */
+	public void updateImportTime(long recordNumber);
+
 }

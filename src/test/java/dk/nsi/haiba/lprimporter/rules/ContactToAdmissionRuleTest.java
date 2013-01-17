@@ -46,6 +46,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
+import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
@@ -61,7 +62,10 @@ public class ContactToAdmissionRuleTest {
 		public HAIBADAO haibaDao() {
 			return Mockito.mock(HAIBADAO.class);
 		}
-		
+		@Bean
+		public LPRDAO lprDao() {
+			return Mockito.mock(LPRDAO.class);
+		}
 	}
 	
 	@Autowired

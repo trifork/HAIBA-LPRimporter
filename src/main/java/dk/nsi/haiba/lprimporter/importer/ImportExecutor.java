@@ -26,6 +26,7 @@
  */
 package dk.nsi.haiba.lprimporter.importer;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,8 +47,10 @@ public class ImportExecutor {
 	@Autowired
 	RulesEngine rulesEngine;
 	
-	@Scheduled(fixedDelay = 1000)
+	@Scheduled(fixedDelay = 10000)
 	public void run() {
+		
+		System.out.println("Running Importer: " + new Date().toString());
 		
 		// Fetch new records from LPR contact table
 		// TODO select this in batches

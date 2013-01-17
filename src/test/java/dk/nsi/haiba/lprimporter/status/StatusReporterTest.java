@@ -107,7 +107,7 @@ public class StatusReporterTest {
 
     @Test
     public void willReturn500whenLPRDBisDown() throws Exception {
-    	Mockito.when(jdbcTemplate.queryForObject("Select max(recordnummer) from T_ADM", Long.class)).thenThrow(Exception.class);
+    	Mockito.when(jdbcTemplate.queryForObject("Select max(K_RECNUM) from T_ADM", Long.class)).thenThrow(Exception.class);
     	
         final ResponseEntity<String> response = reporter.reportStatus();
 

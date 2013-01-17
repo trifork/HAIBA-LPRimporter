@@ -31,6 +31,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Date;
 import java.util.List;
 
 import org.joda.time.DateTime;
@@ -241,5 +242,21 @@ public class LPRDAOIT {
     }
 
     
+    /*
+     * Inserts a contact into the T_ADM table, and tests import timestamp is set correctly from the DAO
+     */
+    @Test
+    public void updateImportTimestamp() {
+    	// TODO - this is only testing a stub by now - improve later
+
+        long recordNumber = 1234;
+    	String cpr = "1111111111";
+    	
+    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr) values (?, ?)", new Long(recordNumber), cpr);
+    	
+    	lprdao.updateImportTime(recordNumber);
+    	
+    	assertNotNull(jdbcTemplate.queryForObject("select D_IMPORTDTO from T_ADM", Date.class));
+    }
     
 }

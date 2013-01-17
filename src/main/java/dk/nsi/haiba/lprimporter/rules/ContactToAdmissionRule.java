@@ -32,6 +32,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
+import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
@@ -46,11 +47,14 @@ public class ContactToAdmissionRule implements LPRRule {
 	
 	@Autowired
 	HAIBADAO haibaDao;
+	
+	@Autowired
+	LPRDAO lprDao;
 
 	@Override
 	public LPRRule doProcessing() {
-		// TODO - this is a simple stub by now, it converts each contact to a List of "Indlaeggelse", this is to be replaced in a later sprint
 		
+		// TODO - this is a simple stub by now, it converts each contact to a List of "Indlaeggelse", this is to be replaced in a later sprint
 		
 		for (Administration contact : contacts) {
 			List<Indlaeggelse> indlaeggelser = new ArrayList<Indlaeggelse>();
@@ -59,6 +63,9 @@ public class ContactToAdmissionRule implements LPRRule {
 			indlaeggelse.setAfdelingsCode(contact.getAfdelingsCode());
 			indlaeggelse.setCpr(contact.getCpr());
 			indlaeggelse.setSygehusCode(contact.getSygehusCode());
+			indlaeggelse.setIndlaeggelsesDatetime(contact.getIndlaeggelsesDatetime());
+			indlaeggelse.setUdskrivningsDatetime(contact.getUdskrivningsDatetime());
+			
 			// TODO - an indlaeggelse can have more than one LPR ref
 			indlaeggelse.addLPRReference(new LPRReference(contact.getRecordNumber()));
 			
@@ -73,16 +80,25 @@ public class ContactToAdmissionRule implements LPRRule {
 			for (LPRProcedure lprProcedure : contact.getLprProcedures()) {
 				Procedure p = new Procedure();
 				p.setAfdelingsCode(lprProcedure.getAfdelingsCode());
+				p.setSygehusCode(lprProcedure.getSygehusCode());
 				p.setProcedureCode(lprProcedure.getProcedureCode());
 				p.setProcedureType(lprProcedure.getProcedureType());
+				p.setTillaegsProcedureCode(lprProcedure.getTillaegsProcedureCode());
 				p.setProcedureDatetime(lprProcedure.getProcedureDatetime());
 				indlaeggelse.addProcedure(p);
 			}
 			
 			indlaeggelser.add(indlaeggelse);
 
+
 			haibaDao.saveIndlaeggelsesForloeb(indlaeggelser);
+			
+			//TODO - Update of imported LPR references must be implemented correctly - this is just a stub by now
+			lprDao.updateImportTime(contact.getRecordNumber());
 		}
+
+		
+		
 		
 		// This is the last rule
 		return null;
