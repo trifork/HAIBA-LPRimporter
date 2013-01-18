@@ -24,47 +24,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package dk.nsi.haiba.lprimporter.importer;
+package dk.nsi.haiba.lprimporter.dao;
 
-import java.util.Date;
-import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
-
-import dk.nsi.haiba.lprimporter.dao.LPRDAO;
-import dk.nsi.haiba.lprimporter.model.lpr.Administration;
-import dk.nsi.haiba.lprimporter.rules.RulesEngine;
-
-/*
- * Scheduled job, responsible for fetching new data from LPR, then send it to the RulesEngine for further processing
- */
-public class ImportExecutor {
+public class CommonDAO {
 	
-	@Autowired
-	LPRDAO lprdao;
-
-	@Autowired
-	RulesEngine rulesEngine;
+	protected final String MYSQL = "MySQL";
+	protected final String MSSQL = "MSSQL";
 	
-	@Scheduled(fixedDelay = 10000)
-	public void run() {
-		
-		System.out.println("Running Importer: " + new Date().toString());
-		
-		// Fetch new records from LPR contact table
-		// TODO select this in batches
-		try {
-			List<String> unprocessedCPRnumbers = lprdao.getUnprocessedCPRnumbers();
-			if(unprocessedCPRnumbers.size() != 0) {
-				for (String cpr : unprocessedCPRnumbers) {
-					List<Administration> contactsByCPR = lprdao.getContactsByCPR(cpr);
-					// Process the LPR data according to the defined business rules
-					rulesEngine.processRuleChain(contactsByCPR);
-				}
-			}
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
+	@Value("${jdbc.dialect}")
+	private String dialect;
+
+	public String getDialect() {
+		return dialect;
 	}
+
+	public void setDialect(String dialect) {
+		this.dialect = dialect;
+	}
+	
+
 }

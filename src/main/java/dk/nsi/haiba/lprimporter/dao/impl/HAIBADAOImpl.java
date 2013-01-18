@@ -39,6 +39,7 @@ import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
+import dk.nsi.haiba.lprimporter.dao.CommonDAO;
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.exception.DAOException;
 import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
@@ -46,13 +47,11 @@ import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
 
-public class HAIBADAOImpl implements HAIBADAO {
+public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 
 	@Autowired
 	@Qualifier("haibaJdbcTemplate")
 	JdbcTemplate jdbc;
-
-	// TODO - select SQL from the chosen dialect
 
 	@Override
 	public void saveIndlaeggelsesForloeb(List<Indlaeggelse> indlaeggelser) throws DAOException {
@@ -61,8 +60,8 @@ public class HAIBADAOImpl implements HAIBADAO {
 		
 		for (Indlaeggelse indlaeggelse : indlaeggelser) {
 			
-			final String sql = "INSERT INTO Indlaeggelser (CPR, Sygehuskode, Afdelingskode, Indlaeggelsesdatotid, Udskrivningsdatotid) "
-					+"VALUES (?,?,?,?,?)";
+			final String sql = "INSERT INTO Indlaeggelser (CPR, Sygehuskode, Afdelingskode, Indlaeggelsesdatotid, Udskrivningsdatotid) VALUES (?,?,?,?,?)";				
+			
 			
 			final Object[] args = new Object[] {
 					indlaeggelse.getCpr(), 
@@ -71,19 +70,27 @@ public class HAIBADAOImpl implements HAIBADAO {
 					indlaeggelse.getIndlaeggelsesDatetime(),
 					indlaeggelse.getUdskrivningsDatetime()};
 			
-			KeyHolder keyHolder = new GeneratedKeyHolder();
 
-	        jdbc.update(new PreparedStatementCreator() {
-	            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
-	                PreparedStatement ps = connection.prepareStatement(sql, new String[] { "id" });
-	                for (int i = 0; i < args.length; i++) {
-	                    ps.setObject(i + 1, args[i]);
-	                }
-	                return ps;
-	            }
-	        }, keyHolder);
+			long indlaeggelsesId = -1;
+			if(MYSQL.equals(getDialect())) {
+				KeyHolder keyHolder = new GeneratedKeyHolder();
+		        jdbc.update(new PreparedStatementCreator() {
+		            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+		                PreparedStatement ps = connection.prepareStatement(sql, new String[] { "id" });
+		                for (int i = 0; i < args.length; i++) {
+		                    ps.setObject(i + 1, args[i]);
+		                }
+		                return ps;
+		            }
+		        }, keyHolder);
+		        indlaeggelsesId = keyHolder.getKey().longValue();
+			} else if(MSSQL.equals(getDialect())) {
+				jdbc.update(sql, args);
+				indlaeggelsesId = jdbc.queryForLong("SELECT @@IDENTITY");
+			} else {
+				throw new DAOException("Unknown SQL dialect: "+ getDialect());
+			}
 
-	        long indlaeggelsesId = keyHolder.getKey().longValue();
 	        indlaeggelserInForloeb.add(new Long(indlaeggelsesId));
 	        
 	        saveDiagnoses(indlaeggelse.getDiagnoses(), indlaeggelsesId);
