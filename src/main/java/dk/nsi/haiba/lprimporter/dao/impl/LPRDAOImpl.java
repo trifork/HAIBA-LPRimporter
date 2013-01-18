@@ -33,18 +33,17 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import dk.nsi.haiba.lprimporter.dao.CommonDAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.exception.DAOException;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 
-public class LPRDAOImpl implements LPRDAO {
+public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 
 	@Autowired
 	JdbcTemplate jdbcTemplate;
-
-	// TODO - select SQL from the chosen dialect
 
 	@Override
 	public List<String> getUnprocessedCPRnumbers() throws DAOException {
