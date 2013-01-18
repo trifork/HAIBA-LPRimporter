@@ -83,7 +83,7 @@ public class ImportExecutorTest {
 		
 		Mockito.when(lprdao.getUnprocessedCPRnumbers()).thenReturn(new ArrayList<String>());
 		
-		executor.run();
+		executor.doProcess();
 		
 		Mockito.verify(lprdao).getUnprocessedCPRnumbers();
 		Mockito.verify(lprdao, Mockito.never()).getContactsByCPR(null);
@@ -96,7 +96,7 @@ public class ImportExecutorTest {
 		
 		Mockito.when(lprdao.getUnprocessedCPRnumbers()).thenReturn(cprList);
 		
-		executor.run();
+		executor.doProcess();
 		
 		Mockito.verify(lprdao).getUnprocessedCPRnumbers();
 		Mockito.verify(lprdao, Mockito.atLeastOnce()).getContactsByCPR(cprList.get(0));

@@ -52,6 +52,14 @@ public class ImportExecutor {
 		
 		System.out.println("Running Importer: " + new Date().toString());
 		
+		doProcess();
+	}
+
+	
+	/*
+	 * Seperated into its own method for testing purpose, because testing a scheduled method isn't good
+	 */
+	public void doProcess() {
 		// Fetch new records from LPR contact table
 		// TODO select this in batches
 		try {
