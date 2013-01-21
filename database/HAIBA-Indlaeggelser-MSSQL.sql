@@ -40,6 +40,8 @@ CREATE TABLE LPR_Reference (
     PRIMARY KEY (IndlaeggelsesID,LPR_recordnummer)
 );
 
+go;
+
 CREATE VIEW IndlaeggelsesForloebsOversigt
 AS SELECT hif.IndlaeggelsesforloebID, min(hi.indlaeggelsesdatotid) as minIndlaeggelsesdatotid, max(hi.udskrivningsdatotid) as maxUdskrivningsdatotid, hi.CPR 
 FROM Indlaeggelsesforloeb hif
