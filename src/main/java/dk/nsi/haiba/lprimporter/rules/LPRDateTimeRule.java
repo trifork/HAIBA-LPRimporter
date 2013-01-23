@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
 import dk.nsi.haiba.lprimporter.log.Log;
+import dk.nsi.haiba.lprimporter.message.MessageResolver;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 
@@ -45,19 +46,19 @@ import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
  */
 public class LPRDateTimeRule implements LPRRule {
 	
-	// TODO - set this up as a text resource
-	private final static String RULENAME= "LPR dato og tid regel";
-	
 	private static Log log = new Log(Logger.getLogger(LPRDateTimeRule.class));
 	private List<Administration> contacts;
 	
 	@Autowired
 	ContactToAdmissionRule contactToAdmissionRule;
+	
+	@Autowired
+	MessageResolver resolver;
 
 	@Override
 	public LPRRule doProcessing() {
-
-		for (Administration contact : getContacts()) {
+		
+		for (Administration contact : contacts) {
 			// AdmissionStartHour for the contact is default set to 0 if not applied in the database
 			
 			// AdmissionEnd must be set to the start of the next day, if it was set to 0
@@ -83,19 +84,16 @@ public class LPRDateTimeRule implements LPRRule {
 					}
 				} else {
 					// TODO - set this up as a text resource
-					BusinessRuleError error = new BusinessRuleError(contact.getRecordNumber(), "Proceduredato findes ikke", RULENAME);
+					BusinessRuleError error = new BusinessRuleError(contact.getRecordNumber(), resolver.getMessage("rule.datatime.proceduredate.isempty"), resolver.getMessage("rule.datatime.name"));
 					throw new RuleAbortedException("Rule aborted due to BusinessRuleError", error);
 				}
 			}
 		}
 		
+		// setup the next rule in the chain
 		contactToAdmissionRule.setContacts(contacts);
 		
 		return contactToAdmissionRule;
-	}
-
-	public List<Administration> getContacts() {
-		return contacts;
 	}
 
 	public void setContacts(List<Administration> contacts) {

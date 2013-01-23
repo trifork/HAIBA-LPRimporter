@@ -34,6 +34,7 @@ import org.springframework.beans.factory.config.CustomScopeConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -48,6 +49,7 @@ import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.dao.impl.HAIBADAOImpl;
 import dk.nsi.haiba.lprimporter.dao.impl.LPRDAOImpl;
 import dk.nsi.haiba.lprimporter.importer.ImportExecutor;
+import dk.nsi.haiba.lprimporter.message.MessageResolver;
 import dk.nsi.haiba.lprimporter.rules.ContactToAdmissionRule;
 import dk.nsi.haiba.lprimporter.rules.LPRDateTimeRule;
 import dk.nsi.haiba.lprimporter.rules.LPRRulesEngine;
@@ -126,6 +128,19 @@ public class LPRConfiguration {
 	@Bean
 	public static CustomScopeConfigurer scopeConfigurer() {
 		return new SimpleThreadScopeConfigurer();
+	}
+	
+	@Bean
+    public ReloadableResourceBundleMessageSource messageSource(){
+        ReloadableResourceBundleMessageSource messageSource=new ReloadableResourceBundleMessageSource();
+        String[] resources= {"classpath:messages"};
+        messageSource.setBasenames(resources);
+        return messageSource;
+    }
+	
+	@Bean
+	public MessageResolver resolver() {
+		return new MessageResolver();
 	}
 	
 	@Bean
