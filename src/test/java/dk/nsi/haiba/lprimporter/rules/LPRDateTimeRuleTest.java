@@ -28,6 +28,7 @@ package dk.nsi.haiba.lprimporter.rules;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +45,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
+import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 
@@ -152,6 +154,29 @@ public class LPRDateTimeRuleTest {
 		assertEquals("Expect 12 hours added to  procedure date", op1.plusHours(12).toDate(), contacts.get(0).getLprProcedures().get(0).getProcedureDatetime());
 	}
 
+	/*
+	 * Procedure date is null, so we expect a BusinessRuleError
+	 */
+	@Test
+	public void expectBusinessRuleErrorBecauseProcedureDateisEmpty() {
+
+    	op1 = null;
+		List<Administration> contacts = setupContacts();
+		
+		lprDateTimeRule.setContacts(contacts);
+		
+		try {
+			lprDateTimeRule.doProcessing();
+		} catch(RuleAbortedException e) {
+			BusinessRuleError businessRuleError = e.getBusinessRuleError();
+			assertEquals(recordNummer, businessRuleError.getLprReference());
+			assertEquals("Proceduredato findes ikke", businessRuleError.getDescription());
+			assertEquals("LPR dato og tid regel", businessRuleError.getAbortedRuleName());
+		} catch(Exception e) {
+			fail("Unexpected exception: "+ e);
+		}
+	}
+
 	private List<Administration> setupContacts() {
 		List<Administration> contacts = new ArrayList<Administration>();
 		Administration contact = new Administration();
@@ -169,7 +194,9 @@ public class LPRDateTimeRuleTest {
 		procedure.setRecordNumber(recordNummer);
 		procedure.setProcedureCode(oprCode1);
 		procedure.setProcedureType(oprType1);
-		procedure.setProcedureDatetime(op1.toDate());
+		if(op1 != null) {
+			procedure.setProcedureDatetime(op1.toDate());
+		}
 		procedure.setTillaegsProcedureCode(extraOprCode1);
 		procedures.add(procedure);
 		contact.setLprProcedures(procedures);

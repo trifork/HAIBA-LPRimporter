@@ -49,9 +49,7 @@ public class ImportExecutor {
 	
 	@Scheduled(fixedDelay = 10000)
 	public void run() {
-		
 		System.out.println("Running Importer: " + new Date().toString());
-		
 		doProcess();
 	}
 
@@ -72,6 +70,7 @@ public class ImportExecutor {
 				}
 			}
 		} catch(Exception e) {
+			// TODO Log this
 			e.printStackTrace();
 		}
 	}

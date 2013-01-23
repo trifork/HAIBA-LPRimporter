@@ -26,6 +26,8 @@
  */
 package dk.nsi.haiba.lprimporter.config;
 
+import static org.mockito.Mockito.mock;
+
 import javax.sql.DataSource;
 
 import org.springframework.context.annotation.Bean;
@@ -33,9 +35,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import dk.nsi.haiba.lprimporter.importer.ImportExecutor;
 import dk.sdsd.nsp.slalog.api.SLALogger;
-
-import static org.mockito.Mockito.mock;
 
 @Configuration
 @EnableTransactionManagement
@@ -57,4 +58,10 @@ public class LPRTestConfiguration extends LPRConfiguration {
 	public SLALogger slaLogger() {
 		return mock(SLALogger.class);
 	}
+    
+	@Bean
+	public ImportExecutor importExecutor() {
+		return mock(ImportExecutor.class);
+	}
+    
 }

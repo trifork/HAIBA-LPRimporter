@@ -26,11 +26,15 @@
  */
 package dk.nsi.haiba.lprimporter.rules;
 
+import java.util.Date;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
+import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 
@@ -41,6 +45,10 @@ import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
  */
 public class LPRDateTimeRule implements LPRRule {
 	
+	// TODO - set this up as a text resource
+	private final static String RULENAME= "LPR dato og tid regel";
+	
+	private static Log log = new Log(Logger.getLogger(LPRDateTimeRule.class));
 	private List<Administration> contacts;
 	
 	@Autowired
@@ -50,21 +58,33 @@ public class LPRDateTimeRule implements LPRRule {
 	public LPRRule doProcessing() {
 
 		for (Administration contact : getContacts()) {
-			// AdmissionStart for the contact is default set to 0 if not applied in the database
+			// AdmissionStartHour for the contact is default set to 0 if not applied in the database
 			
 			// AdmissionEnd must be set to the start of the next day, if it was set to 0
-			DateTime admissionEnd = new DateTime(contact.getUdskrivningsDatetime().getTime());
-			if(admissionEnd.getHourOfDay() == 0) {
-				admissionEnd = admissionEnd.plusHours(24);
-				contact.setUdskrivningsDatetime(admissionEnd.toDate());
+			Date udskrivningsDatetime = contact.getUdskrivningsDatetime();
+			if(udskrivningsDatetime != null) {
+				DateTime admissionEnd = new DateTime(udskrivningsDatetime.getTime());
+				if(admissionEnd.getHourOfDay() == 0) {
+					admissionEnd = admissionEnd.plusHours(24);
+					contact.setUdskrivningsDatetime(admissionEnd.toDate());
+				}
+			} else {
+				log.debug("AdmissionEnd datetime is null for LPR ref: "+contact.getRecordNumber()+" patient is probably not discharged from hospital yet");
 			}
 			
 			for (LPRProcedure procedure : contact.getLprProcedures()) {
-				// if procedure time is set to 0 - set it to 12 the same day 
-				DateTime procedureStart = new DateTime(procedure.getProcedureDatetime().getTime());
-				if(procedureStart.getHourOfDay() == 0) {
-					procedureStart = procedureStart.plusHours(12);
-					procedure.setProcedureDatetime(procedureStart.toDate());
+				// if procedure time is set to 0 - set it to 12 the same day
+				Date procedureDatetime = procedure.getProcedureDatetime(); 
+				if(procedureDatetime != null) {
+					DateTime procedureStart = new DateTime(procedureDatetime.getTime());
+					if(procedureStart.getHourOfDay() == 0) {
+						procedureStart = procedureStart.plusHours(12);
+						procedure.setProcedureDatetime(procedureStart.toDate());
+					}
+				} else {
+					// TODO - set this up as a text resource
+					BusinessRuleError error = new BusinessRuleError(contact.getRecordNumber(), "Proceduredato findes ikke", RULENAME);
+					throw new RuleAbortedException("Rule aborted due to BusinessRuleError", error);
 				}
 			}
 		}

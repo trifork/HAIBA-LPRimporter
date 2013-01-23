@@ -34,28 +34,32 @@ import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 
 /*
- * Simple RulesEngine - enhance this in the next sprints by using Spring Integration
+ * Simple RulesEngine - this could be enhanced by using Spring Integration
+ * but for this P.O.C. the processflow is very simple, without contentbased routing, no external triggers e.t.c
+ * The rules can be used directly with Spring Integration, just needs the channel mapping etc. But for now we keeps it simple.
  */
 public class LPRRulesEngine implements RulesEngine {
 
-	List<Administration> contacts;
-	
 	@Autowired
 	LPRDateTimeRule lprDateTimeRule;
 	
 	@Override
 	public void processRuleChain(List<Administration> contacts) {
-		this.contacts = contacts;
-
+		
+		// The first rule in the squence is the LprDateTimeRule, 
+		// This rule returns the next rule, which carries on until either an error occurs or the end of the flow is reached
 		lprDateTimeRule.setContacts(contacts);
 		
 		try {
 			LPRRule next = lprDateTimeRule.doProcessing();
 			while(next != null) {
+				// Execute the next rule until the end of the flow
 				next = next.doProcessing();
 			}
 		} catch(RuleAbortedException e) {
-			// TODO - handle this
+			// An Error occured, log the exceptions attached dataobject into the business rule log.
+			
+			// TODO - Log the error in the application error log
 			e.printStackTrace();
 		}
 		

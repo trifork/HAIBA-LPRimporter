@@ -24,34 +24,46 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package dk.nsi.haiba.lprimporter.exception;
+package dk.nsi.haiba.lprimporter.log;
 
-import dk.nsi.haiba.lprimporter.rules.BusinessRuleError;
+import org.apache.log4j.Logger;
 
-@SuppressWarnings("serial")
-public class RuleAbortedException extends RuntimeException {
+
+/*
+ * Wrapper class for Log4j - so the "is?enabled" methods are hidden away from regular code
+ */
+public class Log {
 	
-	BusinessRuleError businessRuleError;
-
-	public RuleAbortedException(String message, BusinessRuleError error) {
-		super(message);
-		this.businessRuleError = error;
+	Logger logger;
+	
+	public Log(Logger logger) {
+		this.logger = logger;
 	}
 
-	public RuleAbortedException(String message) {
-		super(message);
+	public void trace(String message) {
+		if(logger.isTraceEnabled()) {
+			logger.trace(message);
+		}
 	}
 
-	public RuleAbortedException(String message, Throwable t) {
-		super(message, t);
+	public void debug(String message) {
+		if(logger.isDebugEnabled()) {
+			logger.debug(message);
+		}
+	}
+
+	public void info(String message) {
+		if(logger.isInfoEnabled()) {
+			logger.info(message);
+		}
+	}
+
+	public void error(String message) {
+		logger.error(message);
 	}
 	
-	public RuleAbortedException(Throwable t) {
-		super(t.getMessage(), t);
+	public void error(String message, Throwable t) {
+		logger.error(message, t);
 	}
 	
-	public BusinessRuleError getBusinessRuleError() {
-		return businessRuleError;
-	}
-
 }

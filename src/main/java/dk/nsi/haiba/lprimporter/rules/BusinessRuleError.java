@@ -24,34 +24,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package dk.nsi.haiba.lprimporter.exception;
+package dk.nsi.haiba.lprimporter.rules;
 
-import dk.nsi.haiba.lprimporter.rules.BusinessRuleError;
-
-@SuppressWarnings("serial")
-public class RuleAbortedException extends RuntimeException {
+public class BusinessRuleError {
 	
-	BusinessRuleError businessRuleError;
+	long lprReference;
+	String description;
+	String abortedRuleName;
 
-	public RuleAbortedException(String message, BusinessRuleError error) {
-		super(message);
-		this.businessRuleError = error;
-	}
-
-	public RuleAbortedException(String message) {
-		super(message);
-	}
-
-	public RuleAbortedException(String message, Throwable t) {
-		super(message, t);
+	public BusinessRuleError() {
+		// empty default constructor
 	}
 	
-	public RuleAbortedException(Throwable t) {
-		super(t.getMessage(), t);
+	public BusinessRuleError(long lprReference, String description, String abortedRuleName) {
+		this.lprReference = lprReference;
+		this.description = description;
+		this.abortedRuleName = abortedRuleName;
 	}
 	
-	public BusinessRuleError getBusinessRuleError() {
-		return businessRuleError;
+	public long getLprReference() {
+		return lprReference;
 	}
+	public void setLprReference(long lprReference) {
+		this.lprReference = lprReference;
+	}
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	public String getAbortedRuleName() {
+		return abortedRuleName;
+	}
+	public void setAbortedRuleName(String abortedRuleName) {
+		this.abortedRuleName = abortedRuleName;
+	}
+	
 
 }

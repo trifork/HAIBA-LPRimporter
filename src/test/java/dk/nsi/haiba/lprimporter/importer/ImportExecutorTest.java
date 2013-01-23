@@ -26,6 +26,8 @@
  */
 package dk.nsi.haiba.lprimporter.importer;
 
+import static org.mockito.Mockito.mock;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,6 +62,10 @@ public class ImportExecutorTest {
 		@Bean
 		public RulesEngine rulesEngine() {
 			return Mockito.mock(RulesEngine.class);
+		}
+		@Bean
+		public ImportExecutor importExecutor() {
+			return new ImportExecutor();
 		}
 	}
 	

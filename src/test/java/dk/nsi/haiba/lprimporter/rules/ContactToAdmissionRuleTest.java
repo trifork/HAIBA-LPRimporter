@@ -88,6 +88,7 @@ public class ContactToAdmissionRuleTest {
 
 	@Before
 	public void init() {
+		
     	// Init Administration data
 		cpr = "1111111111";
     	recordNummer = 1234;
