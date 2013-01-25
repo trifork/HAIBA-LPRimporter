@@ -52,10 +52,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.impl.HAIBADAOImpl;
+import dk.nsi.haiba.lprimporter.exception.DAOException;
 import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
+import dk.nsi.haiba.lprimporter.rules.BusinessRuleError;
 
 /*
  * Tests the HAIBADAO class
@@ -127,6 +129,28 @@ public class HAIBADAOIT {
 
 		assertEquals(sdf.format(d1), sdf.format(jdbc.queryForObject("select proceduredatotid from Procedurer", Date.class)));
     
+    }
+    
+    @Test
+    public void insertsBusinessruleError() {
+    	long refno = 1234;
+    	String description = "description";
+    	String abortedRuleName = "abortedRuleName";
+    	
+    	BusinessRuleError error = new BusinessRuleError(refno, description, abortedRuleName);
+    	
+    	haibaDao.saveBusinessRuleError(error);
+		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from RegelFejlbeskeder"));
+		assertEquals(refno, jdbc.queryForLong("select LPR_recordnummer from RegelFejlbeskeder"));
+		assertEquals(description, jdbc.queryForObject("select Fejlbeskrivelse from RegelFejlbeskeder", String.class));
+		assertEquals(abortedRuleName, jdbc.queryForObject("select AfbrudtForretningsregel from RegelFejlbeskeder", String.class));
+    }
+
+    @Test(expected=DAOException.class)
+    public void insertsBrokenBusinessruleError() {
+    	
+    	haibaDao.saveBusinessRuleError(null);
+    	
     }
     
 }

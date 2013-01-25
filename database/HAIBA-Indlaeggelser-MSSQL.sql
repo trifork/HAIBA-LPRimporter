@@ -40,6 +40,14 @@ CREATE TABLE LPR_Reference (
     PRIMARY KEY (IndlaeggelsesID,LPR_recordnummer)
 );
 
+CREATE TABLE RegelFejlbeskeder (
+    ID BIGINT NOT NULL IDENTITY  PRIMARY KEY,
+    LPR_recordnummer BIGINT NOT NULL,
+    AfbrudtForretningsregel VARCHAR(50),
+    Fejlbeskrivelse VARCHAR(500),
+    Fejltidspunkt datetime
+);
+
 go;
 
 CREATE VIEW IndlaeggelsesForloebsOversigt

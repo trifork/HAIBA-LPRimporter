@@ -28,13 +28,14 @@ package dk.nsi.haiba.lprimporter.testdata;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import org.apache.commons.io.FileUtils;
-import org.joda.time.format.DateTimeFormatter;
 
+/*
+ * Standalone class made only to generate SQL statements from the csv files with testdata
+ * csv files are exported from the spreadsheet (Trifork testeksempler.xlsx)
+ */
 public class SQLStatementsFromCSVFiles {
 	
 	public void generateSQL() {
@@ -47,9 +48,6 @@ public class SQLStatementsFromCSVFiles {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-        
-        
-        
 	}
 
 

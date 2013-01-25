@@ -26,8 +26,6 @@
  */
 package dk.nsi.haiba.lprimporter.importer;
 
-import static org.mockito.Mockito.mock;
-
 import java.util.ArrayList;
 import java.util.List;
 

@@ -60,6 +60,5 @@ public class BusinessRuleError {
 	public void setAbortedRuleName(String abortedRuleName) {
 		this.abortedRuleName = abortedRuleName;
 	}
-	
 
 }

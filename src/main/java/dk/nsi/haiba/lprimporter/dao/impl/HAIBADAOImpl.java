@@ -30,10 +30,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -46,6 +48,7 @@ import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
+import dk.nsi.haiba.lprimporter.rules.BusinessRuleError;
 
 public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 
@@ -58,46 +61,51 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 
 		List<Long> indlaeggelserInForloeb = new ArrayList<Long>();
 		
-		for (Indlaeggelse indlaeggelse : indlaeggelser) {
-			
-			final String sql = "INSERT INTO Indlaeggelser (CPR, Sygehuskode, Afdelingskode, Indlaeggelsesdatotid, Udskrivningsdatotid) VALUES (?,?,?,?,?)";				
-			
-			
-			final Object[] args = new Object[] {
-					indlaeggelse.getCpr(), 
-					indlaeggelse.getSygehusCode(),
-					indlaeggelse.getAfdelingsCode(),
-					indlaeggelse.getIndlaeggelsesDatetime(),
-					indlaeggelse.getUdskrivningsDatetime()};
-			
+		try {
+			for (Indlaeggelse indlaeggelse : indlaeggelser) {
+				
+				final String sql = "INSERT INTO Indlaeggelser (CPR, Sygehuskode, Afdelingskode, Indlaeggelsesdatotid, Udskrivningsdatotid) VALUES (?,?,?,?,?)";				
+				
+				
+				final Object[] args = new Object[] {
+						indlaeggelse.getCpr(), 
+						indlaeggelse.getSygehusCode(),
+						indlaeggelse.getAfdelingsCode(),
+						indlaeggelse.getIndlaeggelsesDatetime(),
+						indlaeggelse.getUdskrivningsDatetime()};
+				
 
-			long indlaeggelsesId = -1;
-			if(MYSQL.equals(getDialect())) {
-				KeyHolder keyHolder = new GeneratedKeyHolder();
-		        jdbc.update(new PreparedStatementCreator() {
-		            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
-		                PreparedStatement ps = connection.prepareStatement(sql, new String[] { "id" });
-		                for (int i = 0; i < args.length; i++) {
-		                    ps.setObject(i + 1, args[i]);
-		                }
-		                return ps;
-		            }
-		        }, keyHolder);
-		        indlaeggelsesId = keyHolder.getKey().longValue();
-			} else if(MSSQL.equals(getDialect())) {
-				jdbc.update(sql, args);
-				indlaeggelsesId = jdbc.queryForLong("SELECT @@IDENTITY");
-			} else {
-				throw new DAOException("Unknown SQL dialect: "+ getDialect());
+				long indlaeggelsesId = -1;
+				if(MYSQL.equals(getDialect())) {
+					KeyHolder keyHolder = new GeneratedKeyHolder();
+			        jdbc.update(new PreparedStatementCreator() {
+			            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+			                PreparedStatement ps = connection.prepareStatement(sql, new String[] { "id" });
+			                for (int i = 0; i < args.length; i++) {
+			                    ps.setObject(i + 1, args[i]);
+			                }
+			                return ps;
+			            }
+			        }, keyHolder);
+			        indlaeggelsesId = keyHolder.getKey().longValue();
+				} else if(MSSQL.equals(getDialect())) {
+					jdbc.update(sql, args);
+					indlaeggelsesId = jdbc.queryForLong("SELECT @@IDENTITY");
+				} else {
+					throw new DAOException("Unknown SQL dialect: "+ getDialect());
+				}
+
+		        indlaeggelserInForloeb.add(new Long(indlaeggelsesId));
+		        
+		        saveDiagnoses(indlaeggelse.getDiagnoses(), indlaeggelsesId);
+		        saveProcedures(indlaeggelse.getProcedures(), indlaeggelsesId);
+		        saveLPRReferences(indlaeggelse.getLprReferencer(), indlaeggelsesId);
 			}
-
-	        indlaeggelserInForloeb.add(new Long(indlaeggelsesId));
-	        
-	        saveDiagnoses(indlaeggelse.getDiagnoses(), indlaeggelsesId);
-	        saveProcedures(indlaeggelse.getProcedures(), indlaeggelsesId);
-	        saveLPRReferences(indlaeggelse.getLprReferencer(), indlaeggelsesId);
+			saveForloeb(indlaeggelserInForloeb);
+		} catch(DataAccessException e) {
+			throw new DAOException(e.getMessage(), e);
 		}
-		saveForloeb(indlaeggelserInForloeb);
+
 	}
 	
 	
@@ -148,6 +156,23 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 					d.getDiagnoseCode(),
 					d.getDiagnoseType(),
 					d.getTillaegsDiagnose());
+		}
+	}
+
+
+	@Override
+	public void saveBusinessRuleError(BusinessRuleError error)
+			throws DAOException {
+		
+		if(error == null) {
+			throw new DAOException("BusinessRuleError must be set");
+		}
+		
+		String sql = "INSERT INTO RegelFejlbeskeder (LPR_recordnummer, AfbrudtForretningsregel, Fejlbeskrivelse, Fejltidspunkt) VALUES (?, ?, ?, ?)";
+		try {
+			jdbc.update(sql, error.getLprReference(), error.getAbortedRuleName(), error.getDescription(), new Date()); 
+		} catch(DataAccessException e) {
+			throw new DAOException(e.getMessage(), e);
 		}
 	}
 }

@@ -48,6 +48,15 @@ CREATE TABLE IF NOT EXISTS LPR_Reference (
     FOREIGN KEY (IndlaeggelsesID) REFERENCES Indlaeggelser(IndlaeggelsesID)
 ) ENGINE=InnoDB COLLATE=utf8_bin;
 
+CREATE TABLE IF NOT EXISTS RegelFejlbeskeder (
+    ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    LPR_recordnummer BIGINT(15) NOT NULL,
+    AfbrudtForretningsregel VARCHAR(50),
+    Fejlbeskrivelse VARCHAR(500),
+    Fejltidspunkt datetime
+    
+) ENGINE=InnoDB COLLATE=utf8_bin;
+
 CREATE VIEW IndlaeggelsesForloebsOversigt
 AS SELECT hif.IndlaeggelsesforloebID, min(hi.indlaeggelsesdatotid) as minIndlaeggelsesdatotid, max(hi.udskrivningsdatotid) as maxUdskrivningsdatotid, hi.CPR 
 FROM Indlaeggelsesforloeb hif

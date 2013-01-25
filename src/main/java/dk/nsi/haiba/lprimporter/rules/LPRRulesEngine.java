@@ -28,9 +28,12 @@ package dk.nsi.haiba.lprimporter.rules;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
+import dk.nsi.haiba.lprimporter.message.MessageResolver;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 
 /*
@@ -40,9 +43,17 @@ import dk.nsi.haiba.lprimporter.model.lpr.Administration;
  */
 public class LPRRulesEngine implements RulesEngine {
 
+	private static Logger businessRuleErrorLog = Logger.getLogger("BusinessRulesErrors");
+	
 	@Autowired
 	LPRDateTimeRule lprDateTimeRule;
 	
+	@Autowired
+	HAIBADAO haibaDao;
+	
+	@Autowired
+	MessageResolver resolver;
+
 	@Override
 	public void processRuleChain(List<Administration> contacts) {
 		
@@ -57,10 +68,13 @@ public class LPRRulesEngine implements RulesEngine {
 				next = next.doProcessing();
 			}
 		} catch(RuleAbortedException e) {
-			// An Error occured, log the exceptions attached dataobject into the business rule log.
+			// An error occured, log the exceptions attached dataobject into the business rule log (both file and database).
+			BusinessRuleError be = e.getBusinessRuleError();
 			
-			// TODO - Log the error in the application error log
-			e.printStackTrace();
+			// Save Businessrule error in database
+			haibaDao.saveBusinessRuleError(be);
+			
+			businessRuleErrorLog.info(resolver.getMessage("errorlog.rule.message", new Object[] {""+be.getLprReference(), be.getAbortedRuleName(), be.getDescription()}));
 		}
 		
 	}
