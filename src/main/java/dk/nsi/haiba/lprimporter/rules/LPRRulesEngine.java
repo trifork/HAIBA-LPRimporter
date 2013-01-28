@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
@@ -45,6 +46,9 @@ public class LPRRulesEngine implements RulesEngine {
 
 	private static Logger businessRuleErrorLog = Logger.getLogger("BusinessRulesErrors");
 	
+	@Value("${disable.database.errorlog}")
+	boolean disableDatabaseErrorLog;
+
 	@Autowired
 	LPRDateTimeRule lprDateTimeRule;
 	
@@ -71,8 +75,10 @@ public class LPRRulesEngine implements RulesEngine {
 			// An error occured, log the exceptions attached dataobject into the business rule log (both file and database).
 			BusinessRuleError be = e.getBusinessRuleError();
 			
-			// Save Businessrule error in database
-			haibaDao.saveBusinessRuleError(be);
+			if(!disableDatabaseErrorLog) {
+				// Save Businessrule error in database
+				haibaDao.saveBusinessRuleError(be);
+			}
 			
 			businessRuleErrorLog.info(resolver.getMessage("errorlog.rule.message", new Object[] {""+be.getLprReference(), be.getAbortedRuleName(), be.getDescription()}));
 		}

@@ -51,7 +51,7 @@ import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class)
-public class LPRDateTimeRuleTest {
+public class ExtendContactEndtimeRuleTest {
 
 	@Configuration
     @Import({LPRTestConfiguration.class})
@@ -59,7 +59,7 @@ public class LPRDateTimeRuleTest {
 	}
 	
 	@Autowired
-	LPRDateTimeRule lprDateTimeRule;
+	ExtendContactEndtimeRule extendContactEndtimeRule;
 
 	String cpr;
 	long recordNummer;
@@ -72,6 +72,7 @@ public class LPRDateTimeRuleTest {
 	String oprType1;
 	String extraOprCode1;
 	DateTime op1;
+	DateTime op2;
 
 	@Before
 	public void init() {
@@ -88,94 +89,66 @@ public class LPRDateTimeRuleTest {
     	oprType1 = "A";
     	extraOprCode1 = "tilA";
     	op1 = new DateTime(2010, 5, 3, 8, 0, 0);
+    	op2 = new DateTime(2010, 5, 12, 9, 0, 0);
 	}
 	
-	
 	/*
-	 * If data is as expected, the rule shouldn't modify data
+	 * The Contact enddatetime is after the proceduredatetime, so no action should be taken.
 	 */
-	@Test
-	public void ruleDoesntModifyData() {
+	@Test 
+	public void contactDateIsAfterLatestProcedureDate() {
+		assertNotNull(extendContactEndtimeRule);
 		
 		List<Administration> contacts = setupContacts();
-
-		lprDateTimeRule.setContacts(contacts);
-		lprDateTimeRule.doProcessing();
 		
-		assertNotNull("1 contact is still expected", contacts);
-		assertEquals(1, contacts.size());
-		assertEquals(in.toDate(), contacts.get(0).getIndlaeggelsesDatetime());
+		extendContactEndtimeRule.setContacts(contacts);
+		extendContactEndtimeRule.doProcessing();
+		
 		assertEquals(out.toDate(), contacts.get(0).getUdskrivningsDatetime());
-		assertEquals(1, contacts.get(0).getLprProcedures().size());
-		assertEquals("Procedure datetime should not have been modified", op1.toDate(), contacts.get(0).getLprProcedures().get(0).getProcedureDatetime());
-		
-	}
-
-	/*
-	 * Admission enddate is 0, so it should be set to the next day.
-	 */
-	@Test
-	public void ruleAdds24HoursToAdmissionEndDate() {
-
-		out = new DateTime(2010, 6, 5, 0, 0, 0);
-		
-		List<Administration> contacts = setupContacts();
-		
-		lprDateTimeRule.setContacts(contacts);
-		lprDateTimeRule.doProcessing();
-		
-		assertNotNull("1 contact is still expected", contacts);
-		assertEquals(1, contacts.size());
-		assertEquals(in.toDate(), contacts.get(0).getIndlaeggelsesDatetime());
-		assertEquals("Expect end date is the next day", out.plusHours(24).toDate(), contacts.get(0).getUdskrivningsDatetime());
-		assertEquals(1, contacts.get(0).getLprProcedures().size());
-		assertEquals("Procedure datetime should not have been modified", op1.toDate(), contacts.get(0).getLprProcedures().get(0).getProcedureDatetime());
-		
 	}
 	
 	/*
-	 * Procedure date is 0, so it should be set to 12 the same day.
+	 * The proceduredatetime is after the contact enddatetime, but not more than 24 hours
+	 * so contact enddatetime should be the same as proceduredatetime
 	 */
-	@Test
-	public void ruleAdds12HoursToProcedureDate() {
-
-    	op1 = new DateTime(2010, 5, 3, 0, 0, 0);
-    	
+	@Test 
+	public void latestProcedureDateIsAfterContactDate() {
+		
+    	op1 = new DateTime(2010, 6, 4, 16, 0, 0);
+		
 		List<Administration> contacts = setupContacts();
 		
-		lprDateTimeRule.setContacts(contacts);
-		lprDateTimeRule.doProcessing();
+		extendContactEndtimeRule.setContacts(contacts);
+		extendContactEndtimeRule.doProcessing();
 		
-		assertNotNull("1 contact is still expected", contacts);
-		assertEquals(1, contacts.size());
-		assertEquals(in.toDate(), contacts.get(0).getIndlaeggelsesDatetime());
-		assertEquals(out.toDate(), contacts.get(0).getUdskrivningsDatetime());
-		assertEquals(1, contacts.get(0).getLprProcedures().size());
-		assertEquals("Expect 12 hours added to  procedure date", op1.plusHours(12).toDate(), contacts.get(0).getLprProcedures().get(0).getProcedureDatetime());
+		assertEquals(op1.toDate(), contacts.get(0).getUdskrivningsDatetime());
 	}
-
+	
 	/*
-	 * Procedure date is null, so we expect a BusinessRuleError
+	 * The proceduredatetime is after the contact enddatetime, with more than 24 hours
+	 * so we expect a businessrule error
 	 */
 	@Test
-	public void expectBusinessRuleErrorBecauseProcedureDateisEmpty() {
+	public void expectBusinessRuleErrorBecauseProcedureDateIsToLate() {
 
-    	op1 = null;
+    	op1 = new DateTime(2010, 6, 5, 13, 0, 0);
 		List<Administration> contacts = setupContacts();
 		
-		lprDateTimeRule.setContacts(contacts);
+		extendContactEndtimeRule.setContacts(contacts);
 		
 		try {
-			lprDateTimeRule.doProcessing();
+			extendContactEndtimeRule.doProcessing();
 		} catch(RuleAbortedException e) {
 			BusinessRuleError businessRuleError = e.getBusinessRuleError();
 			assertEquals(recordNummer, businessRuleError.getLprReference());
-			assertEquals("Proceduredato findes ikke", businessRuleError.getDescription());
-			assertEquals("LPR dato og tid regel", businessRuleError.getAbortedRuleName());
+			assertEquals("Proceduretidspunkt ligger mere end 24 timer efter udskrivningstidspunkt", businessRuleError.getDescription());
+			assertEquals("Forlæng ift. procedurer efter udskrivning", businessRuleError.getAbortedRuleName());
 		} catch(Exception e) {
 			fail("Unexpected exception: "+ e);
 		}
 	}
+	
+	
 
 	private List<Administration> setupContacts() {
 		List<Administration> contacts = new ArrayList<Administration>();
@@ -199,6 +172,20 @@ public class LPRDateTimeRuleTest {
 		}
 		procedure.setTillaegsProcedureCode(extraOprCode1);
 		procedures.add(procedure);
+
+		// procedure 2
+		LPRProcedure procedure2 = new LPRProcedure();
+		procedure2.setAfdelingsCode(afdelingsCode);
+		procedure2.setSygehusCode(sygehusCode);
+		procedure2.setRecordNumber(recordNummer);
+		procedure2.setProcedureCode(oprCode1);
+		procedure2.setProcedureType(oprType1);
+		if(op2 != null) {
+			procedure2.setProcedureDatetime(op2.toDate());
+		}
+		procedure2.setTillaegsProcedureCode(extraOprCode1);
+		procedures.add(procedure2);
+		
 		contact.setLprProcedures(procedures);
 		contacts.add(contact);
 		

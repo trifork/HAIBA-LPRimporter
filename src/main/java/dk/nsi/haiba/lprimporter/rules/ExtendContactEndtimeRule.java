@@ -26,7 +26,6 @@
  */
 package dk.nsi.haiba.lprimporter.rules;
 
-import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -40,17 +39,17 @@ import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 
 /*
- * This is the 1. rule to be applied to LPR data
- * It takes a list of contacts from a single CPR number, and processes the data with the Date/Time rule
+ * This is the 2. rule to be applied to LPR data
+ * It takes a list of contacts from a single CPR number, and processes the data with the Extend Contact EndDate rule
  * See the solution document for details about this rule.
  */
-public class LPRDateTimeRule implements LPRRule {
+public class ExtendContactEndtimeRule implements LPRRule {
 	
-	private static Log log = new Log(Logger.getLogger(LPRDateTimeRule.class));
+	private static Log log = new Log(Logger.getLogger(ExtendContactEndtimeRule.class));
 	private List<Administration> contacts;
 	
 	@Autowired
-	ExtendContactEndtimeRule extendContactEndtimeRule;
+	ContactToAdmissionRule contactToAdmissionRule;
 	
 	@Autowired
 	MessageResolver resolver;
@@ -59,40 +58,40 @@ public class LPRDateTimeRule implements LPRRule {
 	public LPRRule doProcessing() {
 		
 		for (Administration contact : contacts) {
-			// AdmissionStartHour for the contact is default set to 0 if not applied in the database
 			
-			// AdmissionEnd must be set to the start of the next day, if it was set to 0
-			Date udskrivningsDatetime = contact.getUdskrivningsDatetime();
-			if(udskrivningsDatetime != null) {
-				DateTime admissionEnd = new DateTime(udskrivningsDatetime.getTime());
-				if(admissionEnd.getHourOfDay() == 0) {
-					admissionEnd = admissionEnd.plusHours(24);
-					contact.setUdskrivningsDatetime(admissionEnd.toDate());
-				}
-			} else {
-				log.debug("AdmissionEnd datetime is null for LPR ref: "+contact.getRecordNumber()+" patient is probably not discharged from hospital yet");
-			}
+			DateTime contactEndDateTime = new DateTime(contact.getUdskrivningsDatetime());
+			DateTime latestProcedureDateTime = null; 
 			
 			for (LPRProcedure procedure : contact.getLprProcedures()) {
-				// if procedure time is set to 0 - set it to 12 the same day
-				Date procedureDatetime = procedure.getProcedureDatetime(); 
-				if(procedureDatetime != null) {
-					DateTime procedureStart = new DateTime(procedureDatetime.getTime());
-					if(procedureStart.getHourOfDay() == 0) {
-						procedureStart = procedureStart.plusHours(12);
-						procedure.setProcedureDatetime(procedureStart.toDate());
-					}
-				} else {
-					BusinessRuleError error = new BusinessRuleError(contact.getRecordNumber(), resolver.getMessage("rule.datetime.proceduredate.isempty"), resolver.getMessage("rule.datetime.name"));
+				
+				// Get latest procedure endtime, business rule #1 checks the datetime exists.
+				DateTime dt = new DateTime(procedure.getProcedureDatetime());
+				if(latestProcedureDateTime == null || dt.isAfter(latestProcedureDateTime)) {
+					latestProcedureDateTime = dt;
+				}
+			}
+			
+			//compare latest procedure endtime with contact endtime
+			if(latestProcedureDateTime != null) {
+				
+				// if procedureDateTime is more than 24 hours after Contact enddatetime it is a businessrule error
+				if(latestProcedureDateTime.isAfter(contactEndDateTime.plusHours(24))) {
+					BusinessRuleError error = new BusinessRuleError(contact.getRecordNumber(), resolver.getMessage("rule.extend.contact.endddatetime.gap.to.long"), resolver.getMessage("rule.extend.contact.endddatetime.name"));
 					throw new RuleAbortedException("Rule aborted due to BusinessRuleError", error);
+				}
+				
+				// if procedureDateTime is after contact enddatetime, set it to procedureDateTime
+				if(latestProcedureDateTime.isAfter(contactEndDateTime)) {
+					log.debug("procedureDateTime is after contact enddatetime for contact ref + " + contact.getRecordNumber());
+					contact.setUdskrivningsDatetime(latestProcedureDateTime.toDate());
 				}
 			}
 		}
 		
 		// setup the next rule in the chain
-		extendContactEndtimeRule.setContacts(contacts);
+		contactToAdmissionRule.setContacts(contacts);
 		
-		return extendContactEndtimeRule;
+		return contactToAdmissionRule;
 	}
 
 	public void setContacts(List<Administration> contacts) {

@@ -51,6 +51,7 @@ import dk.nsi.haiba.lprimporter.dao.impl.LPRDAOImpl;
 import dk.nsi.haiba.lprimporter.importer.ImportExecutor;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
 import dk.nsi.haiba.lprimporter.rules.ContactToAdmissionRule;
+import dk.nsi.haiba.lprimporter.rules.ExtendContactEndtimeRule;
 import dk.nsi.haiba.lprimporter.rules.LPRDateTimeRule;
 import dk.nsi.haiba.lprimporter.rules.LPRRulesEngine;
 import dk.nsi.haiba.lprimporter.rules.RulesEngine;
@@ -169,8 +170,12 @@ public class LPRConfiguration {
 	}
 	
 	@Bean
+	public ExtendContactEndtimeRule extendContactEndtimeRule() {
+		return new ExtendContactEndtimeRule();
+	}
+
+	@Bean
 	public ContactToAdmissionRule contactToAdmissionRule() {
 		return new ContactToAdmissionRule();
 	}
-	
 }

@@ -1,5 +1,5 @@
 CREATE TABLE T_ADM (
-       K_RECNUM BIGINT NOT NULL PRIMARY KEY,
+       K_RECNUM BIGINT NOT NULL,
        C_SGH varchar(4) NULL,
        C_AFD varchar(3) NULL,
        C_PATTYPE varchar(1) NULL,
@@ -12,14 +12,14 @@ CREATE TABLE T_ADM (
 );
 
 CREATE TABLE T_DIAG (
-       V_RECNUM bigint FOREIGN KEY REFERENCES T_ADM(K_RECNUM),
+       V_RECNUM bigint,
        C_DIAG varchar(10) NULL,
        C_TILDIAG varchar(10) NULL,
        C_DIAGTYPE varchar(1) NOT NULL
 );
 
 CREATE TABLE T_PROCEDURER(
-       V_RECNUM bigint FOREIGN KEY REFERENCES T_ADM(K_RECNUM),
+       V_RECNUM bigint,
        C_OPR varchar(10) NULL,
        C_TILOPR varchar(10) NULL,
        C_OPRART varchar(1) NULL,

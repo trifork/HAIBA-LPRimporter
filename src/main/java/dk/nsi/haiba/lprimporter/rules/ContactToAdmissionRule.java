@@ -93,7 +93,7 @@ public class ContactToAdmissionRule implements LPRRule {
 
 			haibaDao.saveIndlaeggelsesForloeb(indlaeggelser);
 			
-			//TODO - Update of imported LPR references must be implemented correctly - this is just a stub by now
+			// Rules are complete, update LPR with the import timestamp so this contact is not imported again
 			lprDao.updateImportTime(contact.getRecordNumber());
 		}
 

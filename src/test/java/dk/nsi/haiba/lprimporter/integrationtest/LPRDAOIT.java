@@ -247,7 +247,6 @@ public class LPRDAOIT {
      */
     @Test
     public void updateImportTimestamp() {
-    	// TODO - this is only testing a stub by now - improve later
 
         long recordNumber = 1234;
     	String cpr = "1111111111";

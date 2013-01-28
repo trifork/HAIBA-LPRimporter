@@ -87,17 +87,17 @@ public class RulesEngineIT {
 	@Autowired
 	RulesEngine rulesEngine;
 	
-	String cpr = "1111111111";
-	long recordNummer = 1234;
-	String sygehusCode = "csgh";
-	String afdelingsCode = "afd";
-	DateTime in = new DateTime(2010, 5, 3, 0, 0, 0);
-	DateTime out = new DateTime(2010, 6, 4, 12, 0, 0);
+	String cpr;
+	long recordNummer;
+	String sygehusCode;
+	String afdelingsCode;
+	DateTime in;
+	DateTime out;
 
-	String oprCode1 = "J03.9";
-	String oprType1 = "A";
-	String extraOprCode1 = "tilA";
-	DateTime op1 = new DateTime(2010, 5, 3, 8, 0, 0);
+	String oprCode1;
+	String oprType1;
+	String extraOprCode1;
+	DateTime op1;
 
 	@Before
 	public void init() {
