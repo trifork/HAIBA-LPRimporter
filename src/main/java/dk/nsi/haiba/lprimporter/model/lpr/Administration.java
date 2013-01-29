@@ -110,6 +110,23 @@ public class Administration {
 		lprProcedures.add(lprProcedure);
 	}
 	
+	/*
+	 * Utility method for checking if hospital and department is identical for 2 contacts
+	 */
+	public boolean hospitalAndDepartmentAreIdentical(Administration other) {
+        if(this.sygehusCode != null && !this.sygehusCode.equals(other.sygehusCode)) {
+        	return false;
+        } else if(this.sygehusCode == null && other.sygehusCode != null) {
+        	return false;
+        }
+        if(this.afdelingsCode != null && !this.afdelingsCode.equals(other.afdelingsCode)) {
+        	return false;
+        } else if(this.afdelingsCode == null && other.afdelingsCode != null) {
+        	return false;
+        }
+        return true;
+	}
+	
 	
 	/*
 	 * Override to see if content of to administration objects - with the exception of diagnoseslist and procedurelist are equal

@@ -54,6 +54,7 @@ import dk.nsi.haiba.lprimporter.rules.ContactToAdmissionRule;
 import dk.nsi.haiba.lprimporter.rules.ExtendContactEndtimeRule;
 import dk.nsi.haiba.lprimporter.rules.LPRDateTimeRule;
 import dk.nsi.haiba.lprimporter.rules.LPRRulesEngine;
+import dk.nsi.haiba.lprimporter.rules.OverlappingContactsRule;
 import dk.nsi.haiba.lprimporter.rules.RemoveIdenticalContactsRule;
 import dk.nsi.haiba.lprimporter.rules.RulesEngine;
 
@@ -183,5 +184,10 @@ public class LPRConfiguration {
 	@Bean
 	public RemoveIdenticalContactsRule removeIdenticalContactsRule() {
 		return new RemoveIdenticalContactsRule();
+	}
+	
+	@Bean
+	public OverlappingContactsRule overlappingContactsRule() {
+		return new OverlappingContactsRule();
 	}
 }
