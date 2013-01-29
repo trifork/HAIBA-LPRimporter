@@ -26,6 +26,7 @@
  */
 package dk.nsi.haiba.lprimporter.model.lpr;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -41,8 +42,8 @@ public class Administration {
 	String afdelingsCode;
 	Date indlaeggelsesDatetime;
 	Date udskrivningsDatetime;
-	List<LPRDiagnose> lprDiagnoses;
-	List<LPRProcedure> lprProcedures; 
+	List<LPRDiagnose> lprDiagnoses = new ArrayList<LPRDiagnose>();
+	List<LPRProcedure> lprProcedures = new ArrayList<LPRProcedure>(); 
 	
 	public long getRecordNumber() {
 		return recordNumber;
@@ -95,13 +96,72 @@ public class Administration {
 	public void setLprDiagnoses(List<LPRDiagnose> lprDiagnoses) {
 		this.lprDiagnoses = lprDiagnoses;
 	}
+	public void addLprDiagnose(LPRDiagnose lprDiagnose) {
+		lprDiagnoses.add(lprDiagnose);
+	}
+	
 	public List<LPRProcedure> getLprProcedures() {
 		return lprProcedures;
 	}
 	public void setLprProcedures(List<LPRProcedure> lprProcedures) {
 		this.lprProcedures = lprProcedures;
 	}
+	public void addLprProcedure(LPRProcedure lprProcedure) {
+		lprProcedures.add(lprProcedure);
+	}
 	
 	
+	/*
+	 * Override to see if content of to administration objects - with the exception of diagnoseslist and procedurelist are equal
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof Administration)) {
+            return false;
+        }
+        Administration other = (Administration) obj;
+        
+        if(this.recordNumber != other.recordNumber) {
+        	return false;
+        }
+        if(this.cpr != null && !this.cpr.equals(other.cpr)) {
+        	return false;
+        } else if(this.cpr == null && other.cpr != null) {
+        	return false;
+        }
+        if(this.sygehusCode != null && !this.sygehusCode.equals(other.sygehusCode)) {
+        	return false;
+        } else if(this.sygehusCode == null && other.sygehusCode != null) {
+        	return false;
+        }
+        if(this.afdelingsCode != null && !this.afdelingsCode.equals(other.afdelingsCode)) {
+        	return false;
+        } else if(this.afdelingsCode == null && other.afdelingsCode != null) {
+        	return false;
+        }
+        if(this.indlaeggelsesDatetime != null && !this.indlaeggelsesDatetime.equals(other.indlaeggelsesDatetime)) {
+        	return false;
+        } else if(this.indlaeggelsesDatetime == null && other.indlaeggelsesDatetime != null) {
+        	return false;
+        }
+        if(this.udskrivningsDatetime != null && !this.udskrivningsDatetime.equals(other.udskrivningsDatetime)) {
+        	return false;
+        } else if(this.udskrivningsDatetime == null && other.udskrivningsDatetime != null) {
+        	return false;
+        }
 
+        return true;
+    }	
+
+	public int hashCode() {
+        return (recordNumber+
+        		sygehusCode+
+        		afdelingsCode+
+        		cpr+
+        		indlaeggelsesDatetime+
+        		udskrivningsDatetime).hashCode();
+    }
 }

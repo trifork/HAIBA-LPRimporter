@@ -49,7 +49,7 @@ public class ExtendContactEndtimeRule implements LPRRule {
 	private List<Administration> contacts;
 	
 	@Autowired
-	ContactToAdmissionRule contactToAdmissionRule;
+	RemoveIdenticalContactsRule removeIdenticalContactsRule;
 	
 	@Autowired
 	MessageResolver resolver;
@@ -89,9 +89,9 @@ public class ExtendContactEndtimeRule implements LPRRule {
 		}
 		
 		// setup the next rule in the chain
-		contactToAdmissionRule.setContacts(contacts);
+		removeIdenticalContactsRule.setContacts(contacts);
 		
-		return contactToAdmissionRule;
+		return removeIdenticalContactsRule;
 	}
 
 	public void setContacts(List<Administration> contacts) {
