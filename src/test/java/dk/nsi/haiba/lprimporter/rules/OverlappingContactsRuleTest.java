@@ -26,8 +26,10 @@
  */
 package dk.nsi.haiba.lprimporter.rules;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,6 +47,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
+import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -100,12 +103,49 @@ public class OverlappingContactsRuleTest {
 	}
 	
 	/*
-	 * 2 contacts with same fields are in the list, one of the should be removed
+	 * 2 overlapping contacts where outdatetime for the first is set to indatetime for the last, so no overlap occurs
+	 */
+	@Test 
+	public void overlappingContactWhereEnddatetimeIsAdjusted() {
+		assertNotNull(overlappingContactsRule);
+		
+    	out2 = new DateTime(2010, 6, 10, 12, 0, 0);
+		List<Administration> contacts = setupContacts();
+
+		overlappingContactsRule.setContacts(contacts);
+		overlappingContactsRule.doProcessing();
+		
+		List<Administration> processedContacts = overlappingContactsRule.getContacts();
+		
+		assertTrue("Still expecting 3 contacts", processedContacts.size() == 3);
+
+		Collections.sort(processedContacts, new InDateComparator());
+		
+		Administration first = processedContacts.get(0);
+		Administration next = processedContacts.get(1);
+		Administration last = processedContacts.get(2);
+
+		DateTime firstIn = new DateTime(first.getIndlaeggelsesDatetime());
+		DateTime firstOut = new DateTime(first.getUdskrivningsDatetime());
+		DateTime nextIn = new DateTime(next.getIndlaeggelsesDatetime());
+		DateTime nextOut = new DateTime(next.getUdskrivningsDatetime());
+		
+		assertTrue(firstIn.isEqual(in));
+		assertTrue(firstOut.isEqual(in2)); // first out should have been set to next in
+		assertTrue(nextIn.isEqual(in2));
+		assertTrue(nextOut.isEqual(out2));
+		
+		// last contact shouldn't have been touched
+		Administration administration = contacts.get(2);
+		assertTrue(contacts.get(0).equals(last));
+			
+	}
+
+	/*
+	 * 2 overlapping contacts one should be split up into two, so no overlap occurs
 	 */
 	@Test 
 	public void overlappingContactIsSplittedIntoTwo() {
-		assertNotNull(overlappingContactsRule);
-		
 		List<Administration> contacts = setupContacts();
 
 		overlappingContactsRule.setContacts(contacts);
@@ -133,6 +173,64 @@ public class OverlappingContactsRuleTest {
 		}
 	}
 	
+	/*
+	 * 2 overlapping contacts with the same in and out date, don't know which to choose so raise an error
+	 */
+	@Test 
+	public void overlappingContactWithIdenticalInAndOutTimestamps() {
+		
+    	in2 = new DateTime(2010, 5, 3, 0, 0, 0);
+    	out2 = new DateTime(2010, 6, 4, 12, 0, 0);
+		List<Administration> contacts = setupContacts();
+
+		boolean ruleWasAborted = false;
+		overlappingContactsRule.setContacts(contacts);
+		try {
+			overlappingContactsRule.doProcessing();
+		} catch(RuleAbortedException e) {
+			BusinessRuleError error = e.getBusinessRuleError();
+			assertEquals(1235, error.getLprReference());
+			assertEquals("Overlappende kontakter", error.getAbortedRuleName());
+			assertTrue(error.getDescription().contains("recordnummer [1234]"));
+			ruleWasAborted = true;
+		} catch(Exception e) {
+			fail();
+		}
+		if(!ruleWasAborted) {
+			fail();
+		}
+	}
+
+//	Der er flere kontakter for samme sygehus/afdeling, men kan ikke afgøre om de er overlappende da udskrivningstidspunktet ikke er udfyldt	
+	
+	/*
+	 * 2 overlapping contacts but one without enddatetime, so don't know how to merge them
+	 */
+	@Test 
+	public void overlappingContactWhereOneHasEmptyEnddate() {
+		
+    	out = null;
+		List<Administration> contacts = setupContacts();
+
+		overlappingContactsRule.setContacts(contacts);
+		boolean ruleWasAborted = false;
+		try {
+			overlappingContactsRule.doProcessing();
+		} catch(RuleAbortedException e) {
+			BusinessRuleError error = e.getBusinessRuleError();
+			assertEquals(1234, error.getLprReference());
+			assertEquals("Overlappende kontakter", error.getAbortedRuleName());
+			assertTrue(error.getDescription().contains("da udskrivningstidspunktet ikke er udfyldt"));
+			ruleWasAborted = true;
+		} catch(Exception e) {
+			fail();
+		}
+		if(!ruleWasAborted) {
+			fail();
+		}
+	}
+
+	
 	private List<Administration> setupContacts() {
 		List<Administration> contacts = new ArrayList<Administration>();
 		Administration contact = new Administration();
@@ -141,7 +239,9 @@ public class OverlappingContactsRuleTest {
 		contact.setAfdelingsCode(afdelingsCode);
 		contact.setCpr(cpr);
 		contact.setIndlaeggelsesDatetime(in.toDate());
-		contact.setUdskrivningsDatetime(out.toDate());
+		if(out != null) {
+			contact.setUdskrivningsDatetime(out.toDate());
+		}
 		
 		Administration contact2 = new Administration();
 		contact2.setRecordNumber(recordNummer2);
@@ -149,7 +249,9 @@ public class OverlappingContactsRuleTest {
 		contact2.setAfdelingsCode(afdelingsCode2);
 		contact2.setCpr(cpr);
 		contact2.setIndlaeggelsesDatetime(in2.toDate());
-		contact2.setUdskrivningsDatetime(out2.toDate());
+		if(out2 != null) {
+			contact2.setUdskrivningsDatetime(out2.toDate());
+		}
 		
 		Administration contact3 = new Administration();
 		contact3.setRecordNumber(recordNummer3);
