@@ -26,10 +26,10 @@
  */
 package dk.nsi.haiba.lprimporter.config;
 
+import java.util.HashMap;
+
 import org.springframework.beans.factory.config.CustomScopeConfigurer;
 import org.springframework.context.support.SimpleThreadScope;
-
-import java.util.HashMap;
 
 public class SimpleThreadScopeConfigurer extends CustomScopeConfigurer {
 	public SimpleThreadScopeConfigurer() {

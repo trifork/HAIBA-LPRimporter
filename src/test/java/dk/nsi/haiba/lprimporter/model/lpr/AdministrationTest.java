@@ -26,7 +26,6 @@
  */
 package dk.nsi.haiba.lprimporter.model.lpr;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
