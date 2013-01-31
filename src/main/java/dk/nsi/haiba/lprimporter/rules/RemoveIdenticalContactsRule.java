@@ -49,7 +49,7 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 	private List<Administration> contacts;
 
 	@Autowired
-	ContactToAdmissionRule contactToAdmissionRule;
+	OverlappingContactsRule overlappingContactsRule;
 
 	@Autowired
 	MessageResolver resolver;
@@ -78,9 +78,9 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 		log.debug("Size after removing duplicates: " + contacts.size());
 
 		// setup the next rule in the chain
-		contactToAdmissionRule.setContacts(contacts);
+		overlappingContactsRule.setContacts(contacts);
 
-		return contactToAdmissionRule;
+		return overlappingContactsRule;
 	}
 
 	public void setContacts(List<Administration> contacts) {

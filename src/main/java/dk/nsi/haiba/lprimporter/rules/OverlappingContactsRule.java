@@ -52,7 +52,7 @@ public class OverlappingContactsRule implements LPRRule {
 	private List<Administration> contacts;
 	
 	@Autowired
-	ContactToAdmissionRule contactToAdmissionRule;
+	ConnectContactsRule connectContactsRule;
 	
 	@Autowired
 	MessageResolver resolver;
@@ -126,9 +126,9 @@ public class OverlappingContactsRule implements LPRRule {
 		contacts = processedContacts;
 		
 		// setup the next rule in the chain
-		contactToAdmissionRule.setContacts(contacts);
+		connectContactsRule.setContacts(contacts);
 		
-		return contactToAdmissionRule;
+		return connectContactsRule;
 	}
 
 	private List<Administration> splitContacts(Administration previous, Administration current) {

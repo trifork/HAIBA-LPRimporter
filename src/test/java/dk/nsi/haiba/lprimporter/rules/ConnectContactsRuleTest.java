@@ -26,10 +26,8 @@
  */
 package dk.nsi.haiba.lprimporter.rules;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,12 +45,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
-import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class)
-public class OverlappingContactsRuleTest {
+public class ConnectContactsRuleTest {
 
 	@Configuration
     @Import({LPRTestConfiguration.class})
@@ -60,7 +57,7 @@ public class OverlappingContactsRuleTest {
 	}
 	
 	@Autowired
-	OverlappingContactsRule overlappingContactsRule;
+	ConnectContactsRule connectContactsRule;
 
 	String cpr;
 	long recordNummer;
@@ -92,8 +89,8 @@ public class OverlappingContactsRuleTest {
     	recordNummer2 = 1235;
     	sygehusCode2 = "csgh";
     	afdelingsCode2 = "afd";
-    	in2 = new DateTime(2010, 5, 4, 0, 0, 0);
-    	out2 = new DateTime(2010, 5, 10, 12, 0, 0);
+    	in2 = new DateTime(2010, 6, 4, 16, 0, 0);
+    	out2 = new DateTime(2010, 6, 10, 12, 0, 0);
 
     	recordNummer3 = 1236;
     	sygehusCode3 = "abcd";
@@ -103,20 +100,21 @@ public class OverlappingContactsRuleTest {
 	}
 	
 	/*
-	 * 2 overlapping contacts where outdatetime for the first is set to indatetime for the last, so no overlap occurs
+	 * 2 contacts from the same hospital where gap is 4 hours, these should be connected
+	 * this test assumes the following properties are set to the following values
+	 *  hours.between.contacts.same.hospital=4
+	 *  hours.between.contacts.different.hospital=10
 	 */
 	@Test 
-	public void overlappingContactWhereEnddatetimeIsAdjusted() {
-		assertNotNull(overlappingContactsRule);
+	public void fill4HourGapBetweenContactsFromSameHospital() {
+		assertNotNull(connectContactsRule);
 		
-    	out2 = new DateTime(2010, 6, 10, 12, 0, 0);
 		List<Administration> contacts = setupContacts();
 
-		overlappingContactsRule.setContacts(contacts);
-		overlappingContactsRule.doProcessing();
+		connectContactsRule.setContacts(contacts);
+		connectContactsRule.doProcessing();
 		
-		List<Administration> processedContacts = overlappingContactsRule.getContacts();
-		
+		List<Administration> processedContacts = connectContactsRule.getContacts();
 		assertTrue("Still expecting 3 contacts", processedContacts.size() == 3);
 
 		Collections.sort(processedContacts, new InDateComparator());
@@ -136,98 +134,75 @@ public class OverlappingContactsRuleTest {
 		assertTrue(nextOut.isEqual(out2));
 		
 		// last contact shouldn't have been touched
-		assertTrue(contacts.get(0).equals(last));
-			
+		assertTrue(contacts.get(2).equals(last));
 	}
 
 	/*
-	 * 2 overlapping contacts one should be split up into two, so no overlap occurs
+	 * 2 contacts from the different hospital where gap is 10 hours, these should be connected
+	 * this test assumes the following properties are set to the following values
+	 *  hours.between.contacts.same.hospital=4
+	 *  hours.between.contacts.different.hospital=10
 	 */
 	@Test 
-	public void overlappingContactIsSplittedIntoTwo() {
+	public void fill10HourGapBetweenContactsFromDifferentHospital() {
+    	out = new DateTime(2010, 5, 10, 12, 0, 0);
+    	out2 = new DateTime(2010, 6, 15, 1, 0, 0);
+    	in3 = new DateTime(2010, 8, 4, 11, 0, 0);
+		
 		List<Administration> contacts = setupContacts();
 
-		overlappingContactsRule.setContacts(contacts);
-		overlappingContactsRule.doProcessing();
+		connectContactsRule.setContacts(contacts);
+		connectContactsRule.doProcessing();
 		
-		List<Administration> processedContacts = overlappingContactsRule.getContacts();
-		
-		assertTrue("Expecting 1 extra contact added to the list", processedContacts.size() == 4);
+		List<Administration> processedContacts = connectContactsRule.getContacts();
+		assertTrue("Still expecting 3 contacts", processedContacts.size() == 3);
 
 		Collections.sort(processedContacts, new InDateComparator());
 		
-		Administration previous = null;
-		for (Administration current : processedContacts) {
-			if(previous == null) {
-				previous = current;
-				continue;
-			}
-			DateTime previousIn = new DateTime(previous.getIndlaeggelsesDatetime());
-			DateTime previousOut = new DateTime(previous.getUdskrivningsDatetime());
-			DateTime in = new DateTime(current.getIndlaeggelsesDatetime());
-			DateTime out = new DateTime(current.getUdskrivningsDatetime());
-			
-			assertTrue(previousIn.isBefore(in));
-			assertTrue(previousOut.isBefore(out) || previousOut.isEqual(out));
-		}
-	}
-	
-	/*
-	 * 2 overlapping contacts with the same in and out date, don't know which to choose so raise an error
-	 */
-	@Test 
-	public void overlappingContactWithIdenticalInAndOutTimestamps() {
+		// none of the contacts should have been touched
+		assertTrue(contacts.get(0).equals(processedContacts.get(0)));
+		assertTrue(contacts.get(1).equals(processedContacts.get(1)));
+		assertTrue(contacts.get(2).equals(processedContacts.get(2)));
 		
-    	in2 = new DateTime(2010, 5, 3, 0, 0, 0);
-    	out2 = new DateTime(2010, 6, 4, 12, 0, 0);
-		List<Administration> contacts = setupContacts();
-
-		boolean ruleWasAborted = false;
-		overlappingContactsRule.setContacts(contacts);
-		try {
-			overlappingContactsRule.doProcessing();
-		} catch(RuleAbortedException e) {
-			BusinessRuleError error = e.getBusinessRuleError();
-			assertEquals(1235, error.getLprReference());
-			assertEquals("Overlappende kontakter", error.getAbortedRuleName());
-			assertTrue(error.getDescription().contains("recordnummer [1234]"));
-			ruleWasAborted = true;
-		} catch(Exception e) {
-			fail();
-		}
-		if(!ruleWasAborted) {
-			fail();
-		}
 	}
 
 	/*
-	 * 2 overlapping contacts but one without enddatetime, so don't know how to merge them
+	 * 2 contacts from the different hospital where gap is 10 hours, these should be connected
+	 * this test assumes the following properties are set to the following values
+	 *  hours.between.contacts.same.hospital=4
+	 *  hours.between.contacts.different.hospital=10
 	 */
 	@Test 
-	public void overlappingContactWhereOneHasEmptyEnddate() {
+	public void gapsAreToBigSonNoConnectingShouldOccur() {
+    	out2 = new DateTime(2010, 8, 4, 1, 0, 0);
+    	in3 = new DateTime(2010, 8, 4, 11, 0, 0);
 		
-    	out = null;
 		List<Administration> contacts = setupContacts();
 
-		overlappingContactsRule.setContacts(contacts);
-		boolean ruleWasAborted = false;
-		try {
-			overlappingContactsRule.doProcessing();
-		} catch(RuleAbortedException e) {
-			BusinessRuleError error = e.getBusinessRuleError();
-			assertEquals(1234, error.getLprReference());
-			assertEquals("Overlappende kontakter", error.getAbortedRuleName());
-			assertTrue(error.getDescription().contains("da udskrivningstidspunktet ikke er udfyldt"));
-			ruleWasAborted = true;
-		} catch(Exception e) {
-			fail();
-		}
-		if(!ruleWasAborted) {
-			fail();
-		}
+		connectContactsRule.setContacts(contacts);
+		connectContactsRule.doProcessing();
+		
+		List<Administration> processedContacts = connectContactsRule.getContacts();
+		assertTrue("Still expecting 3 contacts", processedContacts.size() == 3);
+
+		Collections.sort(processedContacts, new InDateComparator());
+		
+		Administration first = processedContacts.get(0);
+		Administration next = processedContacts.get(1);
+		Administration last = processedContacts.get(2);
+
+		DateTime nextIn = new DateTime(next.getIndlaeggelsesDatetime());
+		DateTime nextOut = new DateTime(next.getUdskrivningsDatetime());
+		DateTime lastIn = new DateTime(last.getIndlaeggelsesDatetime());
+		DateTime lastOut = new DateTime(last.getUdskrivningsDatetime());
+		
+		assertTrue(nextIn.isEqual(in2));
+		assertTrue(nextOut.isEqual(in3)); // next out should have been set to last in
+		assertTrue(lastIn.isEqual(in3));
+		assertTrue(lastOut.isEqual(out3)); 
+		
 	}
 
-	
 	private List<Administration> setupContacts() {
 		List<Administration> contacts = new ArrayList<Administration>();
 		Administration contact = new Administration();
