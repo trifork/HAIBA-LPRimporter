@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
+import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
@@ -54,6 +55,9 @@ public class LPRRulesEngine implements RulesEngine {
 	
 	@Autowired
 	HAIBADAO haibaDao;
+	
+	@Autowired
+	LPRDAO lprDao;
 	
 	@Autowired
 	MessageResolver resolver;
@@ -81,6 +85,11 @@ public class LPRRulesEngine implements RulesEngine {
 			}
 			
 			businessRuleErrorLog.info(resolver.getMessage("errorlog.rule.message", new Object[] {""+be.getLprReference(), be.getAbortedRuleName(), be.getDescription()}));
+			
+			// TODO find out how to detect errors next time importer runs, for nor just write a dummy date to import timestamp
+			for (Administration contact : contacts) {
+				lprDao.updateImportTime(contact.getRecordNumber());
+			}
 		}
 		
 	}

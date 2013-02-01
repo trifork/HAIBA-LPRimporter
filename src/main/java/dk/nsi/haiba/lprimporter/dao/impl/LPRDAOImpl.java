@@ -47,9 +47,19 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 
 	@Override
 	public List<String> getUnprocessedCPRnumbers() throws DAOException {
+		// TODO - select in batches
+		
+		String sql = null;
+		if(MYSQL.equals(getDialect())) {
+			sql = "SELECT v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL GROUP BY v_cpr LIMIT 100";
+		} else {
+			// MSSQL
+			sql = "SELECT TOP 100 v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL GROUP BY v_cpr";
+		}
+		
 		List<String> unprocessedCPRNumbers = new ArrayList<String>();
 	    try {
-	    	unprocessedCPRNumbers = jdbcTemplate.queryForList("SELECT v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL GROUP BY v_cpr", String.class);
+	    	unprocessedCPRNumbers = jdbcTemplate.queryForList(sql, String.class);
 		    return unprocessedCPRNumbers;
         } catch (RuntimeException e) {
             throw new DAOException("Error fetching contacts from LPR", e);

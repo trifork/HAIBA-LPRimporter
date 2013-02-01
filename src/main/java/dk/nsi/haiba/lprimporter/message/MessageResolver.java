@@ -33,7 +33,7 @@ import org.springframework.context.MessageSource;
 
 /*
  * Wrapper classe to Spring MessageSource
- * This class uses the default locale, which means the texts in message.properties
+ * This class uses the default locale, which means the texts in messages.properties
  */
 public class MessageResolver {
 	
@@ -45,7 +45,7 @@ public class MessageResolver {
 	} 
 
 	public String getMessage(String name, Object[] args) {
-		return messageSource.getMessage(name, args, null);
+		return messageSource.getMessage(name, args, new Locale("DA_DK"));
 	} 
 
 }
