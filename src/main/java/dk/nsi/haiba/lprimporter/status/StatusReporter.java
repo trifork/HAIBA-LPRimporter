@@ -31,7 +31,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -44,10 +43,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class StatusReporter {
 	
 	@Autowired
-	JdbcTemplate haibaJdbcTemplate;
-
-	@Autowired
-	JdbcTemplate jdbcTemplate;
+	ImportStatusRepository statusRepo;
 
 	@RequestMapping(value = "/status")
 	public ResponseEntity<String> reportStatus() {
@@ -57,10 +53,13 @@ public class StatusReporter {
 		body = "OK";
 		
 		try {
-			if (!isHAIBADBAlive()) {
+			if (!statusRepo.isHAIBADBAlive()) {
 				body = "HAIBA Database is _NOT_ running correctly";
-			} else if (!isLPRDBAlive()) {
+			} else if (!statusRepo.isLPRDBAlive()) {
 				body = "LPR Database is _NOT_ running correctly";
+			} else if (statusRepo.isOverdue()) {
+				// last run information is applied to body later
+				body = "Is overdue";
 			} else {
 				status = HttpStatus.OK;
 			}
@@ -68,28 +67,20 @@ public class StatusReporter {
 			body = e.getMessage();
 		}
 
+		body = addLastRunInformation(body);
 		headers.setContentType(MediaType.TEXT_PLAIN);
 		
 		return new ResponseEntity<String>(body, headers, status);
 	}
-	
-	
-	private boolean isHAIBADBAlive() {
-		try {
-			haibaJdbcTemplate.queryForObject("Select max(indlaeggelsesid) from Indlaeggelser", Long.class);
-		} catch (Exception someError) {
-			return false;
-		}
-		return true;
-	}
-	
-	private boolean isLPRDBAlive() {
-		try {
-			jdbcTemplate.queryForObject("Select max(K_RECNUM) from T_ADM", Long.class);
-		} catch (Exception someError) {
-			return false;
-		}
-		return true;
-	}
 
+	
+	private String addLastRunInformation(String body) {
+		ImportStatus latestStatus = statusRepo.getLatestStatus();
+		if (latestStatus == null) {
+			return body + "\nLast import: Never run";
+		} else {
+			return body + "\n" + latestStatus.toString();
+		}
+	}
+	
 }

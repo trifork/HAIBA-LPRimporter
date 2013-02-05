@@ -24,52 +24,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package dk.nsi.haiba.lprimporter.log;
+package dk.nsi.haiba.lprimporter.status;
 
-import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
 
-
-/*
- * Wrapper class for Log4j - so the "is?enabled" methods are hidden away from regular code
- */
-public class Log {
-	
-	Logger logger;
-	
-	public Log(Logger logger) {
-		this.logger = logger;
-	}
-
-	public void trace(String message) {
-		if(logger.isTraceEnabled()) {
-			logger.trace(message);
-		}
-	}
-
-	public void debug(String message) {
-		if(logger.isDebugEnabled()) {
-			logger.debug(message);
-		}
-	}
-
-	public void debug(String message, Throwable t) {
-		if(logger.isDebugEnabled()) {
-			logger.debug(message, t);
-		}
-	}
-
-	public void info(String message) {
-		if(logger.isInfoEnabled()) {
-			logger.info(message);
-		}
-	}
-
-	public void error(String message) {
-		logger.error(message);
-	}
-	
-	public void error(String message, Throwable t) {
-		logger.error(message, t);
-	}
-	
+public interface TimeSource {
+	DateTime now();
 }

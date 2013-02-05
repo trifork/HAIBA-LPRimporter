@@ -48,6 +48,15 @@ CREATE TABLE RegelFejlbeskeder (
     Fejltidspunkt datetime
 );
 
+CREATE TABLE ImporterStatus (
+    Id BIGINT NOT NULL IDENTITY PRIMARY KEY,
+    StartTime DATETIME NOT NULL,
+    EndTime DATETIME,
+    Outcome VARCHAR(20),
+
+    INDEX (StartTime)
+);
+
 go;
 
 CREATE VIEW IndlaeggelsesForloebsOversigt

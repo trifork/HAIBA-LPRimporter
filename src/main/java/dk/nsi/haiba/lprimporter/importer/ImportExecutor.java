@@ -29,27 +29,36 @@ package dk.nsi.haiba.lprimporter.importer;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
+import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.rules.RulesEngine;
+import dk.nsi.haiba.lprimporter.status.ImportStatusRepository;
 
 /*
  * Scheduled job, responsible for fetching new data from LPR, then send it to the RulesEngine for further processing
  */
 public class ImportExecutor {
 	
+	private static Log log = new Log(Logger.getLogger(ImportExecutor.class));
+
 	@Autowired
 	LPRDAO lprdao;
 
 	@Autowired
 	RulesEngine rulesEngine;
 	
+	@Autowired
+	ImportStatusRepository statusRepo;
+	
 	@Scheduled(fixedDelay = 10000)
 	public void run() {
-		System.out.println("Running Importer: " + new Date().toString());
+		log.trace("Running Importer: " + new Date().toString());
 		doProcess();
 	}
 
@@ -63,15 +72,17 @@ public class ImportExecutor {
 		try {
 			List<String> unprocessedCPRnumbers = lprdao.getUnprocessedCPRnumbers();
 			if(unprocessedCPRnumbers.size() != 0) {
+				statusRepo.importStartedAt(new DateTime());
 				for (String cpr : unprocessedCPRnumbers) {
 					List<Administration> contactsByCPR = lprdao.getContactsByCPR(cpr);
 					// Process the LPR data according to the defined business rules
 					rulesEngine.processRuleChain(contactsByCPR);
 				}
+				statusRepo.importEndedWithSuccess(new DateTime());
 			}
 		} catch(Exception e) {
-			// TODO Log this
-			e.printStackTrace();
+			statusRepo.importEndedWithFailure(new DateTime());
+			log.error("", e);
 		}
 	}
 }

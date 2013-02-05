@@ -173,31 +173,20 @@ public class OverlappingContactsRuleTest {
 	}
 	
 	/*
-	 * 2 overlapping contacts with the same in and out date, don't know which to choose so raise an error
+	 * 2 overlapping contacts with the same in and out date, choose the first one
 	 */
 	@Test 
 	public void overlappingContactWithIdenticalInAndOutTimestamps() {
 		
-    	in2 = new DateTime(2010, 5, 3, 0, 0, 0);
-    	out2 = new DateTime(2010, 6, 4, 12, 0, 0);
+    	in2 = in;
+    	out2 = out;
 		List<Administration> contacts = setupContacts();
 
-		boolean ruleWasAborted = false;
 		overlappingContactsRule.setContacts(contacts);
-		try {
-			overlappingContactsRule.doProcessing();
-		} catch(RuleAbortedException e) {
-			BusinessRuleError error = e.getBusinessRuleError();
-			assertEquals(1235, error.getLprReference());
-			assertEquals("Overlappende kontakter", error.getAbortedRuleName());
-			assertTrue(error.getDescription().contains("recordnummer [1234]"));
-			ruleWasAborted = true;
-		} catch(Exception e) {
-			fail();
-		}
-		if(!ruleWasAborted) {
-			fail();
-		}
+		overlappingContactsRule.doProcessing();
+		
+		List<Administration> processedContacts = overlappingContactsRule.getContacts();
+		assertEquals("List size must be 2", 2, processedContacts.size());
 	}
 
 	/*

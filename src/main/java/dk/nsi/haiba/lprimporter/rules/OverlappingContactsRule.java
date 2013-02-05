@@ -140,11 +140,13 @@ public class OverlappingContactsRule implements LPRRule {
 		DateTime out = new DateTime(current.getUdskrivningsDatetime());
 
 		if(in.isEqual(previousIn) && out.isEqual(previousOut)) {
-			BusinessRuleError be = new BusinessRuleError(previous.getRecordNumber(), resolver.getMessage("rule.overlapping.contact.in.and.outdate.are.identical", new Object[] {""+current.getRecordNumber()}), resolver.getMessage("rule.overlapping.contact.name"));
-			throw new RuleAbortedException("Business rule aborted", be);
-		}
-		
-		if(previousIn.isEqual(in)) {
+			// choose the first - merge diagnoses and procedures
+			previous.getLprDiagnoses().addAll(current.getLprDiagnoses());
+			previous.getLprProcedures().addAll(current.getLprProcedures());
+			// TODO remember to save the old LPR reference
+			splittedContacts.add(previous);
+			return splittedContacts;
+		} else if(previousIn.isEqual(in)) {
 			// split on outTime, where current is the first
 			previous.setIndlaeggelsesDatetime(current.getUdskrivningsDatetime());
 		} else if(previousIn.isBefore(in) && previousOut.isAfter(out)) {

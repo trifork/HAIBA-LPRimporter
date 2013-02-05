@@ -45,6 +45,7 @@ import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.rules.RulesEngine;
+import dk.nsi.haiba.lprimporter.status.ImportStatusRepository;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class)
@@ -60,6 +61,10 @@ public class ImportExecutorTest {
 		@Bean
 		public RulesEngine rulesEngine() {
 			return Mockito.mock(RulesEngine.class);
+		}
+		@Bean
+		public ImportStatusRepository statusRepo() {
+			return Mockito.mock(ImportStatusRepository.class); 
 		}
 		@Bean
 		public ImportExecutor importExecutor() {

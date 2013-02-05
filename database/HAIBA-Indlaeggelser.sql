@@ -57,6 +57,15 @@ CREATE TABLE IF NOT EXISTS RegelFejlbeskeder (
     
 ) ENGINE=InnoDB COLLATE=utf8_bin;
 
+CREATE TABLE IF NOT EXISTS ImporterStatus (
+    Id BIGINT(15) AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    StartTime DATETIME NOT NULL,
+    EndTime DATETIME,
+    Outcome VARCHAR(20),
+
+    INDEX (StartTime)
+) ENGINE=InnoDB COLLATE=utf8_bin;
+
 CREATE VIEW IndlaeggelsesForloebsOversigt
 AS SELECT hif.IndlaeggelsesforloebID, min(hi.indlaeggelsesdatotid) as minIndlaeggelsesdatotid, max(hi.udskrivningsdatotid) as maxUdskrivningsdatotid, hi.CPR 
 FROM Indlaeggelsesforloeb hif

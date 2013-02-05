@@ -58,6 +58,10 @@ import dk.nsi.haiba.lprimporter.rules.LPRRulesEngine;
 import dk.nsi.haiba.lprimporter.rules.OverlappingContactsRule;
 import dk.nsi.haiba.lprimporter.rules.RemoveIdenticalContactsRule;
 import dk.nsi.haiba.lprimporter.rules.RulesEngine;
+import dk.nsi.haiba.lprimporter.status.ImportStatusRepository;
+import dk.nsi.haiba.lprimporter.status.ImportStatusRepositoryJdbcImpl;
+import dk.nsi.haiba.lprimporter.status.TimeSource;
+import dk.nsi.haiba.lprimporter.status.TimeSourceRealTimeImpl;
 
 /**
  * Configuration class 
@@ -134,6 +138,16 @@ public class LPRConfiguration {
 		return new SimpleThreadScopeConfigurer();
 	}
 	
+	@Bean
+	public ImportStatusRepository statusRepo() {
+		return new ImportStatusRepositoryJdbcImpl(); 
+	}
+
+	@Bean
+	public TimeSource timeSource() {
+		return new TimeSourceRealTimeImpl();
+	}
+
 	@Bean
     public ReloadableResourceBundleMessageSource messageSource(){
         ReloadableResourceBundleMessageSource messageSource=new ReloadableResourceBundleMessageSource();
