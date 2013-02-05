@@ -33,8 +33,6 @@ import java.util.List;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
-import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
@@ -52,65 +50,53 @@ import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 	private List<Administration> contacts;
 	
 	@Autowired
-	HAIBADAO haibaDao;
+	ConnectAdmissionsRule connectAdmissionsRule;
 	
-	@Autowired
-	LPRDAO lprDao;
 
 	@Override
 	public LPRRule doProcessing() {
 
-		// sort contacts after In date
+		List<Indlaeggelse> indlaeggelser = new ArrayList<Indlaeggelse>();
+
+		// sort contacts after in date
 		Collections.sort(contacts, new InDateComparator());
 		
 		
 		if(contacts.size() == 1) {
-			List<Indlaeggelse> indlaeggelser = new ArrayList<Indlaeggelse>();
 			indlaeggelser.add(convertContact(contacts.get(0)));
-			
-			lprDao.updateImportTime(contacts.get(0).getRecordNumber());
-			
-			haibaDao.saveIndlaeggelsesForloeb(indlaeggelser);
-			
 		} else {
-			Administration previousContact = null;
+			Indlaeggelse indlaeggelse = null;
 			for (Administration contact : contacts) {
-				if(previousContact == null) {
-					previousContact = contact;
-				}
-				
-				List<Indlaeggelse> indlaeggelser = new ArrayList<Indlaeggelse>();
-				
-				Indlaeggelse indlaeggelse = null;
-				DateTime previousOut = new DateTime(previousContact.getUdskrivningsDatetime());
-				DateTime currentIn = new DateTime(contact.getIndlaeggelsesDatetime());
-				// check if there is a gab between the contacts, if not merge them to one admission
-				if(previousContact.hospitalAndDepartmentAreIdentical(contact) && previousOut.isEqual(currentIn)) {
-					indlaeggelse = convertContact(previousContact);
-					Indlaeggelse tempIndlaeggelse = convertContact(contact);
-					// preserve diagnoses and procedures, and adjust the outDate and save the LPR refnumber
-					indlaeggelse.getDiagnoses().addAll(tempIndlaeggelse.getDiagnoses());
-					indlaeggelse.getProcedures().addAll(tempIndlaeggelse.getProcedures());
-					indlaeggelse.setUdskrivningsDatetime(tempIndlaeggelse.getUdskrivningsDatetime());
-					indlaeggelse.getLprReferencer().addAll(tempIndlaeggelse.getLprReferencer());
-					// TODO check if more than 2 contacts are in the chain
+				if(indlaeggelse == null) {
+					indlaeggelse = convertContact(contact);
+					continue;
 				} else {
-					indlaeggelse = convertContact(previousContact);
+					DateTime previousOut = new DateTime(indlaeggelse.getUdskrivningsDatetime());
+					DateTime currentIn = new DateTime(contact.getIndlaeggelsesDatetime());
+					
+					// check if there is a gap between the contact and admission, if not merge them to one admission
+					if(hospitalAndDepartmentAreIdentical(indlaeggelse, contact) && previousOut.isEqual(currentIn)) {
+						Indlaeggelse tempIndlaeggelse = convertContact(contact);
+						// preserve diagnoses and procedures, adjust the outDate and save the LPR refnumber
+						indlaeggelse.getDiagnoses().addAll(tempIndlaeggelse.getDiagnoses());
+						indlaeggelse.getProcedures().addAll(tempIndlaeggelse.getProcedures());
+						indlaeggelse.setUdskrivningsDatetime(tempIndlaeggelse.getUdskrivningsDatetime());
+						indlaeggelse.getLprReferencer().addAll(tempIndlaeggelse.getLprReferencer());
+					} else {
+						// Indlaeggelse and Contact doesn't connect, save the indlaeggelse
+						indlaeggelser.add(indlaeggelse);
+
+						// convert the contact to an indlaeggelse
+						indlaeggelse = convertContact(contact);
+					}
 				}
-				indlaeggelser.add(indlaeggelse);
-				
-				haibaDao.saveIndlaeggelsesForloeb(indlaeggelser);
 			}
-			
-			for (Administration contact : contacts) {
-				// Rules are complete, update LPR with the import timestamp so they are not imported again
-				lprDao.updateImportTime(contact.getRecordNumber());
-			}
+			// no more in the loop, add the last indlaeggelse to the list
+			indlaeggelser.add(indlaeggelse);
 		}
 
-		// TODO the next rule is to apply Admissions to a series of admissions, refactor this rule so it doesn't save state to the database
-		// For now, this is the last rule, terminate the rulesengine
-		return null;
+		connectAdmissionsRule.setAdmissions(indlaeggelser);
+		return connectAdmissionsRule;
 	}
 
 	private Indlaeggelse convertContact(Administration contact) {
@@ -121,8 +107,10 @@ import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 		indlaeggelse.setIndlaeggelsesDatetime(contact.getIndlaeggelsesDatetime());
 		indlaeggelse.setUdskrivningsDatetime(contact.getUdskrivningsDatetime());
 		
-		// TODO - an indlaeggelse can have more than one LPR ref
+		// save current contact reference
 		indlaeggelse.addLPRReference(new LPRReference(contact.getRecordNumber()));
+		// and merge all former contact references to the admission
+		indlaeggelse.getLprReferencer().addAll(contact.getLprReferencer());
 		
 		for (LPRDiagnose lprDiagnose : contact.getLprDiagnoses()) {
 			Diagnose d = new Diagnose();
@@ -144,9 +132,22 @@ import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 		}
 		return indlaeggelse;
 	}
-
-	public List<Administration> getContacts() {
-		return contacts;
+	
+	/*
+	 * Utility method for checking if hospital and department is identical for an indlaeggelse and a contact
+	 */
+	public boolean hospitalAndDepartmentAreIdentical(Indlaeggelse admission, Administration contact) {
+        if(admission.getSygehusCode() != null && !admission.getSygehusCode().equals(contact.getSygehusCode())) {
+        	return false;
+        } else if(admission.getSygehusCode() == null && contact.getSygehusCode() != null) {
+        	return false;
+        }
+        if(admission.getAfdelingsCode() != null && !admission.getAfdelingsCode().equals(contact.getAfdelingsCode())) {
+        	return false;
+        } else if(admission.getAfdelingsCode() == null && contact.getAfdelingsCode() != null) {
+        	return false;
+        }
+        return true;
 	}
 
 	public void setContacts(List<Administration> contacts) {

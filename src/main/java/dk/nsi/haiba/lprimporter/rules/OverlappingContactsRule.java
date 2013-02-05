@@ -143,7 +143,7 @@ public class OverlappingContactsRule implements LPRRule {
 			// choose the first - merge diagnoses and procedures
 			previous.getLprDiagnoses().addAll(current.getLprDiagnoses());
 			previous.getLprProcedures().addAll(current.getLprProcedures());
-			// TODO remember to save the old LPR reference
+			previous.addLPRReference(current.getRecordNumber());
 			splittedContacts.add(previous);
 			return splittedContacts;
 		} else if(previousIn.isEqual(in)) {

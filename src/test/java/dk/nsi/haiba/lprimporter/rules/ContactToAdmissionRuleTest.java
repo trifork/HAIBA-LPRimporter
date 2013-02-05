@@ -26,7 +26,9 @@
  */
 package dk.nsi.haiba.lprimporter.rules;
 
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +49,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
+import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
@@ -110,7 +113,15 @@ public class ContactToAdmissionRuleTest {
 		List<Administration> contacts = setupContacts();
 		contactToAdmissionRule.setContacts(contacts);
 		
-		assertNull("This is the last rule", contactToAdmissionRule.doProcessing());
+		LPRRule nextRule = contactToAdmissionRule.doProcessing();
+		 
+		assertTrue(nextRule instanceof ConnectAdmissionsRule);
+		
+		ConnectAdmissionsRule connectAdmissionsRule = (ConnectAdmissionsRule)nextRule;
+		List<Indlaeggelse> admissions = connectAdmissionsRule.getAdmissions();
+		assertNotNull(admissions);
+		assertEquals("Expected 1 admission", 1, admissions.size());
+		
 	}
 
 	private List<Administration> setupContacts() {

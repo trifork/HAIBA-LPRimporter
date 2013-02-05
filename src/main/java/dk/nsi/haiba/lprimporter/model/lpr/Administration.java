@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
+
 /*
  * Model object for a Contact to the healthsystem from the LPR datamodel
  * This Class matches the t_adm table
@@ -43,7 +45,9 @@ public class Administration {
 	Date indlaeggelsesDatetime;
 	Date udskrivningsDatetime;
 	List<LPRDiagnose> lprDiagnoses = new ArrayList<LPRDiagnose>();
-	List<LPRProcedure> lprProcedures = new ArrayList<LPRProcedure>(); 
+	List<LPRProcedure> lprProcedures = new ArrayList<LPRProcedure>();
+	List<LPRReference> lprReferencer = new ArrayList<LPRReference>();
+	
 	
 	public long getRecordNumber() {
 		return recordNumber;
@@ -111,22 +115,18 @@ public class Administration {
 	}
 	
 	/*
-	 * Utility method for checking if hospital and department is identical for 2 contacts
+	 * According to the rules, some contacts can be disposed due to identical information, but we still need to save the reference number so we can backtrack them
+	 * This list does not contain the current recordNumber.
 	 */
-	public boolean hospitalAndDepartmentAreIdentical(Administration other) {
-        if(this.sygehusCode != null && !this.sygehusCode.equals(other.sygehusCode)) {
-        	return false;
-        } else if(this.sygehusCode == null && other.sygehusCode != null) {
-        	return false;
-        }
-        if(this.afdelingsCode != null && !this.afdelingsCode.equals(other.afdelingsCode)) {
-        	return false;
-        } else if(this.afdelingsCode == null && other.afdelingsCode != null) {
-        	return false;
-        }
-        return true;
+	public List<LPRReference> getLprReferencer() {
+		return lprReferencer;
 	}
-	
+	public void setLprReferencer(List<LPRReference> lprReferencer) {
+		this.lprReferencer = lprReferencer;
+	}
+	public void addLPRReference(long recordNumber) {
+		lprReferencer.add(new LPRReference(recordNumber));
+	}
 	
 	/*
 	 * Override to see if content of to administration objects - with the exception of diagnoseslist and procedurelist are equal

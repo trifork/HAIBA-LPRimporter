@@ -170,41 +170,6 @@ public class AdministrationTest {
 		assertFalse(adm1.equals(adm2));
 	}
 
-	@Test
-	public void testHospitalAndDepartmentAreIdenticalForDifferentContacts() {
-		
-		Administration adm1 = getAdm1();
-		Administration adm2 = getAdm2();
-		
-		adm1.setRecordNumber(2345);
-		
-		assertTrue(adm1.hospitalAndDepartmentAreIdentical(adm2));
-	}
-
-	@Test
-	public void testHospitalAndDepartmentAreDifferentForDifferentContacts() {
-		
-		Administration adm1 = getAdm1();
-		Administration adm2 = getAdm2();
-		
-		adm1.setRecordNumber(2345);
-		adm2.setSygehusCode("Test");
-		
-		assertFalse(adm1.hospitalAndDepartmentAreIdentical(adm2));
-	}
-
-	@Test
-	public void testHospitalAndDepartmentAreDifferent2ForDifferentContacts() {
-		
-		Administration adm1 = getAdm1();
-		Administration adm2 = getAdm2();
-		
-		adm1.setRecordNumber(2345);
-		adm2.setAfdelingsCode("Test");
-		
-		assertFalse(adm1.hospitalAndDepartmentAreIdentical(adm2));
-	}
-	
 	private Administration getAdm1() {
 		Administration adm1 = new Administration();
 		adm1.setSygehusCode(sygehusCode);

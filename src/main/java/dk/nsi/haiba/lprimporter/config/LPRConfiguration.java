@@ -50,6 +50,7 @@ import dk.nsi.haiba.lprimporter.dao.impl.HAIBADAOImpl;
 import dk.nsi.haiba.lprimporter.dao.impl.LPRDAOImpl;
 import dk.nsi.haiba.lprimporter.importer.ImportExecutor;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
+import dk.nsi.haiba.lprimporter.rules.ConnectAdmissionsRule;
 import dk.nsi.haiba.lprimporter.rules.ConnectContactsRule;
 import dk.nsi.haiba.lprimporter.rules.ContactToAdmissionRule;
 import dk.nsi.haiba.lprimporter.rules.ExtendContactEndtimeRule;
@@ -209,5 +210,10 @@ public class LPRConfiguration {
 	@Bean
 	public ConnectContactsRule connectContactsRule() {
 		return new ConnectContactsRule();
+	}
+
+	@Bean
+	public ConnectAdmissionsRule connectAdmissionsRule() {
+		return new ConnectAdmissionsRule();
 	}
 }
