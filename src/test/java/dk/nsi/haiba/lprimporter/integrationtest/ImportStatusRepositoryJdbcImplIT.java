@@ -55,7 +55,7 @@ import dk.nsi.haiba.lprimporter.status.TimeSource;
 @RunWith(SpringJUnit4ClassRunner.class)
 @Transactional("haibaTransactionManager")
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class)
-public class ImportStatusRepositoryJdbcImplTest {
+public class ImportStatusRepositoryJdbcImplIT {
 
 	@Configuration
 	@PropertySource("classpath:test.properties")
