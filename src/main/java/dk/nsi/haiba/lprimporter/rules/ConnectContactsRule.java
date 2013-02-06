@@ -65,7 +65,7 @@ public class ConnectContactsRule implements LPRRule {
 	public LPRRule doProcessing() {
 
 		// Overlapping contacts has been sorted out now, so sort the contacts by in date
-		Collections.sort(contacts, new InDateComparator());
+		Collections.sort(contacts, new AdministrationInDateComparator());
 		
 		
 		if(contacts.size() > 1) {

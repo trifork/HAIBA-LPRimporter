@@ -87,4 +87,12 @@ public interface LPRDAO {
 	 */
 	public void updateImportTime(long recordNumber);
 
+	
+	/**
+	 * Checks if there are any unprocessed cprnumbers in the T_ADM table
+	 * 
+	 * @throws DAOException if something goes wrong in the process
+	 */
+	public int checkForUnprocessedCPRnumbers();
+	
 }

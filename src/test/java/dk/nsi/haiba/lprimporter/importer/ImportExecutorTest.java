@@ -94,7 +94,7 @@ public class ImportExecutorTest {
 		
 		executor.doProcess();
 		
-		Mockito.verify(lprdao).getUnprocessedCPRnumbers();
+		Mockito.verify(lprdao).checkForUnprocessedCPRnumbers();
 		Mockito.verify(lprdao, Mockito.never()).getContactsByCPR(null);
 	}
 
@@ -103,11 +103,13 @@ public class ImportExecutorTest {
 		List<String> cprList = new ArrayList<String>();
 		cprList.add("1234567890");
 		
-		Mockito.when(lprdao.getUnprocessedCPRnumbers()).thenReturn(cprList);
+		Mockito.when(lprdao.checkForUnprocessedCPRnumbers()).thenReturn(1);
+		// first return the list, then return an empty list to finish processing
+		Mockito.when(lprdao.getUnprocessedCPRnumbers()).thenReturn(cprList).thenReturn(new ArrayList<String>());
 		
 		executor.doProcess();
 		
-		Mockito.verify(lprdao).getUnprocessedCPRnumbers();
+		Mockito.verify(lprdao, Mockito.atLeastOnce()).getUnprocessedCPRnumbers();
 		Mockito.verify(lprdao, Mockito.atLeastOnce()).getContactsByCPR(cprList.get(0));
 		Mockito.verify(rulesEngine, Mockito.atLeastOnce()).processRuleChain(Mockito.anyListOf(Administration.class));
 	}

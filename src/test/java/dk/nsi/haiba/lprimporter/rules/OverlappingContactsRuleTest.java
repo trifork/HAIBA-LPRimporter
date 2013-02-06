@@ -119,7 +119,7 @@ public class OverlappingContactsRuleTest {
 		
 		assertTrue("Still expecting 3 contacts", processedContacts.size() == 3);
 
-		Collections.sort(processedContacts, new InDateComparator());
+		Collections.sort(processedContacts, new AdministrationInDateComparator());
 		
 		Administration first = processedContacts.get(0);
 		Administration next = processedContacts.get(1);
@@ -136,7 +136,7 @@ public class OverlappingContactsRuleTest {
 		assertTrue(nextOut.isEqual(out2));
 		
 		// last contact shouldn't have been touched
-		assertTrue(contacts.get(0).equals(last));
+		assertTrue(contacts.get(2).equals(last));
 			
 	}
 
@@ -154,7 +154,7 @@ public class OverlappingContactsRuleTest {
 		
 		assertTrue("Expecting 1 extra contact added to the list", processedContacts.size() == 4);
 
-		Collections.sort(processedContacts, new InDateComparator());
+		Collections.sort(processedContacts, new AdministrationInDateComparator());
 		
 		Administration previous = null;
 		for (Administration current : processedContacts) {
@@ -216,6 +216,27 @@ public class OverlappingContactsRuleTest {
 		}
 	}
 
+	/*
+	 * 3 nested overlapping contacts, must be split up and ends in 5 contacts 
+	 */
+	@Test 
+	public void nestedOverlappingContacts() {
+		
+    	in = new DateTime(2010, 3, 1, 8, 0, 0);
+    	out = new DateTime(2010, 3, 5, 17, 0, 0);
+    	in2 = new DateTime(2010, 3, 2, 12, 0, 0);
+    	out2 = new DateTime(2010, 3, 4, 17, 0, 0);
+    	in3 = new DateTime(2010, 3, 3, 10, 0, 0);
+    	out3 = new DateTime(2010, 3, 3, 17, 0, 0);
+		
+		List<Administration> contacts = setupContacts();
+
+		overlappingContactsRule.setContacts(contacts);
+		overlappingContactsRule.doProcessing();
+		
+		List<Administration> processedContacts = overlappingContactsRule.getContacts();
+		assertEquals("List size must be 5", 5, processedContacts.size());
+	}
 	
 	private List<Administration> setupContacts() {
 		List<Administration> contacts = new ArrayList<Administration>();

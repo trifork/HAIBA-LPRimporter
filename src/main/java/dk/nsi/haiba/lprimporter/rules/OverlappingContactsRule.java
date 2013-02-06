@@ -60,38 +60,17 @@ public class OverlappingContactsRule implements LPRRule {
 	@Override
 	public LPRRule doProcessing() {
 		
-		// If hospital and department on two contacts are identical, check for overlapping timestamps
 		List<Administration> processedContacts = new ArrayList<Administration>();
 		
-		Map<String, List<Administration>> sortedContacts = new HashMap<String, List<Administration>>(); 
-		
-		// Sort contacts for the same hospital and department
-		for (Administration contact : contacts) {
-			String key = contact.getSygehusCode()+contact.getAfdelingsCode();
-			
-			if(!sortedContacts.containsKey(key)) {
-				List<Administration> list = new ArrayList<Administration>();
-				list.add(contact);
-				sortedContacts.put(key, list); 
-			} else {
-				List<Administration> list = sortedContacts.get(key);
-				list.add(contact);
-			}
-		}
-		
-		for (List<Administration> contactList : sortedContacts.values()) {
+		// sort list after inDate
+		Collections.sort(contacts, new AdministrationInDateComparator());
 
-			if(contactList.size() == 1) {
-				// only 1 contact for the same hospital and department - so no overlapping
-				processedContacts.addAll(contactList);
-				continue;
-			}
-			
-			// sort list after inDate
-			Collections.sort(contactList, new InDateComparator());
-			
+		if(contacts.size() == 1) {
+			// only 1 contact for the same hospital and department - so no overlapping
+			processedContacts.addAll(contacts);
+		} else {
 			Administration previousContact = null;
-			for (Administration contact : contactList) {
+			for (Administration contact : contacts) {
 				if(previousContact == null) {
 					previousContact = contact;
 					continue;
@@ -113,17 +92,29 @@ public class OverlappingContactsRule implements LPRRule {
 					// contact is overlapping
 					List<Administration> splittedContacts = splitContacts(previousContact, contact);
 					processedContacts.addAll(splittedContacts);
-					
-					// TODO if a new contact is created, previous is the one with the newest outdate
 					previousContact = contact;
 				} else {
-					processedContacts.add(previousContact);
+					processedContacts.add(previousContact); // add previous to ensure it is added, this could be added twice but is filtered at the end og this rule
+					processedContacts.add(contact); // also add current, in case no splitting should occur
 					previousContact = contact;
 				}
+			}
+			
+		} 
+		contacts = processedContacts;
 
+		Map<String, Administration> items = new HashMap<String,Administration>();
+		for (Administration item : contacts) {
+			if (items.values().contains(item)) {
+				// ignore duplicate items
+			} else {
+				// use the indata and outdate as keys to sort out duplicates
+				items.put(""+item.getIndlaeggelsesDatetime()+item.getUdskrivningsDatetime(),item);
 			}
 		}
-		contacts = processedContacts;
+		contacts = new ArrayList<Administration>(items.values());
+		
+		
 		
 		// setup the next rule in the chain
 		connectContactsRule.setContacts(contacts);

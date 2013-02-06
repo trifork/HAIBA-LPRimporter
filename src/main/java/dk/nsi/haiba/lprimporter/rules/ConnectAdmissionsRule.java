@@ -26,13 +26,17 @@
  */
 package dk.nsi.haiba.lprimporter.rules;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
+import dk.nsi.haiba.lprimporter.model.haiba.IndlaeggelsesForloeb;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 
 /*
@@ -52,17 +56,81 @@ import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 	@Override
 	public LPRRule doProcessing() {
 
-		// Rules are complete, update LPR with the import timestamp so they are not imported again
+		if(admissions.size() == 1) {
+			// only 1 connection
+			saveConnectedAdmissions(admissions);
+			return null; // end rules processing
+		} 
+		
+		// Sort admissions by in date
+		Collections.sort(admissions, new IndlaeggelseInDateComparator());
 
-		// TODO - this is a stub
+		// first check if admissions are connected and on the same hospital
+		List<Indlaeggelse> connectedAdmissionsFromTheSameHospital = new ArrayList<Indlaeggelse>(); 
+		Indlaeggelse previousAdmission = null;
 		for (Indlaeggelse admission : admissions) {
+			if(previousAdmission == null) {
+				connectedAdmissionsFromTheSameHospital.add(admission);
+				previousAdmission = admission;
+				continue;
+			}
+			
+			DateTime previousOut = new DateTime(previousAdmission.getUdskrivningsDatetime());
+			DateTime currentIn = new DateTime(admission.getIndlaeggelsesDatetime());
+			
+			if(previousAdmission.getSygehusCode().equals(admission.getSygehusCode()) && previousOut.isEqual(currentIn)) {
+				// add admission to the connected list
+				connectedAdmissionsFromTheSameHospital.add(admission);
+			} else {
+				// admission is not from the same hospital, or there is a gap between previousOut and currentIn
+				// so save the connected list and start a new one.
+				saveConnectedAdmissions(connectedAdmissionsFromTheSameHospital);
+				connectedAdmissionsFromTheSameHospital.clear();
+				connectedAdmissionsFromTheSameHospital.add(admission);
+			}
+		}
+		// loop has ended, save the list containing the last admission(s) from the loop
+		saveConnectedAdmissions(connectedAdmissionsFromTheSameHospital);
+		
+		
+		// Then just check if admissions are connected and add a new IndlaeggelsesForloeb
+		List<Indlaeggelse> connectedAdmissions = new ArrayList<Indlaeggelse>(); 
+		previousAdmission = null;
+		for (Indlaeggelse admission : admissions) {
+			if(previousAdmission == null) {
+				connectedAdmissions.add(admission);
+				previousAdmission = admission;
+				continue;
+			}
+			
+			DateTime previousOut = new DateTime(previousAdmission.getUdskrivningsDatetime());
+			DateTime currentIn = new DateTime(admission.getIndlaeggelsesDatetime());
+			
+			if(previousOut.isEqual(currentIn)) {
+				// add admission to the connected list
+				connectedAdmissions.add(admission);
+			} else {
+				// admission is not from the same hospital, or there is a gap between previousOut and currentIn
+				// so save the connected list and start a new one.
+				saveConnectedAdmissions(connectedAdmissions);
+				connectedAdmissions.clear();
+				connectedAdmissions.add(admission);
+			}
+		}
+		// loop has ended, save the list containing the last admission(s) from the loop
+		saveConnectedAdmissions(connectedAdmissions);
+		
+		return null;
+	}
+
+	private void saveConnectedAdmissions(List<Indlaeggelse> admissions) {
+		for (Indlaeggelse admission : admissions) {
+			// Rules are complete, update LPR with the import timestamp so they are not imported again
 			for (LPRReference lprRef : admission.getLprReferencer()) {
 				lprDao.updateImportTime(lprRef.getLprRecordNumber());
 			}
 		}
 		haibaDao.saveIndlaeggelsesForloeb(admissions);
-		
-		return null;
 	}
 
 	/*

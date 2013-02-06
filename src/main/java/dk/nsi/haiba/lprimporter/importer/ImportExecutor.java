@@ -68,18 +68,26 @@ public class ImportExecutor {
 	 */
 	public void doProcess() {
 		// Fetch new records from LPR contact table
-		// TODO select this in batches
 		try {
-			List<String> unprocessedCPRnumbers = lprdao.getUnprocessedCPRnumbers();
-			if(unprocessedCPRnumbers.size() != 0) {
+			int unprocessedCPRnumbersCount = lprdao.checkForUnprocessedCPRnumbers();
+			if(unprocessedCPRnumbersCount > 0) {
 				statusRepo.importStartedAt(new DateTime());
-				for (String cpr : unprocessedCPRnumbers) {
-					List<Administration> contactsByCPR = lprdao.getContactsByCPR(cpr);
-					// Process the LPR data according to the defined business rules
-					rulesEngine.processRuleChain(contactsByCPR);
+
+				// TODO select this in batches
+				List<String> unprocessedCPRnumbers = lprdao.getUnprocessedCPRnumbers();
+				while(unprocessedCPRnumbers.size() > 0) {
+					log.debug("processing "+unprocessedCPRnumbers.size()+ " cprnumbers");
+					for (String cpr : unprocessedCPRnumbers) {
+						List<Administration> contactsByCPR = lprdao.getContactsByCPR(cpr);
+						// Process the LPR data according to the defined business rules
+						rulesEngine.processRuleChain(contactsByCPR);
+					}
+					// fetch the next batch
+					unprocessedCPRnumbers = lprdao.getUnprocessedCPRnumbers();
 				}
 				statusRepo.importEndedWithSuccess(new DateTime());
 			}
+			
 		} catch(Exception e) {
 			statusRepo.importEndedWithFailure(new DateTime());
 			log.error("", e);

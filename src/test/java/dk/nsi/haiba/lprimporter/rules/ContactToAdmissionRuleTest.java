@@ -37,9 +37,7 @@ import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
@@ -47,8 +45,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
-import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
-import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
@@ -61,33 +57,27 @@ public class ContactToAdmissionRuleTest {
 	@Configuration
     @Import({LPRTestConfiguration.class})
 	static class TestConfiguration {
-		@Bean
-		public HAIBADAO haibaDao() {
-			return Mockito.mock(HAIBADAO.class);
-		}
-		@Bean
-		public LPRDAO lprDao() {
-			return Mockito.mock(LPRDAO.class);
-		}
 	}
 	
 	@Autowired
-	HAIBADAO haibaDao;
-
-	@Autowired
 	ContactToAdmissionRule contactToAdmissionRule;
 
-	String cpr = "1111111111";
-	long recordNummer = 1234;
-	String sygehusCode = "csgh";
-	String afdelingsCode = "afd";
-	DateTime in = new DateTime(2010, 5, 3, 0, 0, 0);
-	DateTime out = new DateTime(2010, 6, 4, 12, 0, 0);
+	String cpr;
+	long recordNummer;
+	long recordNummer2;
+	String sygehusCode;
+	String afdelingsCode;
+	String sygehusCode2;
+	String afdelingsCode2;
+	DateTime in;
+	DateTime out;
+	DateTime in2;
+	DateTime out2;
 
-	String oprCode1 = "J03.9";
-	String oprType1 = "A";
-	String extraOprCode1 = "tilA";
-	DateTime op1 = new DateTime(2010, 5, 3, 8, 0, 0);
+	String oprCode1;
+	String oprType1;
+	String extraOprCode1;
+	DateTime op1;
 
 	@Before
 	public void init() {
@@ -105,10 +95,16 @@ public class ContactToAdmissionRuleTest {
     	oprType1 = "A";
     	extraOprCode1 = "tilA";
     	op1 = new DateTime(2010, 5, 3, 8, 0, 0);
+
+    	recordNummer2 = 1235;
+    	sygehusCode2 = "csgh";
+    	afdelingsCode2 = "afd";
+    	in2 = new DateTime(2010, 6, 4, 12, 0, 0);
+    	out2 = new DateTime(2010, 6, 10, 12, 0, 0);
 	}
 
 	@Test
-	public void ruleConvertsLPRDataToHAIBAData() {
+	public void ruleConvertsLPRDataToHAIBADataSameHospitalAndDepartment() {
 		
 		List<Administration> contacts = setupContacts();
 		contactToAdmissionRule.setContacts(contacts);
@@ -121,7 +117,27 @@ public class ContactToAdmissionRuleTest {
 		List<Indlaeggelse> admissions = connectAdmissionsRule.getAdmissions();
 		assertNotNull(admissions);
 		assertEquals("Expected 1 admission", 1, admissions.size());
+		assertEquals("Expected 2 contact references", 2, admissions.get(0).getLprReferencer().size());
+	}
+
+	@Test
+	public void ruleConvertsLPRDataToHAIBADataSameHospitalDifferentDepartment() {
 		
+    	afdelingsCode2 = "af2";
+		List<Administration> contacts = setupContacts();
+		contactToAdmissionRule.setContacts(contacts);
+		
+		LPRRule nextRule = contactToAdmissionRule.doProcessing();
+		 
+		assertTrue(nextRule instanceof ConnectAdmissionsRule);
+		
+		ConnectAdmissionsRule connectAdmissionsRule = (ConnectAdmissionsRule)nextRule;
+		List<Indlaeggelse> admissions = connectAdmissionsRule.getAdmissions();
+		assertNotNull(admissions);
+		assertEquals("Expected 2 admissions", 2, admissions.size());
+		for (Indlaeggelse indlaeggelse : admissions) {
+			assertEquals("Expected 1 contact references", 1, indlaeggelse.getLprReferencer().size());
+		}
 	}
 
 	private List<Administration> setupContacts() {
@@ -148,8 +164,17 @@ public class ContactToAdmissionRuleTest {
 
 		List<LPRDiagnose> diagnoses = new ArrayList<LPRDiagnose>();
 		contact.setLprDiagnoses(diagnoses);
-		
+
+		Administration contact2 = new Administration();
+		contact2.setRecordNumber(recordNummer2);
+		contact2.setSygehusCode(sygehusCode2);
+		contact2.setAfdelingsCode(afdelingsCode2);
+		contact2.setCpr(cpr);
+		contact2.setIndlaeggelsesDatetime(in2.toDate());
+		contact2.setUdskrivningsDatetime(out2.toDate());
+
 		contacts.add(contact);
+		contacts.add(contact2);
 		
 		return contacts;
 	}

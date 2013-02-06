@@ -70,7 +70,7 @@ public class LPRDateTimeRule implements LPRRule {
 					contact.setUdskrivningsDatetime(admissionEnd.toDate());
 				}
 			} else {
-				log.debug("AdmissionEnd datetime is null for LPR ref: "+contact.getRecordNumber()+" patient is probably not discharged from hospital yet");
+				log.debug("Admission End datetime is null for LPR ref: "+contact.getRecordNumber()+" patient is probably not discharged from hospital yet");
 			}
 			
 			for (LPRProcedure procedure : contact.getLprProcedures()) {

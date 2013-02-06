@@ -57,11 +57,8 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 	@Override
 	public LPRRule doProcessing() {
 
-		// TODO - this rule can have a sideeffect if identical procedures or
-		// diagnoses exists on the identical contacts
+		// if identical procedures and diagnoses exists on the identical contacts, they are cleaned up in a later rule
 
-		log.debug("Size before removing duplicates: " + contacts.size());
-		
 		Map<Long, Administration> items = new HashMap<Long,Administration>();
 		for (Administration item : contacts) {
 			if (items.values().contains(item)) {
@@ -75,7 +72,6 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 			}
 		}
 		contacts = new ArrayList<Administration>(items.values());
-		log.debug("Size after removing duplicates: " + contacts.size());
 
 		// setup the next rule in the chain
 		overlappingContactsRule.setContacts(contacts);

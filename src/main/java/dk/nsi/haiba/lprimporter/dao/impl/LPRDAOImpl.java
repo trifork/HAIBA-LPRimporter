@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import dk.nsi.haiba.lprimporter.dao.CommonDAO;
@@ -46,15 +47,30 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 	JdbcTemplate jdbcTemplate;
 
 	@Override
+	public int checkForUnprocessedCPRnumbers() throws DAOException {
+		String sql = "SELECT count(distinct v_cpr) FROM T_ADM WHERE D_IMPORTDTO IS NULL";
+		
+	    try {
+	    	int unprocessedCPRNumbersCount = jdbcTemplate.queryForInt(sql);
+		    return unprocessedCPRNumbersCount;
+        } catch(EmptyResultDataAccessException e) {
+        	// no unprocessed cprnumbers were found
+        	return 0;
+        } catch (RuntimeException e) {
+            throw new DAOException("Error fetching contacts from LPR", e);
+        }
+	}
+	
+	@Override
 	public List<String> getUnprocessedCPRnumbers() throws DAOException {
 		// TODO - select in batches
 		
 		String sql = null;
 		if(MYSQL.equals(getDialect())) {
-			sql = "SELECT v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL GROUP BY v_cpr LIMIT 100";
+			sql = "SELECT v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL GROUP BY v_cpr LIMIT 20";
 		} else {
 			// MSSQL
-			sql = "SELECT TOP 100 v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL GROUP BY v_cpr";
+			sql = "SELECT TOP 20 v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL GROUP BY v_cpr";
 		}
 		
 		List<String> unprocessedCPRNumbers = new ArrayList<String>();

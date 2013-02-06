@@ -30,9 +30,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
@@ -47,6 +49,7 @@ import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
  * See the solution document for details about this rule.
  */public class ContactToAdmissionRule implements LPRRule {
 	
+	private static Log log = new Log(Logger.getLogger(ContactToAdmissionRule.class));
 	private List<Administration> contacts;
 	
 	@Autowired
@@ -59,7 +62,7 @@ import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 		List<Indlaeggelse> indlaeggelser = new ArrayList<Indlaeggelse>();
 
 		// sort contacts after in date
-		Collections.sort(contacts, new InDateComparator());
+		Collections.sort(contacts, new AdministrationInDateComparator());
 		
 		
 		if(contacts.size() == 1) {
@@ -100,6 +103,7 @@ import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 	}
 
 	private Indlaeggelse convertContact(Administration contact) {
+		log.debug("Convert contact with CPR: "+contact.getCpr());
 		Indlaeggelse indlaeggelse = new Indlaeggelse();
 		indlaeggelse.setAfdelingsCode(contact.getAfdelingsCode());
 		indlaeggelse.setCpr(contact.getCpr());
@@ -108,8 +112,12 @@ import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 		indlaeggelse.setUdskrivningsDatetime(contact.getUdskrivningsDatetime());
 		
 		// save current contact reference
+		log.debug("Contact recordnumber: "+contact.getRecordNumber());
 		indlaeggelse.addLPRReference(new LPRReference(contact.getRecordNumber()));
 		// and merge all former contact references to the admission
+		for (LPRReference ref : contact.getLprReferencer()) {
+			log.debug("Contact former recordnumbers: " + ref.getLprRecordNumber());
+		}
 		indlaeggelse.getLprReferencer().addAll(contact.getLprReferencer());
 		
 		for (LPRDiagnose lprDiagnose : contact.getLprDiagnoses()) {

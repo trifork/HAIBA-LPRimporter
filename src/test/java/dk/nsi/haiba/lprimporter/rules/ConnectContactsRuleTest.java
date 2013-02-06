@@ -117,7 +117,7 @@ public class ConnectContactsRuleTest {
 		List<Administration> processedContacts = connectContactsRule.getContacts();
 		assertTrue("Still expecting 3 contacts", processedContacts.size() == 3);
 
-		Collections.sort(processedContacts, new InDateComparator());
+		Collections.sort(processedContacts, new AdministrationInDateComparator());
 		
 		Administration first = processedContacts.get(0);
 		Administration next = processedContacts.get(1);
@@ -157,7 +157,7 @@ public class ConnectContactsRuleTest {
 		List<Administration> processedContacts = connectContactsRule.getContacts();
 		assertTrue("Still expecting 3 contacts", processedContacts.size() == 3);
 
-		Collections.sort(processedContacts, new InDateComparator());
+		Collections.sort(processedContacts, new AdministrationInDateComparator());
 		
 		// none of the contacts should have been touched
 		assertTrue(contacts.get(0).equals(processedContacts.get(0)));
@@ -185,7 +185,7 @@ public class ConnectContactsRuleTest {
 		List<Administration> processedContacts = connectContactsRule.getContacts();
 		assertTrue("Still expecting 3 contacts", processedContacts.size() == 3);
 
-		Collections.sort(processedContacts, new InDateComparator());
+		Collections.sort(processedContacts, new AdministrationInDateComparator());
 		
 		Administration first = processedContacts.get(0);
 		Administration next = processedContacts.get(1);
