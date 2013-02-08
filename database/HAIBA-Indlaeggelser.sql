@@ -41,10 +41,10 @@ CREATE TABLE IF NOT EXISTS Indlaeggelsesforloeb (
 
 ) ENGINE=InnoDB COLLATE=utf8_bin;
 
-CREATE TABLE IF NOT EXISTS LPR_Reference (
+CREATE TABLE LPR_Reference (
+    ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     IndlaeggelsesID BIGINT(15) NOT NULL,
     LPR_recordnummer BIGINT(15) NOT NULL,
-    PRIMARY KEY (`IndlaeggelsesID`,`LPR_recordnummer`),
     FOREIGN KEY (IndlaeggelsesID) REFERENCES Indlaeggelser(IndlaeggelsesID)
 ) ENGINE=InnoDB COLLATE=utf8_bin;
 
