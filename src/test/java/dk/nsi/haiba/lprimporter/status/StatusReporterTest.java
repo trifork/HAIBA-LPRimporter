@@ -96,7 +96,7 @@ public class StatusReporterTest {
 
     @Test
     public void willReturn500whenHAIBADBisDown() throws Exception {
-    	Mockito.when(haibaJdbcTemplate.queryForObject("Select max(indlaeggelsesid) from Indlaeggelser", Long.class)).thenThrow(Exception.class);
+    	Mockito.when(haibaJdbcTemplate.queryForObject("SELECT indlaeggelsesid from Indlaeggelser LIMIT 1", Long.class)).thenThrow(Exception.class);
     	
         final ResponseEntity<String> response = reporter.reportStatus();
 
@@ -106,7 +106,7 @@ public class StatusReporterTest {
 
     @Test
     public void willReturn500whenLPRDBisDown() throws Exception {
-    	Mockito.when(jdbcTemplate.queryForObject("Select max(K_RECNUM) from T_ADM", Long.class)).thenThrow(Exception.class);
+    	Mockito.when(jdbcTemplate.queryForObject("SELECT k_recnum from T_ADM  LIMIT 1", Long.class)).thenThrow(Exception.class);
     	
         final ResponseEntity<String> response = reporter.reportStatus();
 

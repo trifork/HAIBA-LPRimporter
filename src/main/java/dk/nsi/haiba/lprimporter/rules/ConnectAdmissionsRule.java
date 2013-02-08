@@ -35,9 +35,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
+import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.IndlaeggelsesForloeb;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
+import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
 
 /*
  * This is the 8. rule to be applied to LPR data
@@ -130,7 +132,30 @@ import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 				lprDao.updateImportTime(lprRef.getLprRecordNumber());
 			}
 		}
+		removeDuplicateProceduresDiagnoses(admissions);
 		haibaDao.saveIndlaeggelsesForloeb(admissions);
+	}
+
+	private void removeDuplicateProceduresDiagnoses(List<Indlaeggelse> admissions) {
+		for (Indlaeggelse admission : admissions) {
+			// remove duplicate diagnoses
+			List<Diagnose> d = new ArrayList<Diagnose>();
+			for (Diagnose diagosis : admission.getDiagnoses()) {
+				if(!d.contains(diagosis)) {
+					d.add(diagosis);
+				}
+			}
+			admission.setDiagnoses(d);
+			
+			// remove duplicate procedures
+			List<Procedure> p = new ArrayList<Procedure>();
+			for (Procedure procedure : admission.getProcedures()) {
+				if(!p.contains(procedure)) {
+					p.add(procedure);
+				}
+			}
+			admission.setProcedures(p);
+		}
 	}
 
 	/*

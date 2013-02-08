@@ -33,6 +33,7 @@ public class ImportStatus {
 	private DateTime startTime;
 	private DateTime endTime;
 	private Outcome outcome;
+	private String errorMessage;
 
 	public DateTime getStartTime() {
 		return startTime;
@@ -57,6 +58,14 @@ public class ImportStatus {
 	public void setOutcome(Outcome outcome) {
 		this.outcome = outcome;
 	}
+	
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
+	}
 
 	public static enum Outcome {
 		SUCCESS,
@@ -77,6 +86,9 @@ public class ImportStatus {
 
 		if (outcome != null) {
 			body += ". Outcome was " + outcome;
+			if(outcome.equals(Outcome.FAILURE)) {
+				body += ", error was " +errorMessage;
+			}
 		}
 
 		return body;
@@ -92,6 +104,7 @@ public class ImportStatus {
 		if (endTime != null ? !endTime.equals(that.endTime) : that.endTime != null) return false;
 		if (outcome != that.outcome) return false;
 		if (startTime != null ? !startTime.equals(that.startTime) : that.startTime != null) return false;
+		if (errorMessage != null ? !errorMessage.equals(that.errorMessage) : that.errorMessage != null) return false;
 
 		return true;
 	}
@@ -101,6 +114,8 @@ public class ImportStatus {
 		int result = startTime != null ? startTime.hashCode() : 0;
 		result = 31 * result + (endTime != null ? endTime.hashCode() : 0);
 		result = 31 * result + (outcome != null ? outcome.hashCode() : 0);
+		result = 31 * result + (errorMessage != null ? errorMessage.hashCode() : 0);
 		return result;
 	}
+
 }

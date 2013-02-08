@@ -68,17 +68,17 @@ public class ImportStatusRepositoryJdbcImpl extends CommonDAO implements ImportS
 //	@Transactional(value="haibaTransactionManager", propagation = Propagation.MANDATORY)
 	@Transactional(value="haibaTransactionManager")
 	public void importEndedWithSuccess(DateTime endTime) {
-		importEndedAt(endTime, ImportStatus.Outcome.SUCCESS);
+		importEndedAt(endTime, ImportStatus.Outcome.SUCCESS, null);
 	}
 
 	@Override
 //	@Transactional(value="haibaTransactionManager", propagation = Propagation.REQUIRES_NEW)
 	@Transactional(value="haibaTransactionManager")
-	public void importEndedWithFailure(DateTime endTime) {
-		importEndedAt(endTime, ImportStatus.Outcome.FAILURE);
+	public void importEndedWithFailure(DateTime endTime, String errorMessage) {
+		importEndedAt(endTime, ImportStatus.Outcome.FAILURE, errorMessage);
 	}
 
-	private void importEndedAt(DateTime endTime, ImportStatus.Outcome outcome) {
+	private void importEndedAt(DateTime endTime, ImportStatus.Outcome outcome, String errorMessage) {
 		String sql = null;
 		if(MYSQL.equals(getDialect())) {
 			sql = "SELECT Id from ImporterStatus ORDER BY StartTime DESC LIMIT 1";
@@ -95,7 +95,7 @@ public class ImportStatusRepositoryJdbcImpl extends CommonDAO implements ImportS
 			return;
 		}
 
-		haibaJdbcTemplate.update("UPDATE ImporterStatus SET EndTime=?, Outcome=? WHERE Id=?", endTime.toDate(), outcome.toString(), newestOpenId);
+		haibaJdbcTemplate.update("UPDATE ImporterStatus SET EndTime=?, Outcome=?, ErrorMessage=? WHERE Id=?", endTime.toDate(), outcome.toString(), errorMessage, newestOpenId);
 	}
 
 	@Override
@@ -161,8 +161,18 @@ public class ImportStatusRepositoryJdbcImpl extends CommonDAO implements ImportS
 
 	
 	public boolean isHAIBADBAlive() {
+		String sql = null;
+		if(MYSQL.equals(getDialect())) {
+			sql = "SELECT indlaeggelsesid from Indlaeggelser LIMIT 1";
+		} else {
+			// MSSQL
+			sql = "SELECT Top 1 indlaeggelsesid from Indlaeggelser";
+		}
+
 		try {
-			haibaJdbcTemplate.queryForObject("Select max(indlaeggelsesid) from Indlaeggelser", Long.class);
+			haibaJdbcTemplate.queryForObject(sql, Long.class);
+        } catch(EmptyResultDataAccessException e) {
+        	// no data was found, but table exists, so everything is ok
 		} catch (Exception someError) {
 			log.debug("isHAIBADBAlive", someError);
 			return false;
@@ -171,8 +181,18 @@ public class ImportStatusRepositoryJdbcImpl extends CommonDAO implements ImportS
 	}
 	
 	public boolean isLPRDBAlive() {
+		String sql = null;
+		if(MYSQL.equals(getDialect())) {
+			sql = "SELECT k_recnum from T_ADM  LIMIT 1";
+		} else {
+			// MSSQL
+			sql = "SELECT Top 1 k_recnum from T_ADM";
+		}
+
 		try {
-			jdbcTemplate.queryForObject("Select max(K_RECNUM) from T_ADM", Long.class);
+			jdbcTemplate.queryForObject(sql, Long.class);
+        } catch(EmptyResultDataAccessException e) {
+        	// no data was found, but table exists, so everything is ok
 		} catch (Exception someError) {
 			log.debug("isLPRDBAlive", someError);
 			return false;

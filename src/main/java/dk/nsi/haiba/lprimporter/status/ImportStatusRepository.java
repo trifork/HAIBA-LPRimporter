@@ -35,7 +35,7 @@ public interface ImportStatusRepository {
 	void importStartedAt(DateTime startTime);
 
 	ImportStatus getLatestStatus();
-
+	
 	boolean isOverdue();
 
 	boolean isHAIBADBAlive();
@@ -44,5 +44,5 @@ public interface ImportStatusRepository {
 	
 	void importEndedWithSuccess(DateTime endTime);
 
-	void importEndedWithFailure(DateTime endTime);
+	void importEndedWithFailure(DateTime endTime, String errorMessage);
 }

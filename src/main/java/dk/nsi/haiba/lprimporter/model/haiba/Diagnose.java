@@ -26,6 +26,7 @@
  */
 package dk.nsi.haiba.lprimporter.model.haiba;
 
+
 /*
  * Model object for a Diagnosis from the HAIBA datamodel
  */
@@ -64,7 +65,26 @@ public class Diagnose {
 		this.tillaegsDiagnose = tillaegsDiagnose;
 	}
 	
-	
-	
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		Diagnose that = (Diagnose) o;
+
+		if (diagnoseCode != null ? !diagnoseCode.equals(that.diagnoseCode) : that.diagnoseCode != null) return false;
+		if (diagnoseType != null ? !diagnoseType.equals(that.diagnoseType) : that.diagnoseType != null) return false;
+		if (tillaegsDiagnose != null ? !tillaegsDiagnose.equals(that.tillaegsDiagnose) : that.tillaegsDiagnose != null) return false;
+
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = diagnoseCode != null ? diagnoseCode.hashCode() : 0;
+		result = 31 * result + (diagnoseType != null ? diagnoseType.hashCode() : 0);
+		result = 31 * result + (tillaegsDiagnose != null ? tillaegsDiagnose.hashCode() : 0);
+		return result;
+	}
 
 }

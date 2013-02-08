@@ -94,4 +94,34 @@ public class Procedure {
 		this.procedureDatetime = procedureDatetime;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		Procedure that = (Procedure) o;
+
+		if (procedureCode != null ? !procedureCode.equals(that.procedureCode) : that.procedureCode != null) return false;
+		if (procedureType != null ? !procedureType.equals(that.procedureType) : that.procedureType != null) return false;
+		if (tillaegsProcedureCode != null ? !tillaegsProcedureCode.equals(that.tillaegsProcedureCode) : that.tillaegsProcedureCode != null) return false;
+		if (sygehusCode != null ? !sygehusCode.equals(that.sygehusCode) : that.sygehusCode != null) return false;
+		if (afdelingsCode != null ? !afdelingsCode.equals(that.afdelingsCode) : that.afdelingsCode != null) return false;
+		if (procedureDatetime != null ? !procedureDatetime.equals(that.procedureDatetime) : that.procedureDatetime != null) return false;
+
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = procedureCode != null ? procedureCode.hashCode() : 0;
+		result = 31 * result + (procedureType != null ? procedureType.hashCode() : 0);
+		result = 31 * result + (tillaegsProcedureCode != null ? tillaegsProcedureCode.hashCode() : 0);
+		result = 12 * result + (sygehusCode != null ? sygehusCode.hashCode() : 0);
+		result = 14 * result + (afdelingsCode != null ? afdelingsCode.hashCode() : 0);
+		result = 3 * result + (procedureDatetime != null ? procedureDatetime.hashCode() : 0);
+		return result;
+	}
+	
+	
+	
 }

@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
+import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 
 /*
@@ -59,16 +60,20 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 
 		// if identical procedures and diagnoses exists on the identical contacts, they are cleaned up in a later rule
 
-		Map<Long, Administration> items = new HashMap<Long,Administration>();
+		
+		Map<Administration, Administration> items = new HashMap<Administration,Administration>();
 		for (Administration item : contacts) {
 			if (items.values().contains(item)) {
 				log.debug("Found duplicate: "+item);
 				//preserve linked diagnoses and procedures before its removed.
-				Administration preserve = items.get(new Long(item.getRecordNumber()));
+				Administration preserve = items.get(item);
 				preserve.getLprDiagnoses().addAll(item.getLprDiagnoses());
 				preserve.getLprProcedures().addAll(item.getLprProcedures());
+				// save references to the removed contact
+				preserve.getLprReferencer().add(new LPRReference(item.getRecordNumber()));
+				preserve.getLprReferencer().addAll(item.getLprReferencer());
 			} else {
-				items.put(new Long(item.getRecordNumber()),item);
+				items.put(item,item);
 			}
 		}
 		contacts = new ArrayList<Administration>(items.values());

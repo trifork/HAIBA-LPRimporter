@@ -44,6 +44,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
+import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 
@@ -61,11 +62,14 @@ public class RemoveIdenticalContactsRuleTest {
 
 	String cpr;
 	long recordNummer;
+	long recordNummer2;
 	long recordNummer3;
 	String sygehusCode;
 	String afdelingsCode;
 	DateTime in;
 	DateTime out;
+	String sygehusCode3;
+	String afdelingsCode3;
 
 	String oprCode1;
 	String oprType1;
@@ -78,9 +82,12 @@ public class RemoveIdenticalContactsRuleTest {
     	// Init Administration data
 		cpr = "1111111111";
     	recordNummer = 1234;
+    	recordNummer2 = 4321;
     	recordNummer3 = 5678;
     	sygehusCode = "csgh";
+    	sygehusCode3 = "hgfd";
     	afdelingsCode = "afd";
+    	afdelingsCode3 = "dfa";
     	in = new DateTime(2010, 5, 3, 0, 0, 0);
     	out = new DateTime(2010, 6, 4, 12, 0, 0);
 
@@ -96,7 +103,7 @@ public class RemoveIdenticalContactsRuleTest {
 	 * 2 contacts with same fields are in the list, one of the should be removed
 	 */
 	@Test 
-	public void removeIdenticalContactFromList() {
+	public void removeIdenticalContactFromListWithDifferentRecordNumbers() {
 		assertNotNull(removeIdenticalContactsRule);
 		
 		List<Administration> contacts = setupContacts();
@@ -105,6 +112,13 @@ public class RemoveIdenticalContactsRuleTest {
 		removeIdenticalContactsRule.doProcessing();
 		
 		assertTrue("Expecting 1 contact removed from the list", removeIdenticalContactsRule.getContacts().size() == 2);
+		
+		// check if there still is a reference to the removed contacts
+		for (Administration contact : contacts) {
+			if(contact.getRecordNumber() == recordNummer) {
+				assertTrue("Expect recordnumber2 to be in list of references", contact.getLprReferencer().contains(new LPRReference(recordNummer2)));
+			}
+		}
 	}
 	
 	/*
@@ -171,7 +185,7 @@ public class RemoveIdenticalContactsRuleTest {
 		contacts.add(contact);
 		
 		Administration contact2 = new Administration();
-		contact2.setRecordNumber(recordNummer);
+		contact2.setRecordNumber(recordNummer2);
 		contact2.setSygehusCode(sygehusCode);
 		contact2.setAfdelingsCode(afdelingsCode);
 		contact2.setCpr(cpr);
@@ -182,7 +196,7 @@ public class RemoveIdenticalContactsRuleTest {
 		LPRProcedure procedure21 = new LPRProcedure();
 		procedure21.setAfdelingsCode(afdelingsCode);
 		procedure21.setSygehusCode(sygehusCode);
-		procedure21.setRecordNumber(recordNummer);
+		procedure21.setRecordNumber(recordNummer2);
 		procedure21.setProcedureCode(oprCode1);
 		procedure21.setProcedureType(oprType1);
 		if(op1 != null) {
@@ -194,8 +208,8 @@ public class RemoveIdenticalContactsRuleTest {
 		
 		Administration contact3 = new Administration();
 		contact3.setRecordNumber(recordNummer3);
-		contact3.setSygehusCode(sygehusCode);
-		contact3.setAfdelingsCode(afdelingsCode);
+		contact3.setSygehusCode(sygehusCode3);
+		contact3.setAfdelingsCode(afdelingsCode3);
 		contact3.setCpr(cpr);
 		contact3.setIndlaeggelsesDatetime(in.toDate());
 		contact3.setUdskrivningsDatetime(out.toDate());

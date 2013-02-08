@@ -129,7 +129,8 @@ public class Administration {
 	}
 	
 	/*
-	 * Override to see if content of to administration objects - with the exception of diagnoseslist and procedurelist are equal
+	 * Override to see if content of two administration objects,
+	 * with the exception of the recordnumber, diagnoses and procedure, are equal
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	public boolean equals(Object obj) {
@@ -141,9 +142,6 @@ public class Administration {
         }
         Administration other = (Administration) obj;
         
-        if(this.recordNumber != other.recordNumber) {
-        	return false;
-        }
         if(this.cpr != null && !this.cpr.equals(other.cpr)) {
         	return false;
         } else if(this.cpr == null && other.cpr != null) {
@@ -173,9 +171,13 @@ public class Administration {
         return true;
     }	
 
+
+	/*
+	 * Hashcode generated from the same members that are used in the equals method
+	 * @see java.lang.Object#hashCode()
+	 */
 	public int hashCode() {
-        return (recordNumber+
-        		sygehusCode+
+        return (sygehusCode+
         		afdelingsCode+
         		cpr+
         		indlaeggelsesDatetime+

@@ -89,7 +89,7 @@ public class ImportExecutor {
 			}
 			
 		} catch(Exception e) {
-			statusRepo.importEndedWithFailure(new DateTime());
+			statusRepo.importEndedWithFailure(new DateTime(), e.getMessage());
 			log.error("", e);
 		}
 	}

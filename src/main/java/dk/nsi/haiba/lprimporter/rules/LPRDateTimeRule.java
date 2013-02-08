@@ -61,7 +61,7 @@ public class LPRDateTimeRule implements LPRRule {
 		for (Administration contact : contacts) {
 			// AdmissionStartHour for the contact is default set to 0 if not applied in the database
 			
-			// AdmissionEnd must be set to the start of the next day, if it was set to 0
+			// AdmissionEndtime must be set to the start of the next day, if it was set to 0
 			Date udskrivningsDatetime = contact.getUdskrivningsDatetime();
 			if(udskrivningsDatetime != null) {
 				DateTime admissionEnd = new DateTime(udskrivningsDatetime.getTime());
@@ -72,6 +72,16 @@ public class LPRDateTimeRule implements LPRRule {
 			} else {
 				log.debug("Admission End datetime is null for LPR ref: "+contact.getRecordNumber()+" patient is probably not discharged from hospital yet");
 			}
+			
+			// TODO - report if in-datetime is after out-datetime as an error
+			DateTime in = new DateTime(contact.getIndlaeggelsesDatetime());
+			DateTime out = new DateTime(contact.getUdskrivningsDatetime());
+			if(in.isAfter(out)) {
+				// TODO parameterize this
+				out = in.plusHours(1);
+				contact.setUdskrivningsDatetime(out.toDate());
+			}
+			
 			
 			for (LPRProcedure procedure : contact.getLprProcedures()) {
 				// if procedure time is set to 0 - set it to 12 the same day

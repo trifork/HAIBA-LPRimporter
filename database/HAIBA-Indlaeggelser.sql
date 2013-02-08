@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS ImporterStatus (
     StartTime DATETIME NOT NULL,
     EndTime DATETIME,
     Outcome VARCHAR(20),
+    ErrorMessage VARCHAR(200),
 
     INDEX (StartTime)
 ) ENGINE=InnoDB COLLATE=utf8_bin;

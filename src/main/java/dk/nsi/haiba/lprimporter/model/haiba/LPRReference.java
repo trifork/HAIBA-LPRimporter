@@ -50,4 +50,21 @@ public class LPRReference {
 		this.lprRecordNumber = lprRecordNumber;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		LPRReference that = (LPRReference) o;
+
+		if(lprRecordNumber != that.lprRecordNumber) return false;
+		
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = 31 * (int)(lprRecordNumber^(lprRecordNumber>>>32));
+		return result;
+	}
 }

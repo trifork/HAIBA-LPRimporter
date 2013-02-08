@@ -101,7 +101,7 @@ public class ImportStatusRepositoryJdbcImplIT {
 	public void callingEndedAtWithAnEmptyDatabaseDoesNothing() {
 		// this can happen in the ParserExecutor, if some exception occurs
 		// before we reach the call to importStartedAt
-		statusRepo.importEndedWithFailure(new DateTime());
+		statusRepo.importEndedWithFailure(new DateTime(), "ErrorMessage");
 		assertNull(statusRepo.getLatestStatus());
 	}
 
@@ -157,7 +157,7 @@ public class ImportStatusRepositoryJdbcImplIT {
 		statusRepo.importStartedAt(startTimeNewest);
 
 		Thread.sleep(1000);
-		statusRepo.importEndedWithFailure(new DateTime().withMillisOfSecond(0));
+		statusRepo.importEndedWithFailure(new DateTime().withMillisOfSecond(0), "ErrorMessage");
 
 		// check that the newest was closed
 		ImportStatus dbStatus = statusRepo.getLatestStatus();
@@ -215,7 +215,7 @@ public class ImportStatusRepositoryJdbcImplIT {
 		if (outcome == ImportStatus.Outcome.SUCCESS) {
 			statusRepo.importEndedWithSuccess(endTime);
 		} else {
-			statusRepo.importEndedWithFailure(endTime);
+			statusRepo.importEndedWithFailure(endTime, "ErrorMessage");
 		}
 
 		ImportStatus expectedStatus = new ImportStatus();
