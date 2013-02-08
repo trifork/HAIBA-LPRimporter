@@ -138,14 +138,14 @@ public class AdministrationTest {
 	}
 
 	@Test
-	public void testAdministrationsAreNotEqualWithDifferentRecordnumber() {
+	public void testAdministrationsAreEqualWithDifferentRecordnumber() {
 		
 		Administration adm1 = getAdm1();
 		Administration adm2 = getAdm2();
 
 		adm1.setRecordNumber(999);
 		
-		assertFalse(adm1.equals(adm2));
+		assertTrue(adm1.equals(adm2));
 	}
 	
 	@Test
