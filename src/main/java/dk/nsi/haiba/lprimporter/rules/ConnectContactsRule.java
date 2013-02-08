@@ -101,7 +101,7 @@ public class ConnectContactsRule implements LPRRule {
 				previousContact = contact;
 			}
 		} else {
-			log.debug("Only one contact in list");
+			log.trace("Only one contact in list");
 		}
 		
 		// setup the next rule in the chain

@@ -144,8 +144,8 @@ public class LPRDAOIT {
 
         long recordNumber = 1234;
     	String cpr = "1111111111";
-    	String diagnosisCode1 = "J03.9";
-    	String diagnosisCode2 = "F00.9";
+    	String diagnosisCode1 = "D03.9";
+    	String diagnosisCode2 = "D00.9";
     	String diagnosisType1 = "A";
     	String diagnosisType2 = "B";
     	String extraDiagnosisCode1 = "tilA";
@@ -189,8 +189,8 @@ public class LPRDAOIT {
 
         long recordNumber = 1234;
     	String cpr = "1111111111";
-    	String oprCode1 = "J03.9";
-    	String oprCode2 = "F00.9";
+    	String oprCode1 = "B03.9";
+    	String oprCode2 = "K00.9";
     	String oprType1 = "A";
     	String oprType2 = "B";
     	String extraOprCode1 = "tilA";

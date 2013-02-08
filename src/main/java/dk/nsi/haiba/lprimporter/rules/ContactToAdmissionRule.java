@@ -103,7 +103,7 @@ import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 	}
 
 	private Indlaeggelse convertContact(Administration contact) {
-		log.debug("Convert contact with CPR: "+contact.getCpr());
+		log.trace("Convert contact with CPR: "+contact.getCpr());
 		Indlaeggelse indlaeggelse = new Indlaeggelse();
 		indlaeggelse.setAfdelingsCode(contact.getAfdelingsCode());
 		indlaeggelse.setCpr(contact.getCpr());
@@ -112,11 +112,11 @@ import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 		indlaeggelse.setUdskrivningsDatetime(contact.getUdskrivningsDatetime());
 		
 		// save current contact reference
-		log.debug("Contact recordnumber: "+contact.getRecordNumber());
+		log.trace("Contact recordnumber: "+contact.getRecordNumber());
 		indlaeggelse.addLPRReference(new LPRReference(contact.getRecordNumber()));
 		// and merge all former contact references to the admission
 		for (LPRReference ref : contact.getLprReferencer()) {
-			log.debug("Contact former recordnumbers: " + ref.getLprRecordNumber());
+			log.trace("Contact former recordnumbers: " + ref.getLprRecordNumber());
 		}
 		indlaeggelse.getLprReferencer().addAll(contact.getLprReferencer());
 		
