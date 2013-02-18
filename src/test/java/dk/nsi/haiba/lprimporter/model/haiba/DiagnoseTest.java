@@ -27,6 +27,10 @@
 package dk.nsi.haiba.lprimporter.model.haiba;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -46,4 +50,29 @@ public class DiagnoseTest {
 		assertEquals(tillaegsDiagnose, d.getTillaegsDiagnose());
 	}
 
+	
+	@Test
+	public void diagnosesAreEqual() {
+
+		String diagnoseCode = "fdsa";
+		String diagnoseType = "zxcv";
+	    String tillaegsDiagnose = "poiu";
+		
+		Diagnose d = new Diagnose(diagnoseCode, diagnoseType, tillaegsDiagnose);
+		Diagnose d2 = new Diagnose(diagnoseCode, diagnoseType, tillaegsDiagnose);
+
+		assertEquals(d,  d2);
+
+		Diagnose d3 = new Diagnose("d3", diagnoseType, tillaegsDiagnose);
+		assertFalse(d.equals(d3));
+		
+		Diagnose d4 = new Diagnose(diagnoseCode, null, tillaegsDiagnose);
+		assertFalse(d.equals(d4));
+
+		Map<Diagnose, Diagnose> diagnoses = new HashMap<Diagnose, Diagnose>();
+		diagnoses.put(d, d);
+		assertEquals(d,  diagnoses.get(d));
+		
+		
+	}
 }

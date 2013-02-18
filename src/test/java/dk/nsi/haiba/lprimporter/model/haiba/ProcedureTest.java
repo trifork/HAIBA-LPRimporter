@@ -27,10 +27,13 @@
 package dk.nsi.haiba.lprimporter.model.haiba;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -56,5 +59,31 @@ public class ProcedureTest {
 		assertEquals(sygehusCode, p.getSygehusCode());
 		assertEquals(afdelingsCode, p.getAfdelingsCode());
 		assertEquals(d1, p.getProcedureDatetime());
+	}
+	
+	@Test
+	public void proceduresAreEqual() {
+
+		String procedureCode = "pCode";
+		String procedureType = "pType";
+		String tillaegsProcedureCode = "tpCode";
+		String sygehusCode = "sCode";
+		String afdelingsCode = "aCode";
+		Calendar calendar = new GregorianCalendar();
+		Date d1 = calendar.getTime();
+		
+		Procedure p = new Procedure(procedureCode,procedureType, tillaegsProcedureCode, sygehusCode, afdelingsCode, d1);
+		Procedure p2 = new Procedure(procedureCode,procedureType, tillaegsProcedureCode, sygehusCode, afdelingsCode, d1);
+		assertEquals(p,  p2);
+
+		Procedure p3 = new Procedure("p3",procedureType, tillaegsProcedureCode, sygehusCode, afdelingsCode, d1);
+		assertFalse(p.equals(p3));
+		
+		Procedure p4 = new Procedure(procedureCode,null, tillaegsProcedureCode, sygehusCode, afdelingsCode, d1);
+		assertFalse(p.equals(p4));
+
+		Map<Procedure, Procedure> procedures = new HashMap<Procedure, Procedure>();
+		procedures.put(p, p);
+		assertEquals(p,  procedures.get(p));
 	}
 }

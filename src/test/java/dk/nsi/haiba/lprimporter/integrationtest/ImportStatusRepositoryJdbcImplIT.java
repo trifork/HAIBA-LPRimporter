@@ -115,15 +115,16 @@ public class ImportStatusRepositoryJdbcImplIT {
 	@Test
 	public void returnsSuccesStatusFromDb() {
 		insertStatusInDb(ImportStatus.Outcome.SUCCESS);
-		assertEquals(ImportStatus.Outcome.SUCCESS, statusRepo.getLatestStatus()
-				.getOutcome());
+		assertEquals(ImportStatus.Outcome.SUCCESS, statusRepo.getLatestStatus().getOutcome());
+		
+		assertTrue(statusRepo.getLatestStatus().toString().contains("Outcome was SUCCESS"));
 	}
 
 	@Test
 	public void returnsErrorStatusFromDb() {
 		insertStatusInDb(ImportStatus.Outcome.FAILURE);
-		assertEquals(ImportStatus.Outcome.FAILURE, statusRepo.getLatestStatus()
-				.getOutcome());
+		assertEquals(ImportStatus.Outcome.FAILURE, statusRepo.getLatestStatus().getOutcome());
+		assertTrue(statusRepo.getLatestStatus().toString().contains("Outcome was FAILURE"));
 	}
 
 	@Test
@@ -132,7 +133,7 @@ public class ImportStatusRepositoryJdbcImplIT {
 		statusRepo.importStartedAt(startTime);
 		assertNull(statusRepo.getLatestStatus().getOutcome());
 	}
-
+	
 	@Test
 	public void returnsLatestStatusWhenTwoClosedStatusesExistsInDb()
 			throws InterruptedException {

@@ -78,6 +78,10 @@ public class ContactToAdmissionRuleTest {
 	String oprType1;
 	String extraOprCode1;
 	DateTime op1;
+	
+	String diagnosisCode;
+	String diagnosisType;
+	String tillaegsDiagnosis;
 
 	@Before
 	public void init() {
@@ -90,17 +94,23 @@ public class ContactToAdmissionRuleTest {
     	in = new DateTime(2010, 5, 3, 0, 0, 0);
     	out = new DateTime(2010, 6, 4, 12, 0, 0);
 
+    	recordNummer2 = 1235;
+    	sygehusCode2 = "csgh";
+    	afdelingsCode2 = "afd";
+    	in2 = new DateTime(2010, 6, 4, 12, 0, 0);
+    	out2 = new DateTime(2010, 6, 10, 12, 0, 0);
+
     	// Init Procedure data
     	oprCode1 = "J03.9";
     	oprType1 = "A";
     	extraOprCode1 = "tilA";
     	op1 = new DateTime(2010, 5, 3, 8, 0, 0);
 
-    	recordNummer2 = 1235;
-    	sygehusCode2 = "csgh";
-    	afdelingsCode2 = "afd";
-    	in2 = new DateTime(2010, 6, 4, 12, 0, 0);
-    	out2 = new DateTime(2010, 6, 10, 12, 0, 0);
+    	// Init Procedure data
+    	diagnosisCode = "d345";
+    	diagnosisType = "A";
+    	tillaegsDiagnosis = "B";
+
 	}
 
 	@Test
@@ -163,6 +173,12 @@ public class ContactToAdmissionRuleTest {
 		contact.setLprProcedures(procedures);
 
 		List<LPRDiagnose> diagnoses = new ArrayList<LPRDiagnose>();
+		LPRDiagnose diagnosis = new LPRDiagnose();
+		diagnosis.setDiagnoseCode(diagnosisCode);
+		diagnosis.setDiagnoseType(diagnosisType);
+		diagnosis.setRecordNumber(recordNummer);
+		diagnosis.setTillaegsDiagnose(tillaegsDiagnosis);
+		diagnoses.add(diagnosis);
 		contact.setLprDiagnoses(diagnoses);
 
 		Administration contact2 = new Administration();
