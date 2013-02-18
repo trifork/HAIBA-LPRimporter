@@ -54,14 +54,14 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 	public boolean hasUnprocessedCPRnumbers() throws DAOException {
 		String sql = null;
 		if(MYSQL.equals(getDialect())) {
-			sql = "SELECT v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL LIMIT 1";
+			sql = "SELECT K_RECNUM FROM T_ADM WHERE D_IMPORTDTO IS NULL LIMIT 1";
 		} else {
 			// MSSQL
-			sql = "SELECT TOP 1 v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL";
+			sql = "SELECT TOP 1 K_RECNUM FROM T_ADM WHERE D_IMPORTDTO IS NULL";
 		}
 		
 	    try {
-	    	jdbcTemplate.queryForInt(sql);
+	    	jdbcTemplate.queryForLong(sql);
 		    return true;
         } catch(EmptyResultDataAccessException e) {
         	// no unprocessed cprnumbers were found

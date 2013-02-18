@@ -68,7 +68,7 @@ public class ImportExecutor {
 
 	
 	/*
-	 * Seperated into its own method for testing purpose, because testing a scheduled method isn't good
+	 * Separated into its own method for testing purpose, because testing a scheduled method isn't good
 	 */
 	public void doProcess() {
 		// Fetch new records from LPR contact table
