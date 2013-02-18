@@ -51,6 +51,9 @@ public class ImportExecutor {
 	@Value("${lpr.cpr.batchsize}")
 	int batchsize;
 	
+	@Value("${scheduling.manual.override}")
+	boolean manualOverride;
+	
 	@Autowired
 	LPRDAO lprdao;
 
@@ -62,8 +65,12 @@ public class ImportExecutor {
 	
 	@Scheduled(fixedDelay = 10000)
 	public void run() {
-		log.trace("Running Importer: " + new Date().toString());
-		doProcess();
+		if(!manualOverride) {
+			log.trace("Running Importer: " + new Date().toString());
+			doProcess();
+		} else {
+			log.trace("Importer must be started manually");
+		}
 	}
 
 	
