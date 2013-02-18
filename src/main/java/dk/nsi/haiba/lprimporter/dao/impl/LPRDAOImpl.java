@@ -51,31 +51,37 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 	JdbcTemplate jdbcTemplate;
 
 	@Override
-	public int checkForUnprocessedCPRnumbers() throws DAOException {
-		String sql = "SELECT count(distinct v_cpr) FROM T_ADM WHERE D_IMPORTDTO IS NULL";
+	public boolean hasUnprocessedCPRnumbers() throws DAOException {
+		String sql = null;
+		if(MYSQL.equals(getDialect())) {
+			sql = "SELECT v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL LIMIT 1";
+		} else {
+			// MSSQL
+			sql = "SELECT TOP 1 v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL";
+		}
 		
 	    try {
-	    	int unprocessedCPRNumbersCount = jdbcTemplate.queryForInt(sql);
-		    return unprocessedCPRNumbersCount;
+	    	jdbcTemplate.queryForInt(sql);
+		    return true;
         } catch(EmptyResultDataAccessException e) {
         	// no unprocessed cprnumbers were found
-        	return 0;
+        	return false;
         } catch (RuntimeException e) {
             throw new DAOException("Error fetching contacts from LPR", e);
         }
 	}
 	
 	@Override
-	public List<String> getUnprocessedCPRnumbers() throws DAOException {
+	public List<String> getCPRnumberBatch(int batchsize) throws DAOException {
 		// TODO - select in batches
 		
-		log.trace("BEGIN getUnprocessedCPRnumbers");
+		log.trace("BEGIN getCPRnumberBatch");
 		String sql = null;
 		if(MYSQL.equals(getDialect())) {
-			sql = "SELECT v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL GROUP BY v_cpr LIMIT 20";
+			sql = "SELECT v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL GROUP BY v_cpr LIMIT "+batchsize;
 		} else {
 			// MSSQL
-			sql = "SELECT TOP 20 v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL GROUP BY v_cpr";
+			sql = "SELECT TOP "+batchsize+" v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL GROUP BY v_cpr";
 		}
 		
 		List<String> unprocessedCPRNumbers = new ArrayList<String>();
@@ -84,7 +90,7 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
         } catch (RuntimeException e) {
             throw new DAOException("Error fetching contacts from LPR", e);
         }
-		log.trace("END getUnprocessedCPRnumbers");
+		log.trace("END getCPRnumberBatch");
 	    return unprocessedCPRNumbers;
 	}
 

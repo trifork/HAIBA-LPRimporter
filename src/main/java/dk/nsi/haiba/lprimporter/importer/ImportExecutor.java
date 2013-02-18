@@ -32,6 +32,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
@@ -47,6 +48,9 @@ public class ImportExecutor {
 	
 	private static Log log = new Log(Logger.getLogger(ImportExecutor.class));
 
+	@Value("${lpr.cpr.batchsize}")
+	int batchsize;
+	
 	@Autowired
 	LPRDAO lprdao;
 
@@ -69,12 +73,10 @@ public class ImportExecutor {
 	public void doProcess() {
 		// Fetch new records from LPR contact table
 		try {
-			int unprocessedCPRnumbersCount = lprdao.checkForUnprocessedCPRnumbers();
-			if(unprocessedCPRnumbersCount > 0) {
+			if(lprdao.hasUnprocessedCPRnumbers()) {
 				statusRepo.importStartedAt(new DateTime());
 
-				// TODO select this in batches
-				List<String> unprocessedCPRnumbers = lprdao.getUnprocessedCPRnumbers();
+				List<String> unprocessedCPRnumbers = lprdao.getCPRnumberBatch(batchsize);
 				while(unprocessedCPRnumbers.size() > 0) {
 					log.debug("processing "+unprocessedCPRnumbers.size()+ " cprnumbers");
 					for (String cpr : unprocessedCPRnumbers) {
@@ -83,7 +85,7 @@ public class ImportExecutor {
 						rulesEngine.processRuleChain(contactsByCPR);
 					}
 					// fetch the next batch
-					unprocessedCPRnumbers = lprdao.getUnprocessedCPRnumbers();
+					unprocessedCPRnumbers = lprdao.getCPRnumberBatch(batchsize);
 				}
 				statusRepo.importEndedWithSuccess(new DateTime());
 			}

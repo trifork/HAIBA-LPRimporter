@@ -90,11 +90,11 @@ public class ImportExecutorTest {
 	@Test
 	public void executorDoesntFecthAnyContacts() throws Exception {
 		
-		Mockito.when(lprdao.getUnprocessedCPRnumbers()).thenReturn(new ArrayList<String>());
+		Mockito.when(lprdao.getCPRnumberBatch(20)).thenReturn(new ArrayList<String>());
 		
 		executor.doProcess();
 		
-		Mockito.verify(lprdao).checkForUnprocessedCPRnumbers();
+		Mockito.verify(lprdao).hasUnprocessedCPRnumbers();
 		Mockito.verify(lprdao, Mockito.never()).getContactsByCPR(null);
 	}
 
@@ -103,13 +103,13 @@ public class ImportExecutorTest {
 		List<String> cprList = new ArrayList<String>();
 		cprList.add("1234567890");
 		
-		Mockito.when(lprdao.checkForUnprocessedCPRnumbers()).thenReturn(1);
+		Mockito.when(lprdao.hasUnprocessedCPRnumbers()).thenReturn(true);
 		// first return the list, then return an empty list to finish processing
-		Mockito.when(lprdao.getUnprocessedCPRnumbers()).thenReturn(cprList).thenReturn(new ArrayList<String>());
+		Mockito.when(lprdao.getCPRnumberBatch(20)).thenReturn(cprList).thenReturn(new ArrayList<String>());
 		
 		executor.doProcess();
 		
-		Mockito.verify(lprdao, Mockito.atLeastOnce()).getUnprocessedCPRnumbers();
+		Mockito.verify(lprdao, Mockito.atLeastOnce()).getCPRnumberBatch(20);
 		Mockito.verify(lprdao, Mockito.atLeastOnce()).getContactsByCPR(cprList.get(0));
 		Mockito.verify(rulesEngine, Mockito.atLeastOnce()).processRuleChain(Mockito.anyListOf(Administration.class));
 	}
