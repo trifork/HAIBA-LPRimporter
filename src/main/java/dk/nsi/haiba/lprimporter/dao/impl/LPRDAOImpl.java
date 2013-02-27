@@ -73,8 +73,6 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 	
 	@Override
 	public List<String> getCPRnumberBatch(int batchsize) throws DAOException {
-		// TODO - select in batches
-		
 		log.trace("BEGIN getCPRnumberBatch");
 		String sql = null;
 		if(MYSQL.equals(getDialect())) {

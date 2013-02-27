@@ -145,6 +145,18 @@ public class HAIBADAOIT {
 		assertEquals(description, jdbc.queryForObject("select Fejlbeskrivelse from RegelFejlbeskeder", String.class));
 		assertEquals(abortedRuleName, jdbc.queryForObject("select AfbrudtForretningsregel from RegelFejlbeskeder", String.class));
     }
+    
+    @Test 
+    public void fetchSygehusWhenSygehusCodeIs3800() {
+    	
+    	jdbc.update("insert into T_AFDKLASSE (K_SGH, K_AFD, V_AFDNAVN, K_FRADTO, D_TILDTO) values ('3800', '999', 'TST Testafdeling', '2009-01-01', '2045-01-01')");
+    	
+    	String sygehusInitials = haibaDao.getSygehusInitials("3800", "999", new Date());
+    	
+    	assertEquals("TST", sygehusInitials);
+   	
+    	
+    }
 
     @Test(expected=DAOException.class)
     public void insertsBrokenBusinessruleError() {

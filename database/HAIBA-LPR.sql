@@ -2,7 +2,7 @@ CREATE DATABASE IF NOT EXISTS LPR;
 USE LPR;
 
 CREATE TABLE IF NOT EXISTS T_ADM (
-       K_RECNUM BIGINT(15) NOT NULL,
+       K_RECNUM BIGINT(15) NOT NULL PRIMARY KEY,
        C_SGH varchar(4) NULL,
        C_AFD varchar(3) NULL,
        C_PATTYPE varchar(1) NULL,
@@ -11,7 +11,9 @@ CREATE TABLE IF NOT EXISTS T_ADM (
        D_UDDTO datetime NULL,
        V_INDTIME int NULL,
        V_UDTIME int NULL,
-       D_IMPORTDTO datetime NULL
+       D_IMPORTDTO datetime NULL,
+       D_LPR2IMPORTDTO datetime NOT NULL,
+       V_STATUS varchar(10) NULL
 ) ENGINE=InnoDB COLLATE=utf8_bin;
 
 CREATE TABLE IF NOT EXISTS T_DIAG (

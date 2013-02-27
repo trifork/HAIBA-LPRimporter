@@ -36,6 +36,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -174,5 +175,32 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 		} catch(DataAccessException e) {
 			throw new DAOException(e.getMessage(), e);
 		}
+	}
+
+
+	@Override
+	public String getSygehusInitials(String sygehuscode, String afdelingsCode, Date in) throws DAOException {
+		
+		String sql = null;
+		if(MYSQL.equals(getDialect())) {
+			sql = "SELECT V_AFDNAVN FROM T_AFDKLASSE where k_sgh=? and k_afd=? and k_fradto <= ? and d_tildto >= ?";
+		} else {
+			// MSSQL
+			sql = "SELECT V_AFDNAVN FROM fgr.T_AFDKLASSE where k_sgh=? and k_afd=? and k_fradto <= ? and d_tildto >= ?";
+		}
+
+	    try {
+	    	String name = jdbc.queryForObject(sql,new Object[]{sygehuscode, afdelingsCode, in, in}, String.class);
+	    	if(name != null && name.length() > 3) {
+	    		return name.substring(0, 3);
+	    	} else {
+	    		return name;
+	    	}
+        } catch(EmptyResultDataAccessException e) {
+        	// no name found
+        	return null;
+        } catch (RuntimeException e) {
+            throw new DAOException("Error Fetching initials for hospital from FGR", e);
+        }
 	}
 }

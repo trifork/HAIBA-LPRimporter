@@ -26,6 +26,7 @@
  */
 package dk.nsi.haiba.lprimporter.dao;
 
+import java.util.Date;
 import java.util.List;
 
 import dk.nsi.haiba.lprimporter.exception.DAOException;
@@ -51,4 +52,17 @@ public interface HAIBADAO {
 	 *             if something goes wrong in the process
 	 */
 	public void saveBusinessRuleError(BusinessRuleError error) throws DAOException;
+	
+	/**
+	 * Special operation, for taking care of sygehuscodes from Region Sjælland, where they all are set to 3800
+	 * The first 3 letters for the field V_AFDNAVN is returned, because they are the initials for the actual hospital.
+	 * Se solutionspecification for details.
+	 * 
+	 * @param sygehuscode The SKS code for the hospital
+	 * @param afdelingscode The SKS code for the department on the hospital
+	 * @param in The contact in date, because SKS codes can change value with time.
+	 * @return hospitalInitials, the 3 first letters from the field V_AFDNAVN 
+	 * @throws DAOException if something goes wrong in the process
+	 */
+	public String getSygehusInitials(String sygehuscode, String afdelingsCode, Date in) throws DAOException;
 }

@@ -49,12 +49,14 @@ import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.dao.impl.HAIBADAOImpl;
 import dk.nsi.haiba.lprimporter.dao.impl.LPRDAOImpl;
 import dk.nsi.haiba.lprimporter.importer.ImportExecutor;
+import dk.nsi.haiba.lprimporter.log.BusinessRuleErrorLog;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
 import dk.nsi.haiba.lprimporter.rules.ConnectAdmissionsRule;
 import dk.nsi.haiba.lprimporter.rules.ConnectContactsRule;
 import dk.nsi.haiba.lprimporter.rules.ContactToAdmissionRule;
 import dk.nsi.haiba.lprimporter.rules.ExtendContactEndtimeRule;
 import dk.nsi.haiba.lprimporter.rules.LPRDateTimeRule;
+import dk.nsi.haiba.lprimporter.rules.LPRPrepareDataRule;
 import dk.nsi.haiba.lprimporter.rules.LPRRulesEngine;
 import dk.nsi.haiba.lprimporter.rules.OverlappingContactsRule;
 import dk.nsi.haiba.lprimporter.rules.RemoveIdenticalContactsRule;
@@ -162,6 +164,10 @@ public class LPRConfiguration {
 		return new MessageResolver();
 	}
 	
+	@Bean BusinessRuleErrorLog businessRuleErrorLog() {
+		return new BusinessRuleErrorLog();
+	}
+	
 	@Bean
 	public ImportExecutor importExecutor() {
 		return new ImportExecutor();
@@ -216,4 +222,10 @@ public class LPRConfiguration {
 	public ConnectAdmissionsRule connectAdmissionsRule() {
 		return new ConnectAdmissionsRule();
 	}
+	
+	@Bean
+	public LPRPrepareDataRule lprPrepareDataRule() {
+		return new LPRPrepareDataRule();
+	}
+	
 }

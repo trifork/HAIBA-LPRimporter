@@ -28,14 +28,11 @@ package dk.nsi.haiba.lprimporter.rules;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
-import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
-import dk.nsi.haiba.lprimporter.message.MessageResolver;
+import dk.nsi.haiba.lprimporter.log.BusinessRuleErrorLog;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 
 /*
@@ -45,53 +42,37 @@ import dk.nsi.haiba.lprimporter.model.lpr.Administration;
  */
 public class LPRRulesEngine implements RulesEngine {
 
-	private static Logger businessRuleErrorLog = Logger.getLogger("BusinessRulesErrors");
-	
-	@Value("${disable.database.errorlog}")
-	boolean disableDatabaseErrorLog;
-
 	@Autowired
-	LPRDateTimeRule lprDateTimeRule;
+	LPRPrepareDataRule lprPrepareDataRule;
 	
 	@Autowired
-	HAIBADAO haibaDao;
+	BusinessRuleErrorLog businessRuleErrorLog;
 	
 	@Autowired
 	LPRDAO lprDao;
 	
-	@Autowired
-	MessageResolver resolver;
-
 	@Override
 	public void processRuleChain(List<Administration> contacts) {
 		
-		// The first rule in the squence is the LprDateTimeRule, 
+		// The first rule in the sequence is the LPRPrepareDataRule, 
 		// This rule returns the next rule, which carries on until either an error occurs or the end of the flow is reached
-		lprDateTimeRule.setContacts(contacts);
+		lprPrepareDataRule.setContacts(contacts);
 		
 		try {
-			LPRRule next = lprDateTimeRule.doProcessing();
+			LPRRule next = lprPrepareDataRule.doProcessing();
 			while(next != null) {
 				// Execute the next rule until the end of the flow
 				next = next.doProcessing();
 			}
 		} catch(RuleAbortedException e) {
 			// An error occured, log the exceptions attached dataobject into the business rule log (both file and database).
-			BusinessRuleError be = e.getBusinessRuleError();
-			
-			if(!disableDatabaseErrorLog) {
-				// Save Businessrule error in database
-				haibaDao.saveBusinessRuleError(be);
-			}
-			
-			businessRuleErrorLog.info(resolver.getMessage("errorlog.rule.message", new Object[] {""+be.getLprReference(), be.getAbortedRuleName(), be.getDescription()}));
+			businessRuleErrorLog.log(e.getBusinessRuleError());
 			
 			// TODO find out how to detect errors next time importer runs, for nor just write a dummy date to import timestamp
 			for (Administration contact : contacts) {
 				lprDao.updateImportTime(contact.getRecordNumber());
 			}
 		}
-		
 	}
 	
 }

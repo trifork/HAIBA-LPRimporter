@@ -4,10 +4,11 @@ USE HAIBA;
 CREATE TABLE IF NOT EXISTS Indlaeggelser (
     IndlaeggelsesID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     CPR VARCHAR(10),
-    Sygehuskode VARCHAR(4),
+    Sygehuskode VARCHAR(7),
     Afdelingskode VARCHAR(3),
     Indlaeggelsesdatotid datetime,
-    Udskrivningsdatotid datetime
+    Udskrivningsdatotid datetime,
+    Aktuel varchar(1)
 ) ENGINE=InnoDB COLLATE=utf8_bin;
 
 CREATE TABLE IF NOT EXISTS Diagnoser (
@@ -25,7 +26,7 @@ CREATE TABLE IF NOT EXISTS Procedurer (
     Procedurekode VARCHAR(10),
     Proceduretype VARCHAR(1),
     Tillaegsprocedurekode VARCHAR(10),
-    Sygehuskode VARCHAR(4),
+    Sygehuskode VARCHAR(7),
     Afdelingskode VARCHAR(3),
     Proceduredatotid datetime,
     
@@ -73,3 +74,42 @@ FROM Indlaeggelsesforloeb hif
 INNER JOIN Indlaeggelser hi on hif.indlaeggelsesID = hi.indlaeggelsesID
 GROUP BY hif.IndlaeggelsesforloebID, hi.cpr;
 
+CREATE TABLE IF NOT EXISTS AmbulantKontakt (
+    AmbulantKontaktID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    CPR VARCHAR(10),
+    Sygehuskode VARCHAR(7),
+    Afdelingskode VARCHAR(3),
+    Indlaeggelsesdatotid datetime,
+    Udskrivningsdatotid datetime,
+    Aktuel varchar(1)
+) ENGINE=InnoDB COLLATE=utf8_bin;
+
+CREATE TABLE IF NOT EXISTS AmbulantDiagnoser (
+    AmbulantKontaktID BIGINT(15) NOT NULL,
+    Diagnoseskode VARCHAR(10),
+    Diagnosetype VARCHAR(1),
+    Tillaegsdiagnose VARCHAR(10),
+    
+    FOREIGN KEY (AmbulantKontaktID) REFERENCES AmbulantKontakt(AmbulantKontaktID)
+    
+) ENGINE=InnoDB COLLATE=utf8_bin;
+
+CREATE TABLE IF NOT EXISTS AmbulantProcedurer (
+    AmbulantKontaktID BIGINT(15) NOT NULL,
+    Procedurekode VARCHAR(10),
+    Proceduretype VARCHAR(1),
+    Tillaegsprocedurekode VARCHAR(10),
+    Sygehuskode VARCHAR(7),
+    Afdelingskode VARCHAR(3),
+    Proceduredatotid datetime,
+    
+    FOREIGN KEY (AmbulantKontaktID) REFERENCES AmbulantKontakt(AmbulantKontaktID)
+    
+) ENGINE=InnoDB COLLATE=utf8_bin;
+
+CREATE TABLE AmbulantLPR_Reference (
+    ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    AmbulantKontaktID BIGINT(15) NOT NULL,
+    LPR_recordnummer BIGINT(15) NOT NULL,
+    FOREIGN KEY (AmbulantKontaktID) REFERENCES AmbulantKontakt(AmbulantKontaktID)
+) ENGINE=InnoDB COLLATE=utf8_bin;
