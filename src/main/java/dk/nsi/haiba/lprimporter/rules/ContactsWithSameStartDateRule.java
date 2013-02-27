@@ -36,7 +36,7 @@ import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
+import dk.nsi.haiba.lprimporter.log.BusinessRuleErrorLog;
 import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
@@ -46,16 +46,19 @@ import dk.nsi.haiba.lprimporter.model.lpr.Administration;
  * It takes a list of contacts from a single CPR number, and processes the data with the Overlapping contacts rule
  * See the solution document for details about this rule.
  */
-public class OverlappingContactsRule implements LPRRule {
+public class ContactsWithSameStartDateRule implements LPRRule {
 	
-	private static Log log = new Log(Logger.getLogger(OverlappingContactsRule.class));
+	private static Log log = new Log(Logger.getLogger(ContactsWithSameStartDateRule.class));
 	private List<Administration> contacts;
 	
 	@Autowired
-	ConnectContactsRule connectContactsRule;
+	OverlappingContactsRule overlappingContactsRule;
 	
 	@Autowired
 	MessageResolver resolver;
+	
+	@Autowired
+	BusinessRuleErrorLog businessRuleErrorLog;
 
 	@Override
 	public LPRRule doProcessing() {
@@ -77,32 +80,46 @@ public class OverlappingContactsRule implements LPRRule {
 				}
 				
 				DateTime previousIn = new DateTime(previousContact.getIndlaeggelsesDatetime());
-				DateTime previousOut = null;
-				if(previousContact.getUdskrivningsDatetime() != null) {
-					previousOut = new DateTime(previousContact.getUdskrivningsDatetime());
-				} 
 				DateTime in = new DateTime(contact.getIndlaeggelsesDatetime());
-				
-				if(previousOut == null) {
-					BusinessRuleError be = new BusinessRuleError(previousContact.getRecordNumber(), resolver.getMessage("rule.overlapping.contact.no.endddatetime"), resolver.getMessage("rule.overlapping.contact.name"));
-					throw new RuleAbortedException("Business rule aborted", be);
-				}
-				
-				if((in.isAfter(previousIn)||in.isEqual(previousIn)) && (in.isBefore(previousOut) || in.isEqual(previousOut))) {
-					// contact is overlapping
-					List<Administration> splittedContacts = splitContacts(previousContact, contact);
-					processedContacts.addAll(splittedContacts);
-					previousContact = contact;
+				if(in.isEqual(previousIn)) {
+					// if out-datetime is equal but sygehus or afdeling is different it is an error
+					DateTime previousOut = new DateTime(previousContact.getUdskrivningsDatetime());
+					DateTime out = new DateTime(contact.getUdskrivningsDatetime());
+					if(previousOut.isEqual(out) &&
+							(previousContact.getSygehusCode() != contact.getSygehusCode() ||
+							previousContact.getAfdelingsCode() != contact.getAfdelingsCode())) {
+						// error, ignore the contact
+						BusinessRuleError be = new BusinessRuleError(previousContact.getRecordNumber(), resolver.getMessage("rule.contactswithsamestartdate.different.hospitalordepartment", new Object[] {contact.getRecordNumber()}), resolver.getMessage("rule.contactswithsamestartdate.name"));
+						businessRuleErrorLog.log(be);
+						continue;
+					} else {
+						Administration preservedContact = null;
+						Administration deletedContact = null;
+						if(out.isAfter(previousOut)) {
+							preservedContact = contact;
+							deletedContact = previousContact;
+						} else {
+							preservedContact = previousContact;
+							deletedContact = contact;
+						}
+						preservedContact.getLprDiagnoses().addAll(deletedContact.getLprDiagnoses());
+						preservedContact.getLprProcedures().addAll(deletedContact.getLprProcedures());
+						preservedContact.addLPRReference(deletedContact.getRecordNumber());
+						processedContacts.add(preservedContact);
+						previousContact = preservedContact;
+					}
 				} else {
-					processedContacts.add(previousContact); // add previous to ensure it is added, this could be added twice but is filtered at the end og this rule
-					processedContacts.add(contact); // also add current, in case no splitting should occur
+					processedContacts.add(previousContact);
 					previousContact = contact;
 				}
 			}
+			// add the last one - if duplicate it is sorted out later
+			processedContacts.add(previousContact);
 			
 		} 
 		contacts = processedContacts;
 
+		// remove duplicate contacts
 		Map<String, Administration> items = new HashMap<String,Administration>();
 		for (Administration item : contacts) {
 			if (items.values().contains(item)) {
@@ -115,53 +132,11 @@ public class OverlappingContactsRule implements LPRRule {
 		contacts = new ArrayList<Administration>(items.values());
 		
 		// setup the next rule in the chain
-		connectContactsRule.setContacts(contacts);
+		overlappingContactsRule.setContacts(contacts);
 		
-		return connectContactsRule;
+		return overlappingContactsRule;
 	}
 
-	private List<Administration> splitContacts(Administration previous, Administration current) {
-		List<Administration> splittedContacts = new ArrayList<Administration>();
-		
-		DateTime previousIn = new DateTime(previous.getIndlaeggelsesDatetime());
-		DateTime previousOut = new DateTime(previous.getUdskrivningsDatetime());
-		DateTime in = new DateTime(current.getIndlaeggelsesDatetime());
-		DateTime out = new DateTime(current.getUdskrivningsDatetime());
-
-		if(in.isEqual(previousIn) && out.isEqual(previousOut)) {
-			// choose the first - merge diagnoses and procedures
-			previous.getLprDiagnoses().addAll(current.getLprDiagnoses());
-			previous.getLprProcedures().addAll(current.getLprProcedures());
-			previous.addLPRReference(current.getRecordNumber());
-			splittedContacts.add(previous);
-			return splittedContacts;
-		} else if(previousIn.isEqual(in)) {
-			// split on outTime, where current is the first
-			previous.setIndlaeggelsesDatetime(current.getUdskrivningsDatetime());
-		} else if(previousIn.isBefore(in) && previousOut.isAfter(out)) {
-			// create new contact from out to previousout
-			Administration newContact = new Administration();
-			newContact.setCpr(previous.getCpr());
-			newContact.setSygehusCode(previous.getSygehusCode());
-			newContact.setAfdelingsCode(previous.getAfdelingsCode());
-			newContact.setRecordNumber(previous.getRecordNumber());
-			newContact.setLprDiagnoses(previous.getLprDiagnoses());
-			newContact.setLprProcedures(previous.getLprProcedures());
-			// set in to current out and out to previous out
-			newContact.setIndlaeggelsesDatetime(current.getUdskrivningsDatetime());
-			newContact.setUdskrivningsDatetime(previous.getUdskrivningsDatetime());
-			splittedContacts.add(newContact);
-			// Then set previous out to current in
-			previous.setUdskrivningsDatetime(current.getIndlaeggelsesDatetime());
-		} else if(out.equals(previousOut) || out.isAfter(previousOut) ) {
-			// set previous out to current in
-			previous.setUdskrivningsDatetime(current.getIndlaeggelsesDatetime());
-		}
-		
-		splittedContacts.add(previous);
-		splittedContacts.add(current);
-		return splittedContacts;
-	}
 
 	public void setContacts(List<Administration> contacts) {
 		this.contacts = contacts;

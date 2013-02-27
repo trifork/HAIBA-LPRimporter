@@ -50,7 +50,7 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 	private List<Administration> contacts;
 
 	@Autowired
-	OverlappingContactsRule overlappingContactsRule;
+	ExtendContactEndtimeRule extendContactEndtimeRule;
 
 	@Autowired
 	MessageResolver resolver;
@@ -77,11 +77,11 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 			}
 		}
 		contacts = new ArrayList<Administration>(items.values());
-
+		
 		// setup the next rule in the chain
-		overlappingContactsRule.setContacts(contacts);
+		extendContactEndtimeRule.setContacts(contacts);
 
-		return overlappingContactsRule;
+		return extendContactEndtimeRule;
 	}
 
 	public void setContacts(List<Administration> contacts) {

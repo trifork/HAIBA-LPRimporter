@@ -37,7 +37,6 @@ import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
-import dk.nsi.haiba.lprimporter.model.haiba.IndlaeggelsesForloeb;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
 

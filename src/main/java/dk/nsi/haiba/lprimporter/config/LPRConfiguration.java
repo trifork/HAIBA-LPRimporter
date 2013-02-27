@@ -54,6 +54,7 @@ import dk.nsi.haiba.lprimporter.message.MessageResolver;
 import dk.nsi.haiba.lprimporter.rules.ConnectAdmissionsRule;
 import dk.nsi.haiba.lprimporter.rules.ConnectContactsRule;
 import dk.nsi.haiba.lprimporter.rules.ContactToAdmissionRule;
+import dk.nsi.haiba.lprimporter.rules.ContactsWithSameStartDateRule;
 import dk.nsi.haiba.lprimporter.rules.ExtendContactEndtimeRule;
 import dk.nsi.haiba.lprimporter.rules.LPRDateTimeRule;
 import dk.nsi.haiba.lprimporter.rules.LPRPrepareDataRule;
@@ -226,6 +227,11 @@ public class LPRConfiguration {
 	@Bean
 	public LPRPrepareDataRule lprPrepareDataRule() {
 		return new LPRPrepareDataRule();
+	}
+	
+	@Bean
+	public ContactsWithSameStartDateRule contactsWithSameStartDateRule() {
+		return new ContactsWithSameStartDateRule();
 	}
 	
 }

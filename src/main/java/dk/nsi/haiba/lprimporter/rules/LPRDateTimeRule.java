@@ -53,7 +53,7 @@ public class LPRDateTimeRule implements LPRRule {
 	private List<Administration> contacts;
 	
 	@Autowired
-	ExtendContactEndtimeRule extendContactEndtimeRule;
+	RemoveIdenticalContactsRule removeIdenticalContactsRule;
 	
 	@Autowired
 	MessageResolver resolver;
@@ -157,9 +157,9 @@ public class LPRDateTimeRule implements LPRRule {
 		contacts = adjustedContacts;
 		
 		// setup the next rule in the chain
-		extendContactEndtimeRule.setContacts(contacts);
+		removeIdenticalContactsRule.setContacts(contacts);
 		
-		return extendContactEndtimeRule;
+		return removeIdenticalContactsRule;
 	}
 
 	// package scope for unittesting purpose

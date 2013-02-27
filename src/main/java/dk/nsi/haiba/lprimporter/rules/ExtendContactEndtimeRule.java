@@ -49,7 +49,7 @@ public class ExtendContactEndtimeRule implements LPRRule {
 	private List<Administration> contacts;
 	
 	@Autowired
-	RemoveIdenticalContactsRule removeIdenticalContactsRule;
+	ContactsWithSameStartDateRule contactsWithSameStartDateRule;
 	
 	@Autowired
 	MessageResolver resolver;
@@ -89,9 +89,9 @@ public class ExtendContactEndtimeRule implements LPRRule {
 		}
 		
 		// setup the next rule in the chain
-		removeIdenticalContactsRule.setContacts(contacts);
+		contactsWithSameStartDateRule.setContacts(contacts);
 		
-		return removeIdenticalContactsRule;
+		return contactsWithSameStartDateRule;
 	}
 
 	public void setContacts(List<Administration> contacts) {
