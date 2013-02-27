@@ -154,7 +154,6 @@ public class HAIBADAOIT {
     	String sygehusInitials = haibaDao.getSygehusInitials("3800", "999", new Date());
     	
     	assertEquals("TST", sygehusInitials);
-   	
     	
     }
 

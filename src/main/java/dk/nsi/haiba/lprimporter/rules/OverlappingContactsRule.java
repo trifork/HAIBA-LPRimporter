@@ -108,8 +108,8 @@ public class OverlappingContactsRule implements LPRRule {
 			if (items.values().contains(item)) {
 				// ignore duplicate items
 			} else {
-				// use the indata and outdate as keys to sort out duplicates
-				items.put(""+item.getIndlaeggelsesDatetime()+item.getUdskrivningsDatetime(),item);
+				// use the indate, outdate, sygehus and afdeling as keys to sort out duplicates
+				items.put(""+item.getIndlaeggelsesDatetime()+item.getUdskrivningsDatetime()+item.getSygehusCode()+item.getAfdelingsCode(),item);
 			}
 		}
 		contacts = new ArrayList<Administration>(items.values());
