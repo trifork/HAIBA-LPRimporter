@@ -26,21 +26,24 @@
  */
 package dk.nsi.haiba.lprimporter.rules;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
+import dk.nsi.haiba.lprimporter.log.BusinessRuleErrorLog;
 import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 
 /*
- * This is the 1. rule to be applied to LPR data
+ * This is the 2. rule to be applied to LPR data
  * It takes a list of contacts from a single CPR number, and processes the data with the Date/Time rule
  * See the solution document for details about this rule.
  */
@@ -54,42 +57,35 @@ public class LPRDateTimeRule implements LPRRule {
 	
 	@Autowired
 	MessageResolver resolver;
+	
+	@Autowired
+	BusinessRuleErrorLog businessRuleErrorLog;
+
+	@Value("${default.contact.in.hour}")
+	int defaultContactInHour;
+	
+    @Value("${default.contact.outhours.added.inhours}")
+    int defaultContactOuthoursAddedInhours;
+
+    @Value("${default.contact.outhours}")
+    private int defaultAdmissionEndHours;
+
+    @Value("${default.contact.procedure.outhours}")
+	private int defaultProcedureHours;
 
 	@Override
 	public LPRRule doProcessing() {
 		
+		List<Administration> adjustedContacts = new ArrayList<Administration>();
+		
 		for (Administration contact : contacts) {
-			// AdmissionStartHour for the contact is default set to 0 if not applied in the database
-			
-			// AdmissionEndtime must be set to the start of the next day, if it was set to 0
-			Date udskrivningsDatetime = contact.getUdskrivningsDatetime();
-			if(udskrivningsDatetime != null) {
-				DateTime admissionEnd = new DateTime(udskrivningsDatetime.getTime());
-				if(admissionEnd.getHourOfDay() == 0) {
-					admissionEnd = admissionEnd.plusHours(24);
-					contact.setUdskrivningsDatetime(admissionEnd.toDate());
-				}
-			} else {
-				log.debug("Admission End datetime is null for LPR ref: "+contact.getRecordNumber()+" patient is probably not discharged from hospital yet");
-			}
-			
-			// TODO - report if in-datetime is after out-datetime as an error
-			DateTime in = new DateTime(contact.getIndlaeggelsesDatetime());
-			DateTime out = new DateTime(contact.getUdskrivningsDatetime());
-			if(in.isAfter(out)) {
-				// TODO parameterize this
-				out = in.plusHours(1);
-				contact.setUdskrivningsDatetime(out.toDate());
-			}
-			
-			
 			for (LPRProcedure procedure : contact.getLprProcedures()) {
 				// if procedure time is set to 0 - set it to 12 the same day
 				Date procedureDatetime = procedure.getProcedureDatetime(); 
 				if(procedureDatetime != null) {
 					DateTime procedureStart = new DateTime(procedureDatetime.getTime());
 					if(procedureStart.getHourOfDay() == 0) {
-						procedureStart = procedureStart.plusHours(12);
+						procedureStart = procedureStart.plusHours(defaultProcedureHours);
 						procedure.setProcedureDatetime(procedureStart.toDate());
 					}
 				} else {
@@ -97,7 +93,68 @@ public class LPRDateTimeRule implements LPRRule {
 					throw new RuleAbortedException("Rule aborted due to BusinessRuleError", error);
 				}
 			}
+			
+			
+			// AdmissionStartHour for the contact is default set to 0 if not applied in the database, adjust it with the default value from the propertiesfile
+			DateTime admissionStart = new DateTime(contact.getIndlaeggelsesDatetime());
+			if(admissionStart.getHourOfDay() == 0 && defaultContactInHour != 0) {
+				admissionStart = admissionStart.plusHours(defaultContactInHour);
+				contact.setIndlaeggelsesDatetime(admissionStart.toDate());
+			}
+			
+			// AdmissionEndtime must be adjusted, if it was set to 0
+			Date udskrivningsDatetime = contact.getUdskrivningsDatetime();
+			if(udskrivningsDatetime != null) {
+				DateTime admissionEnd = new DateTime(udskrivningsDatetime.getTime());
+				if(admissionEnd.getHourOfDay() == 0) {
+					// does a procedure exist on the same date, set the procedure hour as admission end hour
+					for (LPRProcedure procedure : contact.getLprProcedures()) {
+						DateTime procedureTime = new DateTime(procedure.getProcedureDatetime());
+						if(admissionEnd.getYear() == procedureTime.getYear() &&
+								admissionEnd.getMonthOfYear() == procedureTime.getMonthOfYear() &&
+								admissionEnd.getDayOfMonth() == procedureTime.getDayOfMonth()) {
+							admissionEnd.plusHours(procedureTime.getHourOfDay());
+							break;
+						}
+					}
+				}
+
+				// Then if admissionEnd still is 0, check the in date time is the same day 
+				if(admissionEnd.getHourOfDay() == 0) {
+					if(admissionEnd.getYear() == admissionStart.getYear() &&
+							admissionEnd.getMonthOfYear() == admissionStart.getMonthOfYear() &&
+							admissionEnd.getDayOfMonth() == admissionStart.getDayOfMonth()) {
+						// if same date, set end-datetime to in-datetime + defaultvalue
+						admissionEnd = admissionEnd.plusHours(admissionStart.getHourOfDay()).plusHours(defaultContactOuthoursAddedInhours);
+					}
+				}
+				
+				// Then if admissionEnd still is 0, and the enddate is after indate set it to a configured defaultvalue 
+				if(admissionEnd.getHourOfDay() == 0) {
+					admissionEnd = admissionEnd.plusHours(defaultAdmissionEndHours);
+				}
+				
+				contact.setUdskrivningsDatetime(admissionEnd.toDate());
+			} else {
+				
+				// TODO patient is currently at the hospital
+				log.debug("Admission End datetime is null for LPR ref: "+contact.getRecordNumber()+" patient is probably not discharged from hospital yet");
+			}
+			
+			DateTime in = new DateTime(contact.getIndlaeggelsesDatetime());
+			DateTime out = new DateTime(contact.getUdskrivningsDatetime());
+			if(in.isAfter(out)) {
+				// log the error and ignore the contact.
+				BusinessRuleError be = new BusinessRuleError(contact.getRecordNumber(), resolver.getMessage("rule.datetime.indate.isafter.outdate"), resolver.getMessage("rule.datetime.name"));
+				businessRuleErrorLog.log(be);
+				continue;
+			}
+			
+			adjustedContacts.add(contact);
 		}
+		
+		// set this for unittesting purpose
+		contacts = adjustedContacts;
 		
 		// setup the next rule in the chain
 		extendContactEndtimeRule.setContacts(contacts);
@@ -105,6 +162,11 @@ public class LPRDateTimeRule implements LPRRule {
 		return extendContactEndtimeRule;
 	}
 
+	// package scope for unittesting purpose
+	List<Administration> getContacts() {
+		return contacts;
+	}
+	
 	public void setContacts(List<Administration> contacts) {
 		this.contacts = contacts;
 	}

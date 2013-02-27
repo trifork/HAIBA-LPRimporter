@@ -203,4 +203,5 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
             throw new DAOException("Error Fetching initials for hospital from FGR", e);
         }
 	}
+	
 }

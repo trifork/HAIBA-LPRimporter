@@ -127,7 +127,7 @@ public class LPRDateTimeRuleTest {
 		assertNotNull("1 contact is still expected", contacts);
 		assertEquals(1, contacts.size());
 		assertEquals(in.toDate(), contacts.get(0).getIndlaeggelsesDatetime());
-		assertEquals("Expect end date is the next day", out.plusHours(24).toDate(), contacts.get(0).getUdskrivningsDatetime());
+		assertEquals("Expect end date is 12 hours later", out.plusHours(12).toDate(), contacts.get(0).getUdskrivningsDatetime());
 		assertEquals(1, contacts.get(0).getLprProcedures().size());
 		assertEquals("Procedure datetime should not have been modified", op1.toDate(), contacts.get(0).getLprProcedures().get(0).getProcedureDatetime());
 		
