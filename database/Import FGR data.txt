@@ -11,7 +11,7 @@ CREATE TABLE T_AFDKLASSE (
  C_SPECIALE2 VARCHAR(3),
  C_SPECIALE3 VARCHAR(3),
  C_SPECIALE4 VARCHAR(3)
-);
+) ENGINE=InnoDB COLLATE=utf8_bin;
 
 #Log ind i MYSQL, med rettigheder til at åbne lokale filer:
 
@@ -31,7 +31,7 @@ CREATE TABLE T_SGHKLASSE (
  D_AJODTO DATE,
  C_INSTART VARCHAR(3),
  C_SGHTYPE VARCHAR(1)
-);
+) ENGINE=InnoDB COLLATE=utf8_bin;
 
 #Indlæs csv fil med data
 
@@ -46,7 +46,7 @@ CREATE TABLE T_SKSKLASSE (
  K_FRADTO DATE NOT NULL,
  D_TILDTO DATE,
  D_AJODTO DATE
-);
+) ENGINE=InnoDB COLLATE=utf8_bin;
 
 #Indlæs csv fil med data
 

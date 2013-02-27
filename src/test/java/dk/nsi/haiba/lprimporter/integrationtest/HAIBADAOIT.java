@@ -155,8 +155,6 @@ public class HAIBADAOIT {
     	
     	assertEquals("TST", sygehusInitials);
     	
-    	// TODO - somehow the insert isn't rolled back by the Spring transactionmanager
-    	//jdbc.execute("delete from T_AFDKLASSE where V_AFDNAVN = 'TST Testafdeling'");
     }
 
     @Test(expected=DAOException.class)
