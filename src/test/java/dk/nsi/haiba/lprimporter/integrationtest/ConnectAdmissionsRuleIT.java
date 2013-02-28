@@ -24,8 +24,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package dk.nsi.haiba.lprimporter.rules;
+package dk.nsi.haiba.lprimporter.integrationtest;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
@@ -35,42 +36,58 @@ import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
+import org.springframework.transaction.annotation.Transactional;
 
-import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
+import dk.nsi.haiba.lprimporter.dao.impl.HAIBADAOImpl;
+import dk.nsi.haiba.lprimporter.dao.impl.LPRDAOImpl;
+import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
-import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
+import dk.nsi.haiba.lprimporter.rules.ConnectAdmissionsRule;
+import dk.nsi.haiba.lprimporter.rules.LPRRule;
 
+/*
+ * Tests the that last rule saves admissions correctly'
+ * Spring transaction ensures rollback after test is finished
+ */
 @RunWith(SpringJUnit4ClassRunner.class)
+@Transactional("haibaTransactionManager")
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class)
-public class ConnectAdmissionsRuleTest {
+public class ConnectAdmissionsRuleIT {
 	
-	@Configuration
-    @Import({LPRTestConfiguration.class})
-	static class TestConfiguration {
-		@Bean
-		public HAIBADAO haibaDao() {
-			return Mockito.mock(HAIBADAO.class);
-		}
-		@Bean
-		public LPRDAO lprDao() {
-			return Mockito.mock(LPRDAO.class);
-		}
-	}
-	
-	@Autowired
-	HAIBADAO haibaDao;
+    @Configuration
+    @PropertySource("classpath:test.properties")
+    @Import(LPRIntegrationTestConfiguration.class)
+    static class ContextConfiguration {
+        @Bean
+        public HAIBADAO haibaDao() {
+            return new HAIBADAOImpl();
+        }
+        @Bean
+        public LPRDAO lprDao() {
+            return new LPRDAOImpl();
+        }
+    }
+
+    @Autowired
+    @Qualifier("haibaJdbcTemplate")
+    JdbcTemplate jdbc;
+    
+    @Autowired
+    HAIBADAO haibaDao;
 	
 	@Autowired
 	LPRDAO lprDao;
@@ -105,6 +122,9 @@ public class ConnectAdmissionsRuleTest {
 	String extraOprCode1;
 	DateTime op1;
 	
+	String diagnosisCode;
+	String diagnosisType;
+	String tillaegsDiagnosis;
 
 	@Before
 	public void init() {
@@ -139,9 +159,11 @@ public class ConnectAdmissionsRuleTest {
     	oprType1 = "A";
     	extraOprCode1 = "tilA";
     	op1 = new DateTime(2010, 8, 4, 0, 0, 0);
-
-    	Mockito.reset(haibaDao);
-    	Mockito.reset(lprDao);
+    	
+    	//Init Diagnose data
+    	diagnosisCode = "d345";
+    	diagnosisType = "A";
+    	tillaegsDiagnosis = "B";
 	}
 
 	@Test
@@ -153,9 +175,16 @@ public class ConnectAdmissionsRuleTest {
 
 		assertNull("This is the last rule", nextRule);
 		
-		Mockito.verify(haibaDao, Mockito.atLeastOnce()).saveIndlaeggelsesForloeb(Mockito.anyList());
-		Mockito.verify(lprDao, Mockito.atLeastOnce()).updateImportTime(Mockito.anyLong());
-
+		assertEquals("Expected 4 admission sequences, because its a ref. table", 4, jdbc.queryForInt("Select count(*) from Indlaeggelsesforloeb"));
+		assertEquals("Expected 2 different sequence id's", 2, jdbc.queryForInt("Select count(distinct indlaeggelsesforloebid) from Indlaeggelsesforloeb "));
+		assertEquals("Expected 4 different admission id's", 4, jdbc.queryForInt("Select count(distinct indlaeggelsesid) from Indlaeggelsesforloeb "));
+		
+		Long admissionId1 = jdbc.queryForLong("Select indlaeggelsesId from LPR_Reference where LPR_recordnummer =" +recordNummer);
+		assertEquals("Expected 1 procedure connected to admission1", 1, jdbc.queryForInt("Select count(*) from Procedurer where IndlaeggelsesID = "+admissionId1));
+		
+		Long admissionId2 = jdbc.queryForLong("Select indlaeggelsesId from LPR_Reference where LPR_recordnummer =" +recordNummer2);
+		assertEquals("Expected 1 diagnosis connected to admission2", 1, jdbc.queryForInt("Select count(*) from Diagnoser where IndlaeggelsesID = "+admissionId2));
+		
 	}
 
 	private List<Indlaeggelse> setupAdmissions() {
@@ -179,6 +208,8 @@ public class ConnectAdmissionsRuleTest {
 			procedure.setProcedureDatetime(op1.toDate());
 		}
 		procedure.setTillaegsProcedureCode(extraOprCode1);
+		// add twice, to test duplicates are removed
+		procedures.add(procedure);
 		procedures.add(procedure);
 		a1.setProcedures(procedures);
 
@@ -193,6 +224,15 @@ public class ConnectAdmissionsRuleTest {
 			a2.setUdskrivningsDatetime(out2.toDate());
 		}
 		a2.setProcedures(procedures);
+		List<Diagnose> diagnoses = new ArrayList<Diagnose>();
+		Diagnose diagnose = new Diagnose();
+		diagnose.setDiagnoseCode(diagnosisCode);
+		diagnose.setDiagnoseType(diagnosisType);
+		diagnose.setTillaegsDiagnose(tillaegsDiagnosis);
+		// add twice, to test duplicates are removed
+		diagnoses.add(diagnose);
+		diagnoses.add(diagnose);
+		a2.setDiagnoses(diagnoses);
 
 		Indlaeggelse a3 = new Indlaeggelse();
 		a3.addLPRReference(new LPRReference(recordNummer3));

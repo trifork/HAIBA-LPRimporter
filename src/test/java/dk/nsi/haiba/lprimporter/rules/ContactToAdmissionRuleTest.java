@@ -106,7 +106,7 @@ public class ContactToAdmissionRuleTest {
     	extraOprCode1 = "tilA";
     	op1 = new DateTime(2010, 5, 3, 8, 0, 0);
 
-    	// Init Procedure data
+    	// Init Diagnose data
     	diagnosisCode = "d345";
     	diagnosisType = "A";
     	tillaegsDiagnosis = "B";

@@ -66,37 +66,9 @@ import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
 		// Sort admissions by in date
 		Collections.sort(admissions, new IndlaeggelseInDateComparator());
 
-		// first check if admissions are connected and on the same hospital
-		List<Indlaeggelse> connectedAdmissionsFromTheSameHospital = new ArrayList<Indlaeggelse>(); 
-		Indlaeggelse previousAdmission = null;
-		for (Indlaeggelse admission : admissions) {
-			if(previousAdmission == null) {
-				connectedAdmissionsFromTheSameHospital.add(admission);
-				previousAdmission = admission;
-				continue;
-			}
-			
-			DateTime previousOut = new DateTime(previousAdmission.getUdskrivningsDatetime());
-			DateTime currentIn = new DateTime(admission.getIndlaeggelsesDatetime());
-			
-			if(previousAdmission.getSygehusCode().equals(admission.getSygehusCode()) && previousOut.isEqual(currentIn)) {
-				// add admission to the connected list
-				connectedAdmissionsFromTheSameHospital.add(admission);
-			} else {
-				// admission is not from the same hospital, or there is a gap between previousOut and currentIn
-				// so save the connected list and start a new one.
-				saveConnectedAdmissions(connectedAdmissionsFromTheSameHospital);
-				connectedAdmissionsFromTheSameHospital.clear();
-				connectedAdmissionsFromTheSameHospital.add(admission);
-			}
-		}
-		// loop has ended, save the list containing the last admission(s) from the loop
-		saveConnectedAdmissions(connectedAdmissionsFromTheSameHospital);
-		
-		
-		// Then just check if admissions are connected and add a new IndlaeggelsesForloeb
+		// Check if admissions are connected and add a new IndlaeggelsesForloeb
 		List<Indlaeggelse> connectedAdmissions = new ArrayList<Indlaeggelse>(); 
-		previousAdmission = null;
+		Indlaeggelse previousAdmission = null;
 		for (Indlaeggelse admission : admissions) {
 			if(previousAdmission == null) {
 				connectedAdmissions.add(admission);
@@ -111,12 +83,13 @@ import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
 				// add admission to the connected list
 				connectedAdmissions.add(admission);
 			} else {
-				// admission is not from the same hospital, or there is a gap between previousOut and currentIn
+				// There is a gap between previousOut and currentIn
 				// so save the connected list and start a new one.
 				saveConnectedAdmissions(connectedAdmissions);
 				connectedAdmissions.clear();
 				connectedAdmissions.add(admission);
 			}
+			previousAdmission = admission;
 		}
 		// loop has ended, save the list containing the last admission(s) from the loop
 		saveConnectedAdmissions(connectedAdmissions);

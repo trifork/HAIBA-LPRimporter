@@ -35,9 +35,10 @@ CREATE TABLE IF NOT EXISTS Procedurer (
 ) ENGINE=InnoDB COLLATE=utf8_bin;
 
 CREATE TABLE IF NOT EXISTS Indlaeggelsesforloeb (
-    IndlaeggelsesforloebID BIGINT(15) NOT NULL AUTO_INCREMENT,
+    ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    IndlaeggelsesforloebID BIGINT(15),
     IndlaeggelsesID BIGINT(15) NOT NULL,
-    PRIMARY KEY (`IndlaeggelsesforloebID`,`IndlaeggelsesID`),
+    UNIQUE (`IndlaeggelsesforloebID`,`IndlaeggelsesID`),
     FOREIGN KEY (IndlaeggelsesID) REFERENCES Indlaeggelser(IndlaeggelsesID)
 
 ) ENGINE=InnoDB COLLATE=utf8_bin;

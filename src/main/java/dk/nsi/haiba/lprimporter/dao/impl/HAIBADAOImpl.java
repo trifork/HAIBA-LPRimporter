@@ -112,13 +112,42 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 	
 	private void saveForloeb(List<Long> indlaeggelserInForloeb) {
 
-		String sql = "INSERT INTO Indlaeggelsesforloeb (IndlaeggelsesID) VALUES (?)";
+		final String sql = "INSERT INTO Indlaeggelsesforloeb (IndlaeggelsesID) VALUES (?)";
+		String sqlWithReference = "INSERT INTO Indlaeggelsesforloeb (IndlaeggelsesforloebID,IndlaeggelsesID) VALUES (?,?)";
+		
+		boolean first = true;
+		long sequenceId = 0;
 		
 		for (Long indlaeggelsesId : indlaeggelserInForloeb) {
-			jdbc.update(sql, indlaeggelsesId);
+			if(first) {
+				final Object[] args = new Object[] {indlaeggelsesId};
+
+				if(MYSQL.equals(getDialect())) {
+					KeyHolder keyHolder = new GeneratedKeyHolder();
+			        jdbc.update(new PreparedStatementCreator() {
+			            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+			                PreparedStatement ps = connection.prepareStatement(sql, new String[] { "id" });
+			                for (int i = 0; i < args.length; i++) {
+			                    ps.setObject(i + 1, args[i]);
+			                }
+			                return ps;
+			            }
+			        }, keyHolder);
+			        sequenceId = keyHolder.getKey().longValue();
+				} else if(MSSQL.equals(getDialect())) {
+					jdbc.update(sql, args);
+					sequenceId = jdbc.queryForLong("SELECT @@IDENTITY");
+				} else {
+					throw new DAOException("Unknown SQL dialect: "+ getDialect());
+				}
+				jdbc.update("update Indlaeggelsesforloeb set IndlaeggelsesforloebID=? where ID=?", sequenceId, sequenceId);
+				
+				first = false;
+				continue;
+			}
+			jdbc.update(sqlWithReference, sequenceId, indlaeggelsesId);
 		}
 	}
-
 
 	private void saveLPRReferences(List<LPRReference> lprReferencer, long indlaeggelsesId) {
 		
