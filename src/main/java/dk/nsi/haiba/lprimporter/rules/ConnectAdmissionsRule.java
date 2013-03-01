@@ -42,7 +42,7 @@ import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
 import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 /*
- * This is the 8. rule to be applied to LPR data
+ * This is the 12. (13. and 14.) rule to be applied to LPR data
  * It takes a list of admissions from a single CPR number, and processes the data with the connect admissions rule
  * See the solution document for details about this rule.
  */public class ConnectAdmissionsRule implements LPRRule {
@@ -111,7 +111,7 @@ import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 	private void removeDuplicateProceduresDiagnoses(List<Indlaeggelse> admissions) {
 		for (Indlaeggelse admission : admissions) {
-			// remove duplicate diagnoses
+			// remove duplicate diagnoses - 13. rule
 			List<Diagnose> d = new ArrayList<Diagnose>();
 			for (Diagnose diagosis : admission.getDiagnoses()) {
 				if(!d.contains(diagosis)) {
@@ -120,7 +120,7 @@ import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 			}
 			admission.setDiagnoses(d);
 			
-			// remove duplicate procedures
+			// remove duplicate procedures  - 14. rule
 			List<Procedure> p = new ArrayList<Procedure>();
 			for (Procedure procedure : admission.getProcedures()) {
 				if(!p.contains(procedure)) {

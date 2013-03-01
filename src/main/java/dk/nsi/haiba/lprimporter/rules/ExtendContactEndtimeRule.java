@@ -39,7 +39,7 @@ import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 
 /*
- * This is the 2. rule to be applied to LPR data
+ * This is the 5. rule to be applied to LPR data
  * It takes a list of contacts from a single CPR number, and processes the data with the Extend Contact EndDate rule
  * See the solution document for details about this rule.
  */

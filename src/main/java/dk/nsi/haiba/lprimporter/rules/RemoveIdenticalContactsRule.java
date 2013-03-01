@@ -40,7 +40,7 @@ import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 
 /*
- * This is the 3. rule to be applied to LPR data
+ * This is the 4. rule to be applied to LPR data
  * It takes a list of contacts from a single CPR number, and processes the data with the Remove Identical Contacts rule
  * See the solution document for details about this rule.
  */
@@ -59,7 +59,6 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 	public LPRRule doProcessing() {
 
 		// if identical procedures and diagnoses exists on the identical contacts, they are cleaned up in a later rule
-
 		
 		Map<Administration, Administration> items = new HashMap<Administration,Administration>();
 		for (Administration item : contacts) {

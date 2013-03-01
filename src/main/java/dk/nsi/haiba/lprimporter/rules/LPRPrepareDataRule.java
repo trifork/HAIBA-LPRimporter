@@ -109,6 +109,10 @@ public class LPRPrepareDataRule implements LPRRule {
 		}
 		// to ensure unittest can get the prepared contacts
 		contacts = preparedContacts;
+		if(contacts.size() == 0) {
+			// all contacts were prone to error, abort the flow
+			return null;
+		}
 		
 		// setup the next rule in the chain
 		lprDateTimeRule.setContacts(preparedContacts);

@@ -35,12 +35,14 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
 import dk.nsi.haiba.lprimporter.log.BusinessRuleErrorLog;
 import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
+import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 /*
  * This is the 2 and 3. rule to be applied to LPR data
@@ -60,6 +62,9 @@ public class LPRDateTimeRule implements LPRRule {
 	
 	@Autowired
 	BusinessRuleErrorLog businessRuleErrorLog;
+	
+	@Autowired
+	LPRDAO lprDao;
 
 	@Value("${default.contact.in.hour}")
 	int defaultContactInHour;
@@ -141,12 +146,14 @@ public class LPRDateTimeRule implements LPRRule {
 				log.debug("Admission End datetime is null for LPR ref: "+contact.getRecordNumber()+" patient is probably not discharged from hospital yet");
 			}
 			
+			// Rule #3
 			DateTime in = new DateTime(contact.getIndlaeggelsesDatetime());
 			DateTime out = new DateTime(contact.getUdskrivningsDatetime());
 			if(in.isAfter(out)) {
 				// log the error and ignore the contact.
 				BusinessRuleError be = new BusinessRuleError(contact.getRecordNumber(), resolver.getMessage("rule.datetime.indate.isafter.outdate"), resolver.getMessage("rule.datetime.name"));
 				businessRuleErrorLog.log(be);
+				lprDao.updateImportTime(contact.getRecordNumber(), Outcome.FAILURE);
 				continue;
 			}
 			
@@ -155,6 +162,10 @@ public class LPRDateTimeRule implements LPRRule {
 		
 		// set this for unittesting purpose
 		contacts = adjustedContacts;
+		if(contacts.size() == 0) {
+			// all contacts were prone to error, abort the flow
+			return null;
+		}
 		
 		// setup the next rule in the chain
 		removeIdenticalContactsRule.setContacts(contacts);

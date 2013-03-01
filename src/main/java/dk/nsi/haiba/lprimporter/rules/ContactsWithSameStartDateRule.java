@@ -44,7 +44,7 @@ import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 /*
- * This is the 4. and 5. rule to be applied to LPR data
+ * This is the 6. and 7. rule to be applied to LPR data
  * It takes a list of contacts from a single CPR number, and processes the data with the Overlapping contacts rule
  * See the solution document for details about this rule.
  */
@@ -91,12 +91,13 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 					DateTime previousOut = new DateTime(previousContact.getUdskrivningsDatetime());
 					DateTime out = new DateTime(contact.getUdskrivningsDatetime());
 					if(previousOut.isEqual(out) &&
-							(previousContact.getSygehusCode() != contact.getSygehusCode() ||
-							previousContact.getAfdelingsCode() != contact.getAfdelingsCode())) {
+							(!previousContact.getSygehusCode().equals(contact.getSygehusCode()) ||
+							!previousContact.getAfdelingsCode().equals(contact.getAfdelingsCode()))) {
 						// error, ignore the contact
 						BusinessRuleError be = new BusinessRuleError(previousContact.getRecordNumber(), resolver.getMessage("rule.contactswithsamestartdate.different.hospitalordepartment", new Object[] {contact.getRecordNumber()}), resolver.getMessage("rule.contactswithsamestartdate.name"));
 						businessRuleErrorLog.log(be);
 						lprDao.updateImportTime(previousContact.getRecordNumber(), Outcome.FAILURE);
+						previousContact = contact;
 						continue;
 					} else {
 						Administration preservedContact = null;
@@ -124,6 +125,10 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 			
 		} 
 		contacts = processedContacts;
+		if(contacts.size() == 0) {
+			// all contacts were prone to error, abort the flow
+			return null;
+		}
 
 		// remove duplicate contacts
 		Map<String, Administration> items = new HashMap<String,Administration>();
