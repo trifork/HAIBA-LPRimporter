@@ -36,10 +36,12 @@ import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.log.BusinessRuleErrorLog;
 import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
+import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 /*
  * This is the 4. and 5. rule to be applied to LPR data
@@ -59,6 +61,9 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 	
 	@Autowired
 	BusinessRuleErrorLog businessRuleErrorLog;
+	
+	@Autowired
+	LPRDAO lprDao;
 
 	@Override
 	public LPRRule doProcessing() {
@@ -91,6 +96,7 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 						// error, ignore the contact
 						BusinessRuleError be = new BusinessRuleError(previousContact.getRecordNumber(), resolver.getMessage("rule.contactswithsamestartdate.different.hospitalordepartment", new Object[] {contact.getRecordNumber()}), resolver.getMessage("rule.contactswithsamestartdate.name"));
 						businessRuleErrorLog.log(be);
+						lprDao.updateImportTime(previousContact.getRecordNumber(), Outcome.FAILURE);
 						continue;
 					} else {
 						Administration preservedContact = null;

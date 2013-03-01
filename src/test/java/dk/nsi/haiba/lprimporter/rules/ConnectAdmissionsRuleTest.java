@@ -51,6 +51,7 @@ import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
+import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class)
@@ -154,7 +155,7 @@ public class ConnectAdmissionsRuleTest {
 		assertNull("This is the last rule", nextRule);
 		
 		Mockito.verify(haibaDao, Mockito.atLeastOnce()).saveIndlaeggelsesForloeb(Mockito.anyList());
-		Mockito.verify(lprDao, Mockito.atLeastOnce()).updateImportTime(Mockito.anyLong());
+		Mockito.verify(lprDao, Mockito.atLeastOnce()).updateImportTime(Mockito.anyLong(), (Outcome)Mockito.any());
 
 	}
 

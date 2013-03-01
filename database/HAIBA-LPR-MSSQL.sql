@@ -8,7 +8,9 @@ CREATE TABLE T_ADM (
        D_UDDTO datetime NULL,
        V_INDTIME int NULL,
        V_UDTIME int NULL,
-       D_IMPORTDTO datetime NULL
+       D_IMPORTDTO datetime NULL,
+       D_LPR2IMPORTDTO datetime NULL,
+       V_STATUS varchar(10) NULL
 );
 
 CREATE TABLE T_DIAG (

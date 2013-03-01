@@ -32,6 +32,7 @@ import dk.nsi.haiba.lprimporter.exception.DAOException;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
+import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 public interface LPRDAO {
 
@@ -83,9 +84,10 @@ public interface LPRDAO {
 	 * Updates the import timstamp in the T_ADM table for the given recordnummer number
 	 * 
 	 * @param  The recordnummer from the LPR Contact
+	 * @param  The Outcome of the Import (Success Or Failure)
 	 * @throws DAOException if something goes wrong in the process
 	 */
-	public void updateImportTime(long recordNumber);
+	public void updateImportTime(long recordNumber, Outcome outcome);
 
 	
 	/**

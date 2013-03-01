@@ -33,10 +33,12 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
+import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.log.BusinessRuleErrorLog;
 import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
+import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 /*
  * This is the 1. rule to be applied to LPR data
@@ -60,6 +62,9 @@ public class LPRPrepareDataRule implements LPRRule {
 	@Autowired
 	HAIBADAO haibaDao;
 
+	@Autowired
+	LPRDAO lprDao;
+
 	@Override
 	public LPRRule doProcessing() {
 		
@@ -70,32 +75,27 @@ public class LPRPrepareDataRule implements LPRRule {
 		for (Administration contact : contacts) {
 			if(contact.getRecordNumber() == 0) {
 				// log and ignore this contact
-				BusinessRuleError be = new BusinessRuleError(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.recordnumber.isempty"), resolver.getMessage("rule.preparedata.name"));
-				businessRuleErrorLog.log(be);
+				logErrorContact(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.recordnumber.isempty"));
 				continue;
 			}
 			if(contact.getCpr() == null || contact.getCpr().length() == 0) {
 				// log and ignore this contact
-				BusinessRuleError be = new BusinessRuleError(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.cprnumber.isempty"), resolver.getMessage("rule.preparedata.name"));
-				businessRuleErrorLog.log(be);
+				logErrorContact(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.cprnumber.isempty"));
 				continue;
 			}
 			if(contact.getSygehusCode() == null || contact.getSygehusCode().length() == 0) {
 				// log and ignore this contact
-				BusinessRuleError be = new BusinessRuleError(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.sygehuscode.isempty"), resolver.getMessage("rule.preparedata.name"));
-				businessRuleErrorLog.log(be);
+				logErrorContact(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.sygehuscode.isempty"));
 				continue;
 			}
 			if(contact.getAfdelingsCode() == null || contact.getAfdelingsCode().length() == 0) {
 				// log and ignore this contact
-				BusinessRuleError be = new BusinessRuleError(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.afdelingscode.isempty"), resolver.getMessage("rule.preparedata.name"));
-				businessRuleErrorLog.log(be);
+				logErrorContact(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.afdelingscode.isempty"));
 				continue;
 			}
 			if(contact.getIndlaeggelsesDatetime() == null) {
 				// log and ignore this contact
-				BusinessRuleError be = new BusinessRuleError(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.indate.isempty"), resolver.getMessage("rule.preparedata.name"));
-				businessRuleErrorLog.log(be);
+				logErrorContact(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.indate.isempty"));
 				continue;
 			}
 			
@@ -106,11 +106,9 @@ public class LPRPrepareDataRule implements LPRRule {
 			}
 			
 			preparedContacts.add(contact);
-			
 		}
 		// to ensure unittest can get the prepared contacts
 		contacts = preparedContacts;
-		
 		
 		// setup the next rule in the chain
 		lprDateTimeRule.setContacts(preparedContacts);
@@ -119,6 +117,12 @@ public class LPRPrepareDataRule implements LPRRule {
 	}
 	
 	
+	private void logErrorContact(long recordNumber, String message) {
+		BusinessRuleError be = new BusinessRuleError(recordNumber, message, resolver.getMessage("rule.preparedata.name"));
+		businessRuleErrorLog.log(be);
+		lprDao.updateImportTime(recordNumber, Outcome.FAILURE);
+	}
+
 	// package scope for unittesting purpose
 	List<Administration> getContacts() {
 		return contacts;

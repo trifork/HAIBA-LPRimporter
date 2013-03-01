@@ -34,6 +34,7 @@ import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
 import dk.nsi.haiba.lprimporter.log.BusinessRuleErrorLog;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
+import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 /*
  * Simple RulesEngine - this could be enhanced by using Spring Integration
@@ -70,7 +71,7 @@ public class LPRRulesEngine implements RulesEngine {
 			
 			// TODO find out how to detect errors next time importer runs, for nor just write a dummy date to import timestamp
 			for (Administration contact : contacts) {
-				lprDao.updateImportTime(contact.getRecordNumber());
+				lprDao.updateImportTime(contact.getRecordNumber(), Outcome.FAILURE);
 			}
 		}
 	}

@@ -39,6 +39,7 @@ import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
+import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 /*
  * This is the 8. rule to be applied to LPR data
@@ -101,7 +102,7 @@ import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
 		for (Indlaeggelse admission : admissions) {
 			// Rules are complete, update LPR with the import timestamp so they are not imported again
 			for (LPRReference lprRef : admission.getLprReferencer()) {
-				lprDao.updateImportTime(lprRef.getLprRecordNumber());
+				lprDao.updateImportTime(lprRef.getLprRecordNumber(), Outcome.SUCCESS);
 			}
 		}
 		removeDuplicateProceduresDiagnoses(admissions);

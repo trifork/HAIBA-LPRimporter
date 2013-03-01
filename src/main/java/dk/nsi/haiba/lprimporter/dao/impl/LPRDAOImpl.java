@@ -42,6 +42,7 @@ import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
+import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 
@@ -139,12 +140,12 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 	}
 
 	@Override
-	public void updateImportTime(long recordNumber) {
+	public void updateImportTime(long recordNumber, Outcome status) {
 		log.trace("BEGIN updateImportTime");
-		String sql = "update T_ADM set D_IMPORTDTO = ? WHERE K_RECNUM = ?";
+		String sql = "update T_ADM set D_IMPORTDTO = ?, V_STATUS =? WHERE K_RECNUM = ?";
 
 	    try {
-	    	jdbcTemplate.update(sql, new Object[] {new Date(), new Long(recordNumber)});
+	    	int update = jdbcTemplate.update(sql, new Object[] {new Date(), status.toString(), new Long(recordNumber)});
         } catch (RuntimeException e) {
             throw new DAOException("Error updating import timestamp in LPR", e);
         }

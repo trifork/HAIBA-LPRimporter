@@ -53,6 +53,7 @@ import dk.nsi.haiba.lprimporter.dao.impl.LPRDAOImpl;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
+import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 /*
  * Tests the LPRDAO class
@@ -253,9 +254,10 @@ public class LPRDAOIT {
     	
     	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr) values (?, ?)", new Long(recordNumber), cpr);
     	
-    	lprdao.updateImportTime(recordNumber);
+    	lprdao.updateImportTime(recordNumber, Outcome.SUCCESS);
     	
     	assertNotNull(jdbcTemplate.queryForObject("select D_IMPORTDTO from T_ADM", Date.class));
+    	assertEquals(Outcome.SUCCESS.toString(), jdbcTemplate.queryForObject("select V_STATUS from T_ADM", String.class));
     }
     
 }

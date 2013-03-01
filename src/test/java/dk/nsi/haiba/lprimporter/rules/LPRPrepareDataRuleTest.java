@@ -47,6 +47,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
+import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -59,6 +60,10 @@ public class LPRPrepareDataRuleTest {
 		@Bean
 		public HAIBADAO haibaDao() {
 			return Mockito.mock(HAIBADAO.class);
+		}
+		@Bean
+		public LPRDAO lprDao() {
+			return Mockito.mock(LPRDAO.class);
 		}
 	}
 	
