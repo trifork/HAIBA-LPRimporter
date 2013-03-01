@@ -40,7 +40,7 @@ import dk.nsi.haiba.lprimporter.message.MessageResolver;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 
 /*
- * This is the 6. rule to be applied to LPR data
+ * This is the 10. rule to be applied to LPR data
  * It takes a list of contacts from a single CPR number, and processes the data with the Connect contacts rule
  * See the solution document for details about this rule.
  */

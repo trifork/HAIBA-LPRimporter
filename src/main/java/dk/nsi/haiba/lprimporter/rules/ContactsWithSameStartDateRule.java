@@ -94,7 +94,7 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 							(!previousContact.getSygehusCode().equals(contact.getSygehusCode()) ||
 							!previousContact.getAfdelingsCode().equals(contact.getAfdelingsCode()))) {
 						// error, ignore the contact
-						BusinessRuleError be = new BusinessRuleError(previousContact.getRecordNumber(), resolver.getMessage("rule.contactswithsamestartdate.different.hospitalordepartment", new Object[] {contact.getRecordNumber()}), resolver.getMessage("rule.contactswithsamestartdate.name"));
+						BusinessRuleError be = new BusinessRuleError(previousContact.getRecordNumber(), resolver.getMessage("rule.contactswithsamestartdate.different.hospitalordepartment", new Object[] {"["+contact.getRecordNumber()+"]"}), resolver.getMessage("rule.contactswithsamestartdate.name"));
 						businessRuleErrorLog.log(be);
 						lprDao.updateImportTime(previousContact.getRecordNumber(), Outcome.FAILURE);
 						previousContact = contact;

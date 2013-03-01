@@ -65,4 +65,13 @@ public interface HAIBADAO {
 	 * @throws DAOException if something goes wrong in the process
 	 */
 	public String getSygehusInitials(String sygehuscode, String afdelingsCode, Date in) throws DAOException;
+
+	/**
+	 * removes all data from the HAIBA indlaeggelses tables for current patient
+	 * This method is used before applying businessrules
+	 * 
+	 * @param the current patient CPR number
+	 * @throws DAOException if something goes wrong in the process
+	 */
+	public void prepareCPRNumberForImport(String cpr);
 }

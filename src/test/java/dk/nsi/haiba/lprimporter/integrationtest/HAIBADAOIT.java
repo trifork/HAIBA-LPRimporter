@@ -130,6 +130,48 @@ public class HAIBADAOIT {
 		assertEquals(sdf.format(d1), sdf.format(jdbc.queryForObject("select proceduredatotid from Procedurer", Date.class)));
     
     }
+
+    @Test
+	public void insertsIndlaeggelseAndDeleteIt() {
+    	
+		List<Indlaeggelse> indlaeggelser = new ArrayList<Indlaeggelse>();
+		String cpr = "1234567890";
+		String sygehusCode = "qwer";
+		String afdelingsCode = "asd";
+		Calendar calendar = new GregorianCalendar();
+		Date d1 = calendar.getTime();
+		calendar.add(Calendar.DAY_OF_MONTH, 1);
+		Date d2 = calendar.getTime();
+		LPRReference lprRef = new LPRReference();
+		lprRef.setLprRecordNumber(99999);
+		Diagnose d = new Diagnose("d1", "A", "d2");
+		Procedure p = new Procedure("p1", "p", "p2", sygehusCode, afdelingsCode, d1);
+		
+		Indlaeggelse indlaeggelse = new Indlaeggelse(cpr,sygehusCode,afdelingsCode, d1, d2);
+		indlaeggelse.addLPRReference(lprRef);
+		indlaeggelse.addDiagnose(d);
+		indlaeggelse.addProcedure(p);
+		
+		indlaeggelser.add(indlaeggelse);
+		
+    	assertNotNull(haibaDao);
+		haibaDao.saveIndlaeggelsesForloeb(indlaeggelser);
+		
+		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from Indlaeggelser"));
+		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from Indlaeggelsesforloeb"));
+		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from LPR_Reference"));
+		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from Diagnoser"));
+		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from Procedurer"));
+		
+		haibaDao.prepareCPRNumberForImport(cpr);
+    
+		assertEquals("Expected 0 row", 0, jdbc.queryForInt("select count(*) from Indlaeggelser"));
+		assertEquals("Expected 0 row", 0, jdbc.queryForInt("select count(*) from Indlaeggelsesforloeb"));
+		assertEquals("Expected 0 row", 0, jdbc.queryForInt("select count(*) from LPR_Reference"));
+		assertEquals("Expected 0 row", 0, jdbc.queryForInt("select count(*) from Diagnoser"));
+		assertEquals("Expected 0 row", 0, jdbc.queryForInt("select count(*) from Procedurer"));
+    }
+    
     
     @Test
     public void insertsBusinessruleError() {

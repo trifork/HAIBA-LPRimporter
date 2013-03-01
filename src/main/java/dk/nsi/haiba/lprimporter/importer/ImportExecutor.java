@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
@@ -56,6 +57,9 @@ public class ImportExecutor {
 	
 	@Autowired
 	LPRDAO lprdao;
+
+	@Autowired
+	HAIBADAO haibaDao;
 
 	@Autowired
 	RulesEngine rulesEngine;
@@ -88,6 +92,10 @@ public class ImportExecutor {
 					log.debug("processing "+unprocessedCPRnumbers.size()+ " cprnumbers");
 					for (String cpr : unprocessedCPRnumbers) {
 						List<Administration> contactsByCPR = lprdao.getContactsByCPR(cpr);
+
+						// ensure old data for this cpr number is removed bafore applying businessrules.
+						haibaDao.prepareCPRNumberForImport(cpr);
+						
 						// Process the LPR data according to the defined business rules
 						rulesEngine.processRuleChain(contactsByCPR);
 					}

@@ -98,7 +98,7 @@ public class LPRDAOIT {
     	DateTime out = new DateTime(2010, 6, 4, 0, 0, 0);
     	int outHour = 16;
 
-    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr, c_sgh, c_afd, d_inddto, v_indtime, d_uddto, v_udtime) values (?, ?, ?, ?, ?, ?, ?, ?)", new Long(recordNummer), cpr, sygehusCode, afdelingCode, in.toDate(), inHour, out.toDate(), outHour);
+    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr, c_sgh, c_afd, d_inddto, v_indtime, d_uddto, v_udtime, c_pattype) values (?, ?, ?, ?, ?, ?, ?, ?, ?)", new Long(recordNummer), cpr, sygehusCode, afdelingCode, in.toDate(), inHour, out.toDate(), outHour, 2);
     	
     	List<Administration> contactsByCPR = lprdao.getContactsByCPR(cpr);
     	assertNotNull("Expected 1 contact from LPR", contactsByCPR);
@@ -152,7 +152,7 @@ public class LPRDAOIT {
     	String extraDiagnosisCode1 = "tilA";
     	String extraDiagnosisCode2 = "tilB";
     	
-    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr) values (?, ?)", new Long(recordNumber), cpr);
+    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr, c_pattype) values (?, ?, ?)", new Long(recordNumber), cpr, 2);
     	jdbcTemplate.update("insert into T_DIAG (v_recnum, c_diag, c_diagtype, c_tildiag) values (?, ?, ?, ?)", new Long(recordNumber), diagnosisCode1, diagnosisType1, extraDiagnosisCode1);
     	jdbcTemplate.update("insert into T_DIAG (v_recnum, c_diag, c_diagtype, c_tildiag) values (?, ?, ?, ?)", new Long(recordNumber), diagnosisCode2, diagnosisType2, extraDiagnosisCode2);
 
@@ -205,7 +205,7 @@ public class LPRDAOIT {
     	int opHour1 = 8;
     	int opHour2 = 8;
     	
-    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr) values (?, ?)", new Long(recordNumber), cpr);
+    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr, c_pattype) values (?, ?, ?)", new Long(recordNumber), cpr, 2);
     	jdbcTemplate.update("insert into T_PROCEDURER (v_recnum, c_opr, c_oprart, c_tilopr, c_osgh, c_oafd, d_odto, v_otime) values (?, ?, ?, ?, ?, ?, ?, ?)", new Long(recordNumber), oprCode1, oprType1, extraOprCode1, sygehusCode1, afdelingCode1, op1.toDate(), opHour1);
     	jdbcTemplate.update("insert into T_PROCEDURER (v_recnum, c_opr, c_oprart, c_tilopr, c_osgh, c_oafd, d_odto, v_otime) values (?, ?, ?, ?, ?, ?, ?, ?)", new Long(recordNumber), oprCode2, oprType2, extraOprCode2, sygehusCode2, afdelingCode2, op2.toDate(), opHour2);
 

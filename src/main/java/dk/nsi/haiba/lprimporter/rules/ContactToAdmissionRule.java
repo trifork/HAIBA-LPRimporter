@@ -44,7 +44,7 @@ import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 
 /*
- * This is the 7. rule to be applied to LPR data
+ * This is the 11. rule to be applied to LPR data
  * It takes a list of contacts from a single CPR number, and processes the data with the contacts to admissions rule
  * See the solution document for details about this rule.
  */public class ContactToAdmissionRule implements LPRRule {

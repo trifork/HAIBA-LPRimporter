@@ -55,10 +55,10 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 	public boolean hasUnprocessedCPRnumbers() throws DAOException {
 		String sql = null;
 		if(MYSQL.equals(getDialect())) {
-			sql = "SELECT K_RECNUM FROM T_ADM WHERE D_IMPORTDTO IS NULL LIMIT 1";
+			sql = "SELECT K_RECNUM FROM T_ADM WHERE D_IMPORTDTO IS NULL AND C_PATTYPE=2 LIMIT 1";
 		} else {
 			// MSSQL
-			sql = "SELECT TOP 1 K_RECNUM FROM T_ADM WHERE D_IMPORTDTO IS NULL";
+			sql = "SELECT TOP 1 K_RECNUM FROM T_ADM WHERE D_IMPORTDTO IS NULL AND C_PATTYPE=2";
 		}
 		
 	    try {
@@ -77,10 +77,10 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 		log.trace("BEGIN getCPRnumberBatch");
 		String sql = null;
 		if(MYSQL.equals(getDialect())) {
-			sql = "SELECT v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL GROUP BY v_cpr LIMIT "+batchsize;
+			sql = "SELECT v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL AND C_PATTYPE=2 GROUP BY v_cpr LIMIT "+batchsize;
 		} else {
 			// MSSQL
-			sql = "SELECT TOP "+batchsize+" v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL GROUP BY v_cpr";
+			sql = "SELECT TOP "+batchsize+" v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL AND C_PATTYPE=2 GROUP BY v_cpr";
 		}
 		
 		List<String> unprocessedCPRNumbers = new ArrayList<String>();
@@ -95,10 +95,12 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 
 	@Override
 	public List<Administration> getContactsByCPR(String cpr) throws DAOException {
+		// TODO - For now only contacts with patienttype 2 
+		
 		log.trace("BEGIN getContactsByCPR");
 		List<Administration> lprContacts = new ArrayList<Administration>();
 	    try {
-		    lprContacts = jdbcTemplate.query("SELECT k_recnum,c_sgh,c_afd,c_pattype,v_cpr,d_inddto,d_uddto,v_indtime,v_udtime FROM T_ADM WHERE v_cpr=?", new Object[]{cpr}, new LPRContactRowMapper());
+		    lprContacts = jdbcTemplate.query("SELECT k_recnum,c_sgh,c_afd,c_pattype,v_cpr,d_inddto,d_uddto,v_indtime,v_udtime FROM T_ADM WHERE v_cpr=? and C_PATTYPE=?", new Object[]{cpr, 2}, new LPRContactRowMapper());
         } catch (RuntimeException e) {
             throw new DAOException("Error fetching contacts from LPR", e);
         }
@@ -145,7 +147,7 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 		String sql = "update T_ADM set D_IMPORTDTO = ?, V_STATUS =? WHERE K_RECNUM = ?";
 
 	    try {
-	    	int update = jdbcTemplate.update(sql, new Object[] {new Date(), status.toString(), new Long(recordNumber)});
+	    	jdbcTemplate.update(sql, new Object[] {new Date(), status.toString(), new Long(recordNumber)});
         } catch (RuntimeException e) {
             throw new DAOException("Error updating import timestamp in LPR", e);
         }

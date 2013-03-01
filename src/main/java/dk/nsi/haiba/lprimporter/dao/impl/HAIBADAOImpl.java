@@ -232,5 +232,16 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
             throw new DAOException("Error Fetching initials for hospital from FGR", e);
         }
 	}
+
+
+	@Override
+	public void prepareCPRNumberForImport(String cpr) {
+		// delete earlier processed data from HAIBA indlaeggelses tables.
+		jdbc.update("DELETE FROM Diagnoser WHERE indlaeggelsesID IN (SELECT indlaeggelsesID FROM Indlaeggelser WHERE cpr=?)", cpr);
+		jdbc.update("DELETE FROM Procedurer WHERE indlaeggelsesID IN (SELECT indlaeggelsesID FROM Indlaeggelser WHERE cpr=?)", cpr);
+		jdbc.update("DELETE FROM Indlaeggelsesforloeb WHERE indlaeggelsesID IN (SELECT indlaeggelsesID FROM Indlaeggelser WHERE cpr=?)", cpr);
+		jdbc.update("DELETE FROM LPR_Reference WHERE indlaeggelsesID IN (SELECT indlaeggelsesID FROM Indlaeggelser WHERE cpr=?)", cpr);
+		jdbc.update("DELETE FROM Indlaeggelser WHERE cpr=?", cpr);
+	}
 	
 }
