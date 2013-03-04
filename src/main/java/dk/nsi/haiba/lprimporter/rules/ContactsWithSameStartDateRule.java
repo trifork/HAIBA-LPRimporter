@@ -40,6 +40,7 @@ import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.log.BusinessRuleErrorLog;
 import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
+import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
@@ -87,16 +88,22 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 				DateTime previousIn = new DateTime(previousContact.getIndlaeggelsesDatetime());
 				DateTime in = new DateTime(contact.getIndlaeggelsesDatetime());
 				if(in.isEqual(previousIn)) {
+					log.debug("indates are equal for contacts: "+ previousContact.getRecordNumber() + " and: "+contact.getRecordNumber());
 					// if out-datetime is equal but sygehus or afdeling is different it is an error
 					DateTime previousOut = new DateTime(previousContact.getUdskrivningsDatetime());
 					DateTime out = new DateTime(contact.getUdskrivningsDatetime());
 					if(previousOut.isEqual(out) &&
 							(!previousContact.getSygehusCode().equals(contact.getSygehusCode()) ||
 							!previousContact.getAfdelingsCode().equals(contact.getAfdelingsCode()))) {
-						// error, ignore the contact
+						log.debug("outdates are equal but dep. or hos differs for contacts: "+ previousContact.getRecordNumber() + " and: "+contact.getRecordNumber());
+						// error, ignore the contact, 
 						BusinessRuleError be = new BusinessRuleError(previousContact.getRecordNumber(), resolver.getMessage("rule.contactswithsamestartdate.different.hospitalordepartment", new Object[] {"["+contact.getRecordNumber()+"]"}), resolver.getMessage("rule.contactswithsamestartdate.name"));
 						businessRuleErrorLog.log(be);
+						// mark contact and its earlier refs. as failed
 						lprDao.updateImportTime(previousContact.getRecordNumber(), Outcome.FAILURE);
+						for (LPRReference earlierRefs : previousContact.getLprReferencer()) {
+							lprDao.updateImportTime(earlierRefs.getLprRecordNumber(), Outcome.FAILURE);
+						}
 						previousContact = contact;
 						continue;
 					} else {
@@ -114,8 +121,10 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 						preservedContact.addLPRReference(deletedContact.getRecordNumber());
 						processedContacts.add(preservedContact);
 						previousContact = preservedContact;
+						log.debug("preserve contact: "+ preservedContact.getRecordNumber() + " and discard contact: "+deletedContact.getRecordNumber());
 					}
 				} else {
+					log.debug("indates are NOT equal for contacts: "+ previousContact.getRecordNumber() + " and: "+contact.getRecordNumber());
 					processedContacts.add(previousContact);
 					previousContact = contact;
 				}

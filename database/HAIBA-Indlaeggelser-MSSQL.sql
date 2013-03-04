@@ -30,10 +30,11 @@ CREATE TABLE Procedurer (
 );
 
 CREATE TABLE Indlaeggelsesforloeb (
-    IndlaeggelsesforloebID BIGINT NOT NULL IDENTITY,
+    ID BIGINT NOT NULL IDENTITY PRIMARY KEY,
+    IndlaeggelsesforloebID BIGINT,
     IndlaeggelsesID BIGINT FOREIGN KEY REFERENCES Indlaeggelser(IndlaeggelsesID),
 
-    PRIMARY KEY (IndlaeggelsesforloebID, IndlaeggelsesID),
+    UNIQUE (IndlaeggelsesforloebID, IndlaeggelsesID),
 
 );
 

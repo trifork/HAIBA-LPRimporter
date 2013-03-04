@@ -52,6 +52,7 @@ import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
+import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class)
@@ -72,6 +73,9 @@ public class ContactsWithSameStartDateRuleTest {
 	
 	@Autowired
 	HAIBADAO haibaDao;
+	
+	@Autowired
+	LPRDAO lprDao;
 
 	@Autowired
 	ContactsWithSameStartDateRule contactsWithSameStartDateRule;
@@ -127,6 +131,7 @@ public class ContactsWithSameStartDateRuleTest {
     	op1 = new DateTime(2010, 5, 4, 0, 0, 0);
     	
     	Mockito.reset(haibaDao);
+    	Mockito.reset(lprDao);
 	}
 	
 	@Test 
@@ -151,6 +156,32 @@ public class ContactsWithSameStartDateRuleTest {
 		// contact #3 should still be processed, don't know which one of the 2 with same in and outdate that is kept - it is up to the sortingalgorithm - and it doesn't matter anyway because the other one is logged as an error.
 		Administration last = processedContacts.get(1);
 		assertEquals(recordNummer3, last.getRecordNumber());
+	}
+
+	@Test 
+	public void threeContactsWithSameInAndOutdateButDifferentDepartmentShouldResultInError() {
+		assertNotNull(contactsWithSameStartDateRule);
+		
+    	afdelingsCode2 = "test";
+    	sygehusCode3 = "csgh";
+    	afdelingsCode3 = "tes2";
+    	in3 = new DateTime(2010, 5, 3, 0, 0, 0);
+    	out3 = new DateTime(2010, 6, 4, 12, 0, 0);
+    	
+		List<Administration> contacts = setupContacts();
+
+		contactsWithSameStartDateRule.setContacts(contacts);
+		contactsWithSameStartDateRule.doProcessing();
+		
+		List<Administration> processedContacts = contactsWithSameStartDateRule.getContacts();
+		
+		assertTrue("Expecting 1 contacts", processedContacts.size() == 1);
+
+		// Expect 2 error to be logged
+		Mockito.verify(haibaDao, Mockito.atLeastOnce()).saveBusinessRuleError((BusinessRuleError) Mockito.any());
+		Mockito.verify(lprDao, Mockito.atLeastOnce()).updateImportTime(Mockito.anyLong(), (Outcome)Mockito.any());
+
+		Collections.sort(processedContacts, new AdministrationInDateComparator());
 	}
 
 	@Test 

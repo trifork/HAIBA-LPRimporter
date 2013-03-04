@@ -85,6 +85,7 @@ public class ImportExecutor {
 		// Fetch new records from LPR contact table
 		try {
 			if(lprdao.hasUnprocessedCPRnumbers()) {
+				log.debug("LPR has unprocessed CPR numbers, starting import");
 				statusRepo.importStartedAt(new DateTime());
 
 				List<String> unprocessedCPRnumbers = lprdao.getCPRnumberBatch(batchsize);
@@ -109,8 +110,8 @@ public class ImportExecutor {
 			}
 			
 		} catch(Exception e) {
-			statusRepo.importEndedWithFailure(new DateTime(), e.getMessage());
 			log.error("", e);
+			statusRepo.importEndedWithFailure(new DateTime(), e.getMessage());
 		}
 	}
 }

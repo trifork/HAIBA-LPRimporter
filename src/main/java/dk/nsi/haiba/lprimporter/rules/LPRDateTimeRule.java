@@ -77,6 +77,15 @@ public class LPRDateTimeRule implements LPRRule {
 
     @Value("${default.contact.procedure.outhours}")
 	private int defaultProcedureHours;
+    
+    @Value("${currentpatient.default.outdate.calculated.interval.from.indate}")
+	private int currentPatientDefaultInterval;
+
+    @Value("${currentpatient.default.outdate.hours.after.indate}")
+	private int currentPatientHoursIfLessThanInterval;
+
+    @Value("${currentpatient.default.outdate.days.after.indate}")
+	private int currentPatientDaysIfGreaterThanInterval;
 
 	@Override
 	public LPRRule doProcessing() {
@@ -141,9 +150,22 @@ public class LPRDateTimeRule implements LPRRule {
 				
 				contact.setUdskrivningsDatetime(admissionEnd.toDate());
 			} else {
-				
-				// TODO patient is currently at the hospital
+				// patient is currently at the hospital
+				contact.setCurrentPatient(true);
+
 				log.debug("Admission End datetime is null for LPR ref: "+contact.getRecordNumber()+" patient is probably not discharged from hospital yet");
+
+				// if in-date is not more than 30 days older than now - set out-date to today at 24:00
+				DateTime now = new DateTime();
+				DateTime in = new DateTime(contact.getIndlaeggelsesDatetime());
+				if(in.isAfter(now.minusDays(currentPatientDefaultInterval))) {
+					DateTime out = in.withHourOfDay(0).withMinuteOfHour(0).withSecondOfMinute(0).plusHours(currentPatientHoursIfLessThanInterval);
+					contact.setUdskrivningsDatetime(out.toDate());
+				} else {
+					// else set out-date to in-date + 30 days
+					DateTime out = in.plusDays(currentPatientDaysIfGreaterThanInterval);
+					contact.setUdskrivningsDatetime(out.toDate());
+				}
 			}
 			
 			// Rule #3

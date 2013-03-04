@@ -61,6 +61,7 @@ public class ImportStatusRepositoryJdbcImpl extends CommonDAO implements ImportS
 //	@Transactional(value="haibaTransactionManager", propagation = Propagation.REQUIRES_NEW)
 	@Transactional(value="haibaTransactionManager")
 	public void importStartedAt(DateTime startTime) {
+		log.debug("Starting import");
 		haibaJdbcTemplate.update("INSERT INTO ImporterStatus (StartTime) values (?)", startTime.toDate());
 	}
 
@@ -68,6 +69,7 @@ public class ImportStatusRepositoryJdbcImpl extends CommonDAO implements ImportS
 //	@Transactional(value="haibaTransactionManager", propagation = Propagation.MANDATORY)
 	@Transactional(value="haibaTransactionManager")
 	public void importEndedWithSuccess(DateTime endTime) {
+		log.debug("Import ended with success");
 		importEndedAt(endTime, ImportStatus.Outcome.SUCCESS, null);
 	}
 
@@ -75,6 +77,7 @@ public class ImportStatusRepositoryJdbcImpl extends CommonDAO implements ImportS
 //	@Transactional(value="haibaTransactionManager", propagation = Propagation.REQUIRES_NEW)
 	@Transactional(value="haibaTransactionManager")
 	public void importEndedWithFailure(DateTime endTime, String errorMessage) {
+		log.debug("Import ended with failure");
 		importEndedAt(endTime, ImportStatus.Outcome.FAILURE, errorMessage);
 	}
 
@@ -91,7 +94,7 @@ public class ImportStatusRepositoryJdbcImpl extends CommonDAO implements ImportS
 		try {
 			newestOpenId = haibaJdbcTemplate.queryForLong(sql);
 		} catch (EmptyResultDataAccessException e) {
-			// it seems we do not have any open statuses, let's not update
+			log.debug("it seems we do not have any open statuses, let's not update");
 			return;
 		}
 

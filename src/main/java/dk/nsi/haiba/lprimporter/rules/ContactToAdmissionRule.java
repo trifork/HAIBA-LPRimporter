@@ -110,6 +110,7 @@ import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 		indlaeggelse.setSygehusCode(contact.getSygehusCode());
 		indlaeggelse.setIndlaeggelsesDatetime(contact.getIndlaeggelsesDatetime());
 		indlaeggelse.setUdskrivningsDatetime(contact.getUdskrivningsDatetime());
+		indlaeggelse.setAktuel(contact.isCurrentPatient());
 		
 		// save current contact reference
 		log.trace("Contact recordnumber: "+contact.getRecordNumber());
