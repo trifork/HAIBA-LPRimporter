@@ -40,6 +40,7 @@ public class Indlaeggelse {
 	String afdelingsCode;
 	Date indlaeggelsesDatetime;
 	Date udskrivningsDatetime;
+	boolean aktuel = false; // default false
 	List<LPRReference> lprReferencer = new ArrayList<LPRReference>();
 	List<Diagnose> diagnoses = new ArrayList<Diagnose>();
 	List<Procedure> procedures = new ArrayList<Procedure>();
@@ -50,12 +51,13 @@ public class Indlaeggelse {
 
 	public Indlaeggelse(String cpr, String sygehusCode,
 			String afdelingsCode, Date indlaeggelsesDatetime,
-			Date udskrivningsDatetime) {
+			Date udskrivningsDatetime, boolean aktuel) {
 		this.cpr = cpr;
 		this.sygehusCode = sygehusCode;
 		this.afdelingsCode = afdelingsCode;
 		this.indlaeggelsesDatetime = indlaeggelsesDatetime;
 		this.udskrivningsDatetime = udskrivningsDatetime;
+		this.aktuel = aktuel;
 	}
 
 
@@ -133,5 +135,13 @@ public class Indlaeggelse {
 
 	public void addProcedure(Procedure p) {
 		procedures.add(p);
+	}
+
+	public boolean isAktuel() {
+		return aktuel;
+	}
+
+	public void setAktuel(boolean aktuel) {
+		this.aktuel = aktuel;
 	}
 }

@@ -4,7 +4,10 @@ CREATE TABLE Indlaeggelser (
     Sygehuskode VARCHAR(7),
     Afdelingskode VARCHAR(3),
     Indlaeggelsesdatotid datetime,
-    Udskrivningsdatotid datetime
+    Udskrivningsdatotid datetime,
+    Aktuel Bit default 0,
+    
+    INDEX(CPR)
 );
 
 CREATE TABLE Diagnoser (

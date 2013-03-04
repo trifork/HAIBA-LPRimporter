@@ -65,7 +65,7 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 		try {
 			for (Indlaeggelse indlaeggelse : indlaeggelser) {
 				
-				final String sql = "INSERT INTO Indlaeggelser (CPR, Sygehuskode, Afdelingskode, Indlaeggelsesdatotid, Udskrivningsdatotid) VALUES (?,?,?,?,?)";				
+				final String sql = "INSERT INTO Indlaeggelser (CPR, Sygehuskode, Afdelingskode, Indlaeggelsesdatotid, Udskrivningsdatotid, aktuel) VALUES (?,?,?,?,?,?)";				
 				
 				
 				final Object[] args = new Object[] {
@@ -73,7 +73,8 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 						indlaeggelse.getSygehusCode(),
 						indlaeggelse.getAfdelingsCode(),
 						indlaeggelse.getIndlaeggelsesDatetime(),
-						indlaeggelse.getUdskrivningsDatetime()};
+						indlaeggelse.getUdskrivningsDatetime(),
+						indlaeggelse.isAktuel()};
 				
 
 				long indlaeggelsesId = -1;
@@ -210,6 +211,8 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 	@Override
 	public String getSygehusInitials(String sygehuscode, String afdelingsCode, Date in) throws DAOException {
 		
+		// TODO - this can be cached
+		
 		String sql = null;
 		if(MYSQL.equals(getDialect())) {
 			sql = "SELECT V_AFDNAVN FROM T_AFDKLASSE where k_sgh=? and k_afd=? and k_fradto <= ? and d_tildto >= ?";
@@ -236,12 +239,35 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 
 	@Override
 	public void prepareCPRNumberForImport(String cpr) {
-		// delete earlier processed data from HAIBA indlaeggelses tables.
-		jdbc.update("DELETE FROM Diagnoser WHERE indlaeggelsesID IN (SELECT indlaeggelsesID FROM Indlaeggelser WHERE cpr=?)", cpr);
-		jdbc.update("DELETE FROM Procedurer WHERE indlaeggelsesID IN (SELECT indlaeggelsesID FROM Indlaeggelser WHERE cpr=?)", cpr);
-		jdbc.update("DELETE FROM Indlaeggelsesforloeb WHERE indlaeggelsesID IN (SELECT indlaeggelsesID FROM Indlaeggelser WHERE cpr=?)", cpr);
-		jdbc.update("DELETE FROM LPR_Reference WHERE indlaeggelsesID IN (SELECT indlaeggelsesID FROM Indlaeggelser WHERE cpr=?)", cpr);
-		jdbc.update("DELETE FROM Indlaeggelser WHERE cpr=?", cpr);
+		
+		boolean cprExists = false;
+		
+		String sql = null;
+		if(MYSQL.equals(getDialect())) {
+			sql = "SELECT IndlaeggelsesID FROM Indlaeggelser where cpr=? LIMIT 1";
+		} else {
+			// MSSQL
+			sql = "SELECT TOP 1 IndlaeggelsesID FROM Indlaeggelser where cpr=?";
+		}
+
+	    try {
+	    	jdbc.queryForLong(sql,new Object[]{cpr});
+	    	cprExists = true;
+        } catch(EmptyResultDataAccessException e) {
+        	// ignore - no CPR exists
+        } catch (RuntimeException e) {
+            throw new DAOException("Error Fetching CPR number from Indlaeggelser", e);
+        }
+		
+	    if(cprExists) {
+			// delete earlier processed data from HAIBA indlaeggelses tables.
+			jdbc.update("DELETE FROM Diagnoser WHERE indlaeggelsesID IN (SELECT indlaeggelsesID FROM Indlaeggelser WHERE cpr=?)", cpr);
+			jdbc.update("DELETE FROM Procedurer WHERE indlaeggelsesID IN (SELECT indlaeggelsesID FROM Indlaeggelser WHERE cpr=?)", cpr);
+			jdbc.update("DELETE FROM Indlaeggelsesforloeb WHERE indlaeggelsesID IN (SELECT indlaeggelsesID FROM Indlaeggelser WHERE cpr=?)", cpr);
+			jdbc.update("DELETE FROM LPR_Reference WHERE indlaeggelsesID IN (SELECT indlaeggelsesID FROM Indlaeggelser WHERE cpr=?)", cpr);
+			jdbc.update("DELETE FROM Indlaeggelser WHERE cpr=?", cpr);
+	    }
+	    
 	}
 	
 }

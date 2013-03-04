@@ -49,7 +49,7 @@ public class IndlaeggelseTest {
 		calendar.add(Calendar.DAY_OF_MONTH, 1);
 		Date d2 = calendar.getTime();
 		
-		Indlaeggelse indlaeggelse = new Indlaeggelse(cpr,sygehusCode,afdelingsCode, d1, d2);
+		Indlaeggelse indlaeggelse = new Indlaeggelse(cpr,sygehusCode,afdelingsCode, d1, d2, false);
 		
 		assertEquals(cpr, indlaeggelse.getCpr());
 		assertEquals(sygehusCode, indlaeggelse.getSygehusCode());

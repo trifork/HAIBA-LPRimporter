@@ -105,7 +105,7 @@ public class HAIBADAOIT {
 		Diagnose d = new Diagnose("d1", "A", "d2");
 		Procedure p = new Procedure("p1", "p", "p2", sygehusCode, afdelingsCode, d1);
 		
-		Indlaeggelse indlaeggelse = new Indlaeggelse(cpr,sygehusCode,afdelingsCode, d1, d2);
+		Indlaeggelse indlaeggelse = new Indlaeggelse(cpr,sygehusCode,afdelingsCode, d1, d2, false);
 		indlaeggelse.addLPRReference(lprRef);
 		indlaeggelse.addDiagnose(d);
 		indlaeggelse.addProcedure(p);
@@ -147,7 +147,7 @@ public class HAIBADAOIT {
 		Diagnose d = new Diagnose("d1", "A", "d2");
 		Procedure p = new Procedure("p1", "p", "p2", sygehusCode, afdelingsCode, d1);
 		
-		Indlaeggelse indlaeggelse = new Indlaeggelse(cpr,sygehusCode,afdelingsCode, d1, d2);
+		Indlaeggelse indlaeggelse = new Indlaeggelse(cpr,sygehusCode,afdelingsCode, d1, d2,false);
 		indlaeggelse.addLPRReference(lprRef);
 		indlaeggelse.addDiagnose(d);
 		indlaeggelse.addProcedure(p);

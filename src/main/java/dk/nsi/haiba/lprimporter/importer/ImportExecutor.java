@@ -92,12 +92,15 @@ public class ImportExecutor {
 					log.debug("processing "+unprocessedCPRnumbers.size()+ " cprnumbers");
 					for (String cpr : unprocessedCPRnumbers) {
 						List<Administration> contactsByCPR = lprdao.getContactsByCPR(cpr);
+						log.debug("Fetched "+contactsByCPR.size()+ " contacts");
 
-						// ensure old data for this cpr number is removed bafore applying businessrules.
+						// ensure old data for this cpr number is removed before applying businessrules.
 						haibaDao.prepareCPRNumberForImport(cpr);
+						log.debug("Removed earlier processed admissions for CPR number");
 						
 						// Process the LPR data according to the defined business rules
 						rulesEngine.processRuleChain(contactsByCPR);
+						log.debug("Rules processed for CPR number");
 					}
 					// fetch the next batch
 					unprocessedCPRnumbers = lprdao.getCPRnumberBatch(batchsize);

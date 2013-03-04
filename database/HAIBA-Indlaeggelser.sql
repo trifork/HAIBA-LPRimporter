@@ -8,7 +8,10 @@ CREATE TABLE IF NOT EXISTS Indlaeggelser (
     Afdelingskode VARCHAR(3),
     Indlaeggelsesdatotid datetime,
     Udskrivningsdatotid datetime,
-    Aktuel varchar(1)
+    Aktuel tinyint(1) default 0,
+    
+    INDEX (CPR)
+ 
 ) ENGINE=InnoDB COLLATE=utf8_bin;
 
 CREATE TABLE IF NOT EXISTS Diagnoser (
