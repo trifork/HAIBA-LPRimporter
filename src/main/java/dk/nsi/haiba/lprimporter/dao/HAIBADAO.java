@@ -74,4 +74,15 @@ public interface HAIBADAO {
 	 * @throws DAOException if something goes wrong in the process
 	 */
 	public void prepareCPRNumberForImport(String cpr);
+	
+	/**
+	 * Fetches a list of current patients, that need to be reprocessed every time there is new data
+	 * to see if they are discharged from hospital
+	 * 
+	 * 
+	 * @return a list containing all the current patients CPR numbers
+	 * @throws DAOException if something goes wrong in the process
+	 */
+	public List<String> getCurrentPatients();
+	
 }

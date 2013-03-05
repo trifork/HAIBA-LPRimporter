@@ -269,5 +269,19 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 	    }
 	    
 	}
+
+
+	@Override
+	public List<String> getCurrentPatients() {
+		String sql = "SELECT cpr FROM Indlaeggelser WHERE Aktuel = 1 GROUP BY CPR";
+		
+		List<String> currentPatientCPRNumbers = new ArrayList<String>();
+	    try {
+	    	currentPatientCPRNumbers = jdbc.queryForList(sql, String.class);
+        } catch (RuntimeException e) {
+            throw new DAOException("Error fetching list of current patients", e);
+        }
+	    return currentPatientCPRNumbers;
+	}
 	
 }

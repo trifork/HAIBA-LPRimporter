@@ -36,6 +36,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,31 +87,32 @@ public class HAIBADAOIT {
     @Autowired
     HAIBADAO haibaDao;
     
+	String cpr;
+	String sygehusCode;
+	String afdelingsCode;
+	Date in;
+	Date out;
+	long recordNumber;
+
+	@Before
+    public void init() {
+		cpr = "1234567890";
+		sygehusCode = "qwer";
+		afdelingsCode = "asd";
+		Calendar calendar = new GregorianCalendar();
+		in = calendar.getTime();
+		calendar.add(Calendar.DAY_OF_MONTH, 1);
+		out = calendar.getTime();
+		recordNumber = 99999;
+    }
+    
     /*
      * Inserts an IndlaeggelsesForloeb into the HAIBA db, and tests data is inserted correct by DAO
      */
     @Test
 	public void insertsSingleIndlaeggelse() {
     	
-		List<Indlaeggelse> indlaeggelser = new ArrayList<Indlaeggelse>();
-		String cpr = "1234567890";
-		String sygehusCode = "qwer";
-		String afdelingsCode = "asd";
-		Calendar calendar = new GregorianCalendar();
-		Date d1 = calendar.getTime();
-		calendar.add(Calendar.DAY_OF_MONTH, 1);
-		Date d2 = calendar.getTime();
-		LPRReference lprRef = new LPRReference();
-		lprRef.setLprRecordNumber(99999);
-		Diagnose d = new Diagnose("d1", "A", "d2");
-		Procedure p = new Procedure("p1", "p", "p2", sygehusCode, afdelingsCode, d1);
-		
-		Indlaeggelse indlaeggelse = new Indlaeggelse(cpr,sygehusCode,afdelingsCode, d1, d2, false);
-		indlaeggelse.addLPRReference(lprRef);
-		indlaeggelse.addDiagnose(d);
-		indlaeggelse.addProcedure(p);
-		
-		indlaeggelser.add(indlaeggelse);
+		List<Indlaeggelse> indlaeggelser = createIndlaeggelser(false);
 		
     	assertNotNull(haibaDao);
 		haibaDao.saveIndlaeggelsesForloeb(indlaeggelser);
@@ -124,35 +126,17 @@ public class HAIBADAOIT {
 		assertEquals(sygehusCode, jdbc.queryForObject("select sygehuskode from Indlaeggelser", String.class));
 		
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.0");
-		assertEquals(sdf.format(d1), sdf.format(jdbc.queryForObject("select indlaeggelsesdatotid from Indlaeggelser", Date.class)));
-		assertEquals(sdf.format(d2), sdf.format(jdbc.queryForObject("select udskrivningsdatotid from Indlaeggelser", Date.class)));
+		assertEquals(sdf.format(in), sdf.format(jdbc.queryForObject("select indlaeggelsesdatotid from Indlaeggelser", Date.class)));
+		assertEquals(sdf.format(out), sdf.format(jdbc.queryForObject("select udskrivningsdatotid from Indlaeggelser", Date.class)));
 
-		assertEquals(sdf.format(d1), sdf.format(jdbc.queryForObject("select proceduredatotid from Procedurer", Date.class)));
+		assertEquals(sdf.format(in), sdf.format(jdbc.queryForObject("select proceduredatotid from Procedurer", Date.class)));
     
     }
 
     @Test
 	public void insertsIndlaeggelseAndDeleteIt() {
     	
-		List<Indlaeggelse> indlaeggelser = new ArrayList<Indlaeggelse>();
-		String cpr = "1234567890";
-		String sygehusCode = "qwer";
-		String afdelingsCode = "asd";
-		Calendar calendar = new GregorianCalendar();
-		Date d1 = calendar.getTime();
-		calendar.add(Calendar.DAY_OF_MONTH, 1);
-		Date d2 = calendar.getTime();
-		LPRReference lprRef = new LPRReference();
-		lprRef.setLprRecordNumber(99999);
-		Diagnose d = new Diagnose("d1", "A", "d2");
-		Procedure p = new Procedure("p1", "p", "p2", sygehusCode, afdelingsCode, d1);
-		
-		Indlaeggelse indlaeggelse = new Indlaeggelse(cpr,sygehusCode,afdelingsCode, d1, d2,false);
-		indlaeggelse.addLPRReference(lprRef);
-		indlaeggelse.addDiagnose(d);
-		indlaeggelse.addProcedure(p);
-		
-		indlaeggelser.add(indlaeggelse);
+		List<Indlaeggelse> indlaeggelser = createIndlaeggelser(false);
 		
     	assertNotNull(haibaDao);
 		haibaDao.saveIndlaeggelsesForloeb(indlaeggelser);
@@ -163,8 +147,17 @@ public class HAIBADAOIT {
 		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from Diagnoser"));
 		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from Procedurer"));
 		
-		haibaDao.prepareCPRNumberForImport(cpr);
+		// test it works as intended with a cpr number not in the database
+		haibaDao.prepareCPRNumberForImport("other");
     
+		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from Indlaeggelser"));
+		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from Indlaeggelsesforloeb"));
+		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from LPR_Reference"));
+		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from Diagnoser"));
+		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from Procedurer"));
+
+		haibaDao.prepareCPRNumberForImport(cpr);
+		
 		assertEquals("Expected 0 row", 0, jdbc.queryForInt("select count(*) from Indlaeggelser"));
 		assertEquals("Expected 0 row", 0, jdbc.queryForInt("select count(*) from Indlaeggelsesforloeb"));
 		assertEquals("Expected 0 row", 0, jdbc.queryForInt("select count(*) from LPR_Reference"));
@@ -172,6 +165,19 @@ public class HAIBADAOIT {
 		assertEquals("Expected 0 row", 0, jdbc.queryForInt("select count(*) from Procedurer"));
     }
     
+    @Test
+	public void insertsAndFetchesCurrentPatient() {
+    	
+		List<Indlaeggelse> indlaeggelser = createIndlaeggelser(true);
+		
+    	assertNotNull(haibaDao);
+		haibaDao.saveIndlaeggelsesForloeb(indlaeggelser);
+		
+		List<String> currentPatients = haibaDao.getCurrentPatients();
+		
+		assertEquals("Expected 1 row", 1, currentPatients.size());
+		assertEquals(cpr, currentPatients.get(0));
+    }
     
     @Test
     public void insertsBusinessruleError() {
@@ -206,4 +212,19 @@ public class HAIBADAOIT {
     	
     }
     
+    /*
+     * Utility method to create a list of indlaeggelser as the rules would have done.
+     */
+    private List<Indlaeggelse> createIndlaeggelser(boolean current) {
+		List<Indlaeggelse> indlaeggelser = new ArrayList<Indlaeggelse>();
+		LPRReference lprRef = new LPRReference(recordNumber);
+		Diagnose d = new Diagnose("d1", "A", "d2");
+		Procedure p = new Procedure("p1", "p", "p2", sygehusCode, afdelingsCode, in);
+		Indlaeggelse indlaeggelse = new Indlaeggelse(cpr,sygehusCode,afdelingsCode, in, out, current);
+		indlaeggelse.addLPRReference(lprRef);
+		indlaeggelse.addDiagnose(d);
+		indlaeggelse.addProcedure(p);
+		indlaeggelser.add(indlaeggelse);
+		return indlaeggelser;
+	}
 }

@@ -87,21 +87,20 @@ public class ImportExecutor {
 			if(lprdao.hasUnprocessedCPRnumbers()) {
 				log.debug("LPR has unprocessed CPR numbers, starting import");
 				statusRepo.importStartedAt(new DateTime());
+				
+				// new data has arrived, check if any of the processed current patients are discharged
+				List<String> currentPatients = haibaDao.getCurrentPatients();
+				log.debug("processing "+currentPatients.size()+ " current patients cprnumbers");
+				for (String cpr : currentPatients) {
+					processCPRNumber(cpr);
+				}
 
+				// process the new data
 				List<String> unprocessedCPRnumbers = lprdao.getCPRnumberBatch(batchsize);
 				while(unprocessedCPRnumbers.size() > 0) {
 					log.debug("processing "+unprocessedCPRnumbers.size()+ " cprnumbers");
 					for (String cpr : unprocessedCPRnumbers) {
-						List<Administration> contactsByCPR = lprdao.getContactsByCPR(cpr);
-						log.debug("Fetched "+contactsByCPR.size()+ " contacts");
-
-						// ensure old data for this cpr number is removed before applying businessrules.
-						haibaDao.prepareCPRNumberForImport(cpr);
-						log.debug("Removed earlier processed admissions for CPR number");
-						
-						// Process the LPR data according to the defined business rules
-						rulesEngine.processRuleChain(contactsByCPR);
-						log.debug("Rules processed for CPR number");
+						processCPRNumber(cpr);
 					}
 					// fetch the next batch
 					unprocessedCPRnumbers = lprdao.getCPRnumberBatch(batchsize);
@@ -113,5 +112,19 @@ public class ImportExecutor {
 			log.error("", e);
 			statusRepo.importEndedWithFailure(new DateTime(), e.getMessage());
 		}
+	}
+
+
+	private void processCPRNumber(String cpr) {
+		List<Administration> contactsByCPR = lprdao.getContactsByCPR(cpr);
+		log.debug("Fetched "+contactsByCPR.size()+ " contacts");
+
+		// ensure old data for this cpr number is removed before applying businessrules.
+		haibaDao.prepareCPRNumberForImport(cpr);
+		log.debug("Removed earlier processed admissions for CPR number");
+		
+		// Process the LPR data according to the defined business rules
+		rulesEngine.processRuleChain(contactsByCPR);
+		log.debug("Rules processed for CPR number");
 	}
 }
