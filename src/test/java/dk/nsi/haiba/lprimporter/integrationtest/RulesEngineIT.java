@@ -165,6 +165,7 @@ public class RulesEngineIT {
 		contact.setCpr(cpr);
 		contact.setIndlaeggelsesDatetime(in.toDate());
 		contact.setUdskrivningsDatetime(out.toDate());
+		contact.setPatientType(2);
 		
 		List<LPRProcedure> procedures = new ArrayList<LPRProcedure>();
 		LPRProcedure procedure = new LPRProcedure();

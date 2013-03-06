@@ -212,6 +212,7 @@ public class LPRPrepareDataRuleTest {
 		contact.setRecordNumber(recordNummer);
 		contact.setSygehusCode(sygehusCode);
 		contact.setAfdelingsCode(afdelingsCode);
+		contact.setPatientType(2);
 		contact.setCpr(cpr);
 		if(in != null) {
 			contact.setIndlaeggelsesDatetime(in.toDate());

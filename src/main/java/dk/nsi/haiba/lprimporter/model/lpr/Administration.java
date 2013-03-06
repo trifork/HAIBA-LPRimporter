@@ -48,6 +48,7 @@ public class Administration {
 	List<LPRProcedure> lprProcedures = new ArrayList<LPRProcedure>();
 	List<LPRReference> lprReferencer = new ArrayList<LPRReference>();
 	boolean currentPatient = false;
+	private int patientType;
 	
 	
 	public long getRecordNumber() {
@@ -73,6 +74,18 @@ public class Administration {
 	}
 	public void setAfdelingsCode(String afdelingsCode) {
 		this.afdelingsCode = afdelingsCode;
+	}
+	public boolean isCurrentPatient() {
+		return currentPatient;
+	}
+	public void setCurrentPatient(boolean currentPatient) {
+		this.currentPatient = currentPatient;
+	}
+	public int getPatientType() {
+		return patientType;
+	}
+	public void setPatientType(int patientType) {
+		this.patientType = patientType;
 	}
 
 	/*
@@ -184,10 +197,4 @@ public class Administration {
         		indlaeggelsesDatetime+
         		udskrivningsDatetime).hashCode();
     }
-	public boolean isCurrentPatient() {
-		return currentPatient;
-	}
-	public void setCurrentPatient(boolean currentPatient) {
-		this.currentPatient = currentPatient;
-	}
 }

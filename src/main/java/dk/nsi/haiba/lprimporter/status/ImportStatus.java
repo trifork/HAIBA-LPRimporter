@@ -69,7 +69,8 @@ public class ImportStatus {
 
 	public static enum Outcome {
 		SUCCESS,
-		FAILURE
+		FAILURE,
+		AMBULANT
 	}
 
 	@Override

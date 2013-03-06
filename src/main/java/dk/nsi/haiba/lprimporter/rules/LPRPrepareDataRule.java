@@ -68,11 +68,16 @@ public class LPRPrepareDataRule implements LPRRule {
 	@Override
 	public LPRRule doProcessing() {
 		
-		// TODO: Filter psychiatric contacts if not done by Carecom.
-		
 		List<Administration> preparedContacts = new ArrayList<Administration>();
 		
 		for (Administration contact : contacts) {
+			
+			if(contact.getPatientType() == 0) {
+				// Ambulant kontakt - ignore for now.
+				lprDao.updateImportTime(contact.getRecordNumber(), Outcome.AMBULANT);
+				continue;
+ 			}
+			
 			if(contact.getRecordNumber() == 0) {
 				// log and ignore this contact
 				logErrorContact(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.recordnumber.isempty"));

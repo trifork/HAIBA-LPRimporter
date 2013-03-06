@@ -95,12 +95,12 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 
 	@Override
 	public List<Administration> getContactsByCPR(String cpr) throws DAOException {
-		// TODO - For now only contacts with patienttype 2 
+		// TODO - For now discard contacts with patienttype 0 - set status as AMBULANT 
 		
 		log.trace("BEGIN getContactsByCPR");
 		List<Administration> lprContacts = new ArrayList<Administration>();
 	    try {
-		    lprContacts = jdbcTemplate.query("SELECT k_recnum,c_sgh,c_afd,c_pattype,v_cpr,d_inddto,d_uddto,v_indtime,v_udtime FROM T_ADM WHERE v_cpr=? and C_PATTYPE=?", new Object[]{cpr, 2}, new LPRContactRowMapper());
+		    lprContacts = jdbcTemplate.query("SELECT k_recnum,c_sgh,c_afd,c_pattype,v_cpr,d_inddto,d_uddto,v_indtime,v_udtime FROM T_ADM WHERE v_cpr=?", new Object[]{cpr}, new LPRContactRowMapper());
         } catch (RuntimeException e) {
             throw new DAOException("Error fetching contacts from LPR", e);
         }
@@ -118,8 +118,7 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 		log.trace("BEGIN getDiagnosesByRecordnummer");
 		List<LPRDiagnose> lprDiagnoses = new ArrayList<LPRDiagnose>();
 	    try {
-	    	// TODO only diagnosiscodes that starts with "D" is used - make this a parameter
-	    	lprDiagnoses = jdbcTemplate.query("SELECT v_recnum,c_diag,c_tildiag,c_diagtype FROM T_DIAG WHERE v_recnum=? and c_diag like 'D%'", new Object[]{recordnummer}, new LPRDiagnosisRowMapper());
+	    	lprDiagnoses = jdbcTemplate.query("SELECT v_recnum,c_diag,c_tildiag,c_diagtype FROM T_DIAG WHERE v_recnum=?", new Object[]{recordnummer}, new LPRDiagnosisRowMapper());
         } catch (RuntimeException e) {
             throw new DAOException("Error fetching diagnoses from LPR", e);
         }
@@ -132,8 +131,7 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 		log.trace("END getProceduresByRecordnummer");
 		List<LPRProcedure> lprProcedures = new ArrayList<LPRProcedure>();
 	    try {
-	    	// TODO only procedurecodes that starts with "B,K,N or U" is used - make this a parameter
-	    	lprProcedures = jdbcTemplate.query("SELECT v_recnum,c_opr,c_tilopr,c_oprart,d_odto,v_otime,c_osgh,c_oafd FROM T_PROCEDURER WHERE v_recnum=? and (c_opr like 'B%' or c_opr like 'K%' or c_opr like 'N%' or c_opr like 'U%')", new Object[]{recordnummer}, new LPRProcedureRowMapper());
+	    	lprProcedures = jdbcTemplate.query("SELECT v_recnum,c_opr,c_tilopr,c_oprart,d_odto,v_otime,c_osgh,c_oafd FROM T_PROCEDURER WHERE v_recnum=?", new Object[]{recordnummer}, new LPRProcedureRowMapper());
         } catch (RuntimeException e) {
             throw new DAOException("Error fetching diagnoses from LPR", e);
         }

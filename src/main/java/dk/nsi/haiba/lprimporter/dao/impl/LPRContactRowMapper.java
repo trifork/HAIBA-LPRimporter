@@ -45,6 +45,7 @@ class LPRContactRowMapper extends LPRRowMapper implements RowMapper<Administrati
 			adm.setSygehusCode(rs.getString("c_sgh"));
 			adm.setAfdelingsCode(rs.getString("c_afd"));
 			adm.setCpr(rs.getString("v_cpr"));
+			adm.setPatientType(rs.getInt("c_pattype"));
 
 			Date in = rs.getDate("d_inddto");
 			int inHour = rs.getInt("v_indtime");
