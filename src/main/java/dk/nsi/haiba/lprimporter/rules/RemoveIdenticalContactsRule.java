@@ -63,7 +63,7 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 		Map<Administration, Administration> items = new HashMap<Administration,Administration>();
 		for (Administration item : contacts) {
 			if (items.values().contains(item)) {
-				log.debug("Found duplicate: "+item);
+				log.debug("Found duplicate contact with recordnumber: "+item.getRecordNumber());
 				//preserve linked diagnoses and procedures before its removed.
 				Administration preserve = items.get(item);
 				preserve.getLprDiagnoses().addAll(item.getLprDiagnoses());

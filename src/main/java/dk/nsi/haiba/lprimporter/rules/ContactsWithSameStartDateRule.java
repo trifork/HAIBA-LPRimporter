@@ -119,6 +119,7 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 						preservedContact.getLprDiagnoses().addAll(deletedContact.getLprDiagnoses());
 						preservedContact.getLprProcedures().addAll(deletedContact.getLprProcedures());
 						preservedContact.addLPRReference(deletedContact.getRecordNumber());
+						preservedContact.getLprReferencer().addAll(deletedContact.getLprReferencer());
 						processedContacts.add(preservedContact);
 						previousContact = preservedContact;
 						log.debug("preserve contact: "+ preservedContact.getRecordNumber() + " and discard contact: "+deletedContact.getRecordNumber());
