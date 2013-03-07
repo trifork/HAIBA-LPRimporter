@@ -55,10 +55,10 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 	public boolean hasUnprocessedCPRnumbers() throws DAOException {
 		String sql = null;
 		if(MYSQL.equals(getDialect())) {
-			sql = "SELECT K_RECNUM FROM T_ADM WHERE D_IMPORTDTO IS NULL AND C_PATTYPE=2 LIMIT 1";
+			sql = "SELECT K_RECNUM FROM T_ADM WHERE D_IMPORTDTO IS NULL LIMIT 1";
 		} else {
 			// MSSQL
-			sql = "SELECT TOP 1 K_RECNUM FROM T_ADM WHERE D_IMPORTDTO IS NULL AND C_PATTYPE=2";
+			sql = "SELECT TOP 1 K_RECNUM FROM T_ADM WHERE D_IMPORTDTO IS NULL";
 		}
 		
 	    try {
@@ -77,10 +77,10 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 		log.trace("BEGIN getCPRnumberBatch");
 		String sql = null;
 		if(MYSQL.equals(getDialect())) {
-			sql = "SELECT v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL AND C_PATTYPE=2 GROUP BY v_cpr LIMIT "+batchsize;
+			sql = "SELECT v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL GROUP BY v_cpr LIMIT "+batchsize;
 		} else {
 			// MSSQL
-			sql = "SELECT TOP "+batchsize+" v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL AND C_PATTYPE=2 GROUP BY v_cpr";
+			sql = "SELECT TOP "+batchsize+" v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL GROUP BY v_cpr";
 		}
 		
 		List<String> unprocessedCPRNumbers = new ArrayList<String>();
