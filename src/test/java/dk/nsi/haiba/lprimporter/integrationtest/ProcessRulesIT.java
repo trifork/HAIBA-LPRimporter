@@ -29,6 +29,7 @@ package dk.nsi.haiba.lprimporter.integrationtest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.sql.Date;
 import java.util.List;
 
 import org.joda.time.DateTime;
@@ -132,7 +133,6 @@ public class ProcessRulesIT {
     	afdelingsCode0 = "yyy";
     	in0 = new DateTime(2019, 5, 3, 0, 0, 0);
     	out0 = new DateTime(2019, 5, 3, 0, 0, 0);
-
 		
 		recordNummer = 1234;
     	sygehusCode = "csgh";
@@ -205,4 +205,45 @@ public class ProcessRulesIT {
 		
 		assertEquals(3, jdbc.queryForInt("select count(*) from Indlaeggelser"));
 	}
+	
+	@Test 
+	public void threeIdenticalContactsButDifferentInTimeShouldBeMergedToOneAdmission() {
+		assertNotNull(lprPrepareDataRule);
+		
+		sygehusCode0 = sygehusCode;
+		sygehusCode2 = sygehusCode;
+		afdelingsCode0 = afdelingsCode;
+		afdelingsCode2 = afdelingsCode;
+    	in0 = new DateTime(2010, 5, 3, 0, 0, 0);
+    	in = new DateTime(2010, 5, 3, 10, 0, 0);
+    	in2 = new DateTime(2010, 5, 3, 11, 0, 0);
+    	out0 = new DateTime(2010, 5, 3, 0, 0, 0);
+    	out = new DateTime(2010, 5, 3, 0, 0, 0);
+    	out2 = new DateTime(2010, 5, 3, 0, 0, 0);
+		
+    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    			new Long(recordNummer0), cpr, sygehusCode0, afdelingsCode0, in0.toDate(), out0.toDate(), 2);
+    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    			new Long(recordNummer), cpr, sygehusCode, afdelingsCode, in.toDate(), out.toDate(), 2);
+    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    			new Long(recordNummer2), cpr, sygehusCode2, afdelingsCode2, in2.toDate(), out2.toDate(), 2);
+
+    	List<Administration> contactsByCPR = lprDao.getContactsByCPR(cpr);
+
+		lprPrepareDataRule.setContacts(contactsByCPR);
+		LPRRule next = lprPrepareDataRule.doProcessing();
+		
+		// Process rest of the rules and save admission
+		while(next != null) {
+			next = next.doProcessing();
+		}
+
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where k_recnum ="+recordNummer0, String.class));
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where k_recnum ="+recordNummer, String.class));
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where k_recnum ="+recordNummer2, String.class));
+
+		System.out.println(jdbc.queryForObject("select udskrivningsdatotid from Indlaeggelser", String.class));
+		assertEquals(1, jdbc.queryForInt("select count(*) from Indlaeggelser"));
+	}
+	
 }

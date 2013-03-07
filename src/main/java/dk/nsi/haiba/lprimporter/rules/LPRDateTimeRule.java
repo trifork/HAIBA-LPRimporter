@@ -93,21 +93,6 @@ public class LPRDateTimeRule implements LPRRule {
 		List<Administration> adjustedContacts = new ArrayList<Administration>();
 		
 		for (Administration contact : contacts) {
-			for (LPRProcedure procedure : contact.getLprProcedures()) {
-				// if procedure time is set to 0 - set it to 12 the same day
-				Date procedureDatetime = procedure.getProcedureDatetime(); 
-				if(procedureDatetime != null) {
-					DateTime procedureStart = new DateTime(procedureDatetime.getTime());
-					if(procedureStart.getHourOfDay() == 0) {
-						procedureStart = procedureStart.plusHours(defaultProcedureHours);
-						procedure.setProcedureDatetime(procedureStart.toDate());
-					}
-				} else {
-					BusinessRuleError error = new BusinessRuleError(contact.getRecordNumber(), resolver.getMessage("rule.datetime.proceduredate.isempty"), resolver.getMessage("rule.datetime.name"));
-					throw new RuleAbortedException("Rule aborted due to BusinessRuleError", error);
-				}
-			}
-			
 			
 			// AdmissionStartHour for the contact is default set to 0 if not applied in the database, adjust it with the default value from the propertiesfile
 			DateTime admissionStart = new DateTime(contact.getIndlaeggelsesDatetime());
@@ -149,6 +134,22 @@ public class LPRDateTimeRule implements LPRRule {
 				}
 				
 				contact.setUdskrivningsDatetime(admissionEnd.toDate());
+				
+				for (LPRProcedure procedure : contact.getLprProcedures()) {
+					// if procedure time is set to 0 - set it to 12 the same day
+					Date procedureDatetime = procedure.getProcedureDatetime(); 
+					if(procedureDatetime != null) {
+						DateTime procedureStart = new DateTime(procedureDatetime.getTime());
+						if(procedureStart.getHourOfDay() == 0) {
+							procedureStart = procedureStart.plusHours(defaultProcedureHours);
+							procedure.setProcedureDatetime(procedureStart.toDate());
+						}
+					} else {
+						BusinessRuleError error = new BusinessRuleError(contact.getRecordNumber(), resolver.getMessage("rule.datetime.proceduredate.isempty"), resolver.getMessage("rule.datetime.name"));
+						throw new RuleAbortedException("Rule aborted due to BusinessRuleError", error);
+					}
+				}
+				
 			} else {
 				// patient is currently at the hospital
 				contact.setCurrentPatient(true);
