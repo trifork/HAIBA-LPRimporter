@@ -61,23 +61,22 @@ public interface LPRDAO {
 	/**
 	 * Fetches a list of {@link LPRDiagnose} given the recordnummer number
 	 * 
-	 * @param 
-	 *            The recordnummer from the LPR Contact
+	 * @param  The recordnumbers from the LPR Contacts as a string to be used directly by as SELECT IN statement  ex. (12,123,1234)
 	 * @return {@link LPRDiagnose} A list of diagnoses for a given CPR number
 	 * @throws DAOException
 	 *             if something goes wrong in the process
 	 */
-	public List<LPRDiagnose> getDiagnosesByRecordnummer(long recordnummer) throws DAOException;
+	public List<LPRDiagnose> getDiagnosesByRecordnumber(String recordnumbers) throws DAOException;
 
 	/**
 	 * Fetches a list of {@link LPRProcedure} given the recordnummer number
 	 * 
-	 * @param  The recordnummer from the LPR Contact
+	 * @param  The recordnumbers from the LPR Contacts as a string to be used directly by as SELECT IN statement  ex. (12,123,1234)
 	 * @return {@link LPRProcedure} A list of procedures for a given CPR number
 	 * @throws DAOException
 	 *             if something goes wrong in the process
 	 */
-	public List<LPRProcedure> getProceduresByRecordnummer(long recordnummer) throws DAOException;
+	public List<LPRProcedure> getProceduresByRecordnumber(String recordnumbers) throws DAOException;
 
 	
 	/**

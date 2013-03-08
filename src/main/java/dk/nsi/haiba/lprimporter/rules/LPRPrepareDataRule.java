@@ -73,7 +73,7 @@ public class LPRPrepareDataRule implements LPRRule {
 		for (Administration contact : contacts) {
 			
 			if(contact.getPatientType() == 0) {
-				// Ambulant kontakt - ignore for now.
+				// TODO Ambulant kontakt - ignore for now.
 				lprDao.updateImportTime(contact.getRecordNumber(), Outcome.AMBULANT);
 				continue;
  			}

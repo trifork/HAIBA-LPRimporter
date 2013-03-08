@@ -158,7 +158,7 @@ public class LPRDAOIT {
 
     	Administration contact = lprdao.getContactsByCPR(cpr).get(0);
     	
-    	List<LPRDiagnose> diagnoses = lprdao.getDiagnosesByRecordnummer(contact.getRecordNumber());
+    	List<LPRDiagnose> diagnoses = lprdao.getDiagnosesByRecordnumber("("+contact.getRecordNumber()+")");
     	
     	assertNotNull("Expected 2 diagnoses from LPR", diagnoses);
     	assertEquals(2, diagnoses.size());
@@ -211,7 +211,7 @@ public class LPRDAOIT {
 
     	Administration contact = lprdao.getContactsByCPR(cpr).get(0);
     	
-    	List<LPRProcedure> procedures = lprdao.getProceduresByRecordnummer(contact.getRecordNumber());
+    	List<LPRProcedure> procedures = lprdao.getProceduresByRecordnumber("("+contact.getRecordNumber()+")");
     	
     	assertNotNull("Expected 2 procedures from LPR", procedures);
     	assertEquals(2, procedures.size());
