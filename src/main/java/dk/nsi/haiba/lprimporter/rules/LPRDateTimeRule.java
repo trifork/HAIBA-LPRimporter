@@ -112,7 +112,7 @@ public class LPRDateTimeRule implements LPRRule {
 						if(admissionEnd.getYear() == procedureTime.getYear() &&
 								admissionEnd.getMonthOfYear() == procedureTime.getMonthOfYear() &&
 								admissionEnd.getDayOfMonth() == procedureTime.getDayOfMonth()) {
-							admissionEnd.plusHours(procedureTime.getHourOfDay());
+							admissionEnd = admissionEnd.plusHours(procedureTime.getHourOfDay());
 							break;
 						}
 					}
