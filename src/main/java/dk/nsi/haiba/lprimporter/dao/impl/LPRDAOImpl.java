@@ -186,4 +186,19 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 		log.trace("END updateImportTime");
 	}
 
+	@Override
+	public long isdatabaseReadyForImport() {
+		
+		try {
+			long maxSyncId = jdbcTemplate.queryForLong("select max(v_sync_id) from T_LOG_SYNC");
+			jdbcTemplate.queryForLong("select v_sync_id from T_LOG_SYNC where v_sync_id =  ? and end_time is not null", maxSyncId);
+	    	return maxSyncId;
+        } catch(EmptyResultDataAccessException e) {
+        	// LPR is not ready for Import
+        } catch (RuntimeException e) {
+            throw new DAOException("Error fetching contacts from LPR", e);
+        }
+    	return 0;
+	}
+
 }

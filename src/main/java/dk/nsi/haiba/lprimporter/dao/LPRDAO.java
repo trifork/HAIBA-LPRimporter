@@ -96,4 +96,11 @@ public interface LPRDAO {
 	 */
 	public boolean hasUnprocessedCPRnumbers();
 	
+	/**
+	 * Checks if the LPR database is ready for import by checking the end_time for the last v_sync_id in the T_LOG_SYNC table
+	 * 
+	 * @return the latest v_sync_id
+	 * @throws DAOException if something goes wrong in the process
+	 */
+	public long isdatabaseReadyForImport();
 }

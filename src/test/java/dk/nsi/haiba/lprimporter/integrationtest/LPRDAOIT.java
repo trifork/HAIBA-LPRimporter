@@ -255,4 +255,24 @@ public class LPRDAOIT {
     	assertEquals(Outcome.SUCCESS.toString(), jdbcTemplate.queryForObject("select V_STATUS from T_ADM", String.class));
     }
     
+    
+    /*
+     * Inserts a couple of rows in the T_LOG_SYNC table, and tests if import is ready or not.
+     */
+    @Test
+    public void checkImportReadiness() {
+
+    	jdbcTemplate.update("insert into T_LOG_SYNC (v_sync_id, start_time, end_time) values (?, ?, ?)", 1, new Date(), new Date());
+    	jdbcTemplate.update("insert into T_LOG_SYNC (v_sync_id, start_time, end_time) values (?, ?, ?)", 2, new Date(), new Date());
+    	jdbcTemplate.update("insert into T_LOG_SYNC (v_sync_id, start_time, end_time) values (?, ?, ?)", 3, new Date(), null);
+    	
+    	long maxSyncId = lprdao.isdatabaseReadyForImport();
+    	assertEquals("Database is not ready for import", 0, maxSyncId);
+    	
+    	jdbcTemplate.update("update T_LOG_SYNC set end_time = ? where v_sync_id = 3", new Date());
+
+    	maxSyncId = lprdao.isdatabaseReadyForImport();
+    	assertEquals("Database is ready for import", 3, maxSyncId);
+    }
+    
 }
