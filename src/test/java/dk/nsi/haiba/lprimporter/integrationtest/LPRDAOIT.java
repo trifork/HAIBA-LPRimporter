@@ -93,12 +93,10 @@ public class LPRDAOIT {
     	long recordNummer = 1234;
     	String sygehusCode = "csgh";
     	String afdelingCode = "afd";
-    	DateTime in = new DateTime(2010, 5, 3, 0, 0, 0);
-    	int inHour = 8;
-    	DateTime out = new DateTime(2010, 6, 4, 0, 0, 0);
-    	int outHour = 16;
+    	DateTime in = new DateTime(2010, 5, 3, 8, 0, 0);
+    	DateTime out = new DateTime(2010, 6, 4, 16, 0, 0);
 
-    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr, c_sgh, c_afd, d_inddto, v_indtime, d_uddto, v_udtime, c_pattype) values (?, ?, ?, ?, ?, ?, ?, ?, ?)", new Long(recordNummer), cpr, sygehusCode, afdelingCode, in.toDate(), inHour, out.toDate(), outHour, 2);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)", new Long(recordNummer), cpr, sygehusCode, afdelingCode, in.toDate(), out.toDate(), 2);
     	
     	List<Administration> contactsByCPR = lprdao.getContactsByCPR(cpr);
     	assertNotNull("Expected 1 contact from LPR", contactsByCPR);
@@ -110,8 +108,8 @@ public class LPRDAOIT {
     	assertEquals(cpr, adm.getCpr());
     	assertEquals(sygehusCode, adm.getSygehusCode());
     	assertEquals(afdelingCode, adm.getAfdelingsCode());
-    	assertEquals(in.plusHours(inHour).toDate(), adm.getIndlaeggelsesDatetime());
-    	assertEquals(out.plusHours(outHour).toDate(), adm.getUdskrivningsDatetime());
+    	assertEquals(in.toDate(), adm.getIndlaeggelsesDatetime());
+    	assertEquals(out.toDate(), adm.getUdskrivningsDatetime());
 	}
     
     /*
@@ -124,13 +122,11 @@ public class LPRDAOIT {
     	long recordNummer = 1234;
     	String sygehusCode = "csgh";
     	String afdelingCode = "afd";
-    	DateTime in = new DateTime(2010, 5, 3, 0, 0, 0);
-    	int inHour = 8;
-    	DateTime out = new DateTime(2010, 6, 4, 0, 0, 0);
-    	int outHour = 16;
+    	DateTime in = new DateTime(2010, 5, 3, 8, 0, 0);
+    	DateTime out = new DateTime(2010, 6, 4, 16, 0, 0);
     	DateTime processed = new DateTime(2012, 12, 31, 11, 59, 23);
 
-    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr, c_sgh, c_afd, d_inddto, v_indtime, d_uddto, v_udtime, d_importdto) values (?, ?, ?, ?, ?, ?, ?, ?, ?)", new Long(recordNummer), cpr, sygehusCode, afdelingCode, in.toDate(), inHour, out.toDate(), outHour, processed.toDate());
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, d_importdto) values (?, ?, ?, ?, ?, ?, ?)", new Long(recordNummer), cpr, sygehusCode, afdelingCode, in.toDate(), out.toDate(), processed.toDate());
     	
     	List<String> unprocessedCPRNumbers = lprdao.getCPRnumberBatch(20);
     	assertNotNull("Expected 0 contacts from LPR", unprocessedCPRNumbers);
@@ -152,7 +148,7 @@ public class LPRDAOIT {
     	String extraDiagnosisCode1 = "tilA";
     	String extraDiagnosisCode2 = "tilB";
     	
-    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr, c_pattype) values (?, ?, ?)", new Long(recordNumber), cpr, 2);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_pattype) values (?, ?, ?)", new Long(recordNumber), cpr, 2);
     	jdbcTemplate.update("insert into T_DIAG (v_recnum, c_diag, c_diagtype, c_tildiag) values (?, ?, ?, ?)", new Long(recordNumber), diagnosisCode1, diagnosisType1, extraDiagnosisCode1);
     	jdbcTemplate.update("insert into T_DIAG (v_recnum, c_diag, c_diagtype, c_tildiag) values (?, ?, ?, ?)", new Long(recordNumber), diagnosisCode2, diagnosisType2, extraDiagnosisCode2);
 
@@ -200,14 +196,13 @@ public class LPRDAOIT {
     	String sygehusCode2 = "sgh2";
     	String afdelingCode1 = "af1";
     	String afdelingCode2 = "af2";
-    	DateTime op1 = new DateTime(2010, 5, 3, 0, 0, 0);
-    	DateTime op2 = new DateTime(2010, 5, 3, 0, 0, 0);
-    	int opHour1 = 8;
-    	int opHour2 = 8;
+    	DateTime op1 = new DateTime(2010, 5, 3, 8, 0, 0);
+    	DateTime op2 = new DateTime(2010, 5, 3, 12, 0, 0);
     	
-    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr, c_pattype) values (?, ?, ?)", new Long(recordNumber), cpr, 2);
-    	jdbcTemplate.update("insert into T_PROCEDURER (v_recnum, c_opr, c_oprart, c_tilopr, c_osgh, c_oafd, d_odto, v_otime) values (?, ?, ?, ?, ?, ?, ?, ?)", new Long(recordNumber), oprCode1, oprType1, extraOprCode1, sygehusCode1, afdelingCode1, op1.toDate(), opHour1);
-    	jdbcTemplate.update("insert into T_PROCEDURER (v_recnum, c_opr, c_oprart, c_tilopr, c_osgh, c_oafd, d_odto, v_otime) values (?, ?, ?, ?, ?, ?, ?, ?)", new Long(recordNumber), oprCode2, oprType2, extraOprCode2, sygehusCode2, afdelingCode2, op2.toDate(), opHour2);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_pattype) values (?, ?, ?)", new Long(recordNumber), cpr, 2);
+    	System.out.println(op1.toDate());
+    	jdbcTemplate.update("insert into T_PROCEDURER (v_recnum, c_opr, c_oprart, c_tilopr, c_osgh, c_oafd, d_odto) values (?, ?, ?, ?, ?, ?, ?)", new Long(recordNumber), oprCode1, oprType1, extraOprCode1, sygehusCode1, afdelingCode1, op1.toDate());
+    	jdbcTemplate.update("insert into T_PROCEDURER (v_recnum, c_opr, c_oprart, c_tilopr, c_osgh, c_oafd, d_odto) values (?, ?, ?, ?, ?, ?, ?)", new Long(recordNumber), oprCode2, oprType2, extraOprCode2, sygehusCode2, afdelingCode2, op2.toDate());
 
     	Administration contact = lprdao.getContactsByCPR(cpr).get(0);
     	
@@ -225,14 +220,14 @@ public class LPRDAOIT {
     			assertEquals(extraOprCode1, p.getTillaegsProcedureCode());
     			assertEquals(sygehusCode1, p.getSygehusCode());
     			assertEquals(afdelingCode1, p.getAfdelingsCode());
-    	    	assertEquals(op1.plusHours(opHour1).toDate(), p.getProcedureDatetime());
+    	    	assertEquals(op1.toDate(), p.getProcedureDatetime());
     			procedure1checked = true;
     		} else if(oprCode2.equals(p.getProcedureCode())) {
     			assertEquals(oprType2, p.getProcedureType());
     			assertEquals(extraOprCode2, p.getTillaegsProcedureCode());
     			assertEquals(sygehusCode2, p.getSygehusCode());
     			assertEquals(afdelingCode2, p.getAfdelingsCode());
-    	    	assertEquals(op2.plusHours(opHour2).toDate(), p.getProcedureDatetime());
+    	    	assertEquals(op2.toDate(), p.getProcedureDatetime());
     			procedure2checked = true;
     		} else {
     			fail("did not expect an proceudre with code: "+p.getProcedureCode());
@@ -252,7 +247,7 @@ public class LPRDAOIT {
         long recordNumber = 1234;
     	String cpr = "1111111111";
     	
-    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr) values (?, ?)", new Long(recordNumber), cpr);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr) values (?, ?)", new Long(recordNumber), cpr);
     	
     	lprdao.updateImportTime(recordNumber, Outcome.SUCCESS);
     	

@@ -29,10 +29,8 @@ package dk.nsi.haiba.lprimporter.dao.impl;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,10 +57,10 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 	public boolean hasUnprocessedCPRnumbers() throws DAOException {
 		String sql = null;
 		if(MYSQL.equals(getDialect())) {
-			sql = "SELECT K_RECNUM FROM T_ADM WHERE D_IMPORTDTO IS NULL LIMIT 1";
+			sql = "SELECT V_RECNUM FROM T_ADM WHERE D_IMPORTDTO IS NULL LIMIT 1";
 		} else {
 			// MSSQL
-			sql = "SELECT TOP 1 K_RECNUM FROM T_ADM WHERE D_IMPORTDTO IS NULL";
+			sql = "SELECT TOP 1 V_RECNUM FROM T_ADM WHERE D_IMPORTDTO IS NULL";
 		}
 		
 	    try {
@@ -102,7 +100,7 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 		log.trace("BEGIN getContactsByCPR");
 		List<Administration> lprContacts = new ArrayList<Administration>();
 	    try {
-		    lprContacts = jdbcTemplate.query("SELECT k_recnum,c_sgh,c_afd,c_pattype,v_cpr,d_inddto,d_uddto,v_indtime,v_udtime FROM T_ADM WHERE v_cpr=?", new Object[]{cpr}, new LPRContactRowMapper());
+		    lprContacts = jdbcTemplate.query("SELECT v_recnum,c_sgh,c_afd,c_pattype,v_cpr,d_inddto,d_uddto FROM T_ADM WHERE v_cpr=?", new Object[]{cpr}, new LPRContactRowMapper());
         } catch (RuntimeException e) {
             throw new DAOException("Error fetching contacts from LPR", e);
         }
@@ -167,7 +165,7 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 		log.trace("BEGIN getProceduresByRecordnummer");
 		List<LPRProcedure> lprProcedures = new ArrayList<LPRProcedure>();
 	    try {
-	    	lprProcedures = jdbcTemplate.query("SELECT v_recnum,c_opr,c_tilopr,c_oprart,d_odto,v_otime,c_osgh,c_oafd FROM T_PROCEDURER WHERE v_recnum in "+ recordNumbers, new LPRProcedureRowMapper());
+	    	lprProcedures = jdbcTemplate.query("SELECT v_recnum,c_opr,c_tilopr,c_oprart,d_odto,c_osgh,c_oafd FROM T_PROCEDURER WHERE v_recnum in "+ recordNumbers, new LPRProcedureRowMapper());
         } catch (RuntimeException e) {
             throw new DAOException("Error fetching diagnoses from LPR", e);
         }
@@ -178,7 +176,7 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 	@Override
 	public void updateImportTime(long recordNumber, Outcome status) {
 		log.trace("BEGIN updateImportTime");
-		String sql = "update T_ADM set D_IMPORTDTO = ?, V_STATUS =? WHERE K_RECNUM = ?";
+		String sql = "update T_ADM set D_IMPORTDTO = ?, V_STATUS =? WHERE V_RECNUM = ?";
 
 	    try {
 	    	jdbcTemplate.update(sql, new Object[] {new Date(), status.toString(), new Long(recordNumber)});

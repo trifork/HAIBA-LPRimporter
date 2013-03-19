@@ -33,7 +33,7 @@ import org.springframework.jdbc.core.RowMapper;
 
 import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
 
-class LPRDiagnosisRowMapper extends LPRRowMapper implements RowMapper<LPRDiagnose> {
+class LPRDiagnosisRowMapper implements RowMapper<LPRDiagnose> {
 	@Override
 	public LPRDiagnose mapRow(ResultSet rs, int rowNum) throws SQLException {
 		

@@ -28,32 +28,33 @@ package dk.nsi.haiba.lprimporter.dao.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Date;
 
 import org.springframework.jdbc.core.RowMapper;
 
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 
-class LPRContactRowMapper extends LPRRowMapper implements RowMapper<Administration> {
+class LPRContactRowMapper implements RowMapper<Administration> {
 	
 	@Override
 	public Administration mapRow(ResultSet rs, int rowNum) throws SQLException {
 		
 			Administration adm = new Administration();
 			
-			adm.setRecordNumber(rs.getLong("k_recnum"));
+			adm.setRecordNumber(rs.getLong("v_recnum"));
 			adm.setSygehusCode(rs.getString("c_sgh"));
 			adm.setAfdelingsCode(rs.getString("c_afd"));
 			adm.setCpr(rs.getString("v_cpr"));
 			adm.setPatientType(rs.getInt("c_pattype"));
-
-			Date in = rs.getDate("d_inddto");
-			int inHour = rs.getInt("v_indtime");
-			adm.setIndlaeggelsesDatetime(addHoursToDate(in,  inHour));
-			
-			Date out = rs.getDate("d_uddto");
-			int outHour = rs.getInt("v_udtime");
-			adm.setUdskrivningsDatetime(addHoursToDate(out,  outHour));
+			Timestamp tsIn = rs.getTimestamp("d_inddto");
+			if(tsIn != null) {
+				adm.setIndlaeggelsesDatetime(new Date(tsIn.getTime()));
+			}
+			Timestamp tsOut = rs.getTimestamp("d_uddto");
+			if(tsOut != null) {
+				adm.setUdskrivningsDatetime(new Date(tsOut.getTime()));
+			}
 			return adm;
 	}
 }

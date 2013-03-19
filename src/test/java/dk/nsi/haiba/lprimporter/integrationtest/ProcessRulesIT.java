@@ -29,7 +29,6 @@ package dk.nsi.haiba.lprimporter.integrationtest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.sql.Date;
 import java.util.List;
 
 import org.joda.time.DateTime;
@@ -173,15 +172,15 @@ public class ProcessRulesIT {
     	in3 = new DateTime(2010, 5, 3, 0, 0, 0);
     	out3 = new DateTime(2010, 6, 4, 0, 0, 0);
 		
-    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
     			new Long(recordNummer0), cpr, sygehusCode0, afdelingsCode0, in0.toDate(), out0.toDate(), 2);
-    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
     			new Long(recordNummer), cpr, sygehusCode, afdelingsCode, in.toDate(), out.toDate(), 2);
-    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
     			new Long(recordNummer2), cpr, sygehusCode2, afdelingsCode2, in2.toDate(), out2.toDate(), 2);
-    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
     			new Long(recordNummer3), cpr, sygehusCode3, afdelingsCode3, in3.toDate(), out3.toDate(), 2);
-    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
     			new Long(recordNummer4), cpr, sygehusCode4, afdelingsCode4, in4.toDate(), out4.toDate(), 2);
     	List<Administration> contactsByCPR = lprDao.getContactsByCPR(cpr);
 
@@ -197,11 +196,11 @@ public class ProcessRulesIT {
 		assertEquals(2, jdbc.queryForInt("select count(*) from RegelFejlbeskeder"));
 
 		// check updated status flag in T_ADM
-		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where k_recnum ="+recordNummer0, String.class));
-		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where k_recnum ="+recordNummer, String.class));
-		assertEquals("FAILURE",jdbcTemplate.queryForObject("select v_status from T_ADM where k_recnum ="+recordNummer2, String.class));
-		assertEquals("FAILURE",jdbcTemplate.queryForObject("select v_status from T_ADM where k_recnum ="+recordNummer3, String.class));
-		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where k_recnum ="+recordNummer4, String.class));
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer0, String.class));
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer, String.class));
+		assertEquals("FAILURE",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer2, String.class));
+		assertEquals("FAILURE",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer3, String.class));
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer4, String.class));
 		
 		assertEquals(3, jdbc.queryForInt("select count(*) from Indlaeggelser"));
 	}
@@ -214,18 +213,18 @@ public class ProcessRulesIT {
 		sygehusCode2 = sygehusCode;
 		afdelingsCode0 = afdelingsCode;
 		afdelingsCode2 = afdelingsCode;
-    	in0 = new DateTime(2010, 5, 3, 0, 0, 0);
-    	in = new DateTime(2010, 5, 3, 10, 0, 0);
-    	in2 = new DateTime(2010, 5, 3, 11, 0, 0);
+    	in0 = new DateTime(2010, 5, 3, 9, 0, 0);
     	out0 = new DateTime(2010, 5, 3, 0, 0, 0);
+    	in = new DateTime(2010, 5, 3, 10, 0, 0);
     	out = new DateTime(2010, 5, 3, 0, 0, 0);
+    	in2 = new DateTime(2010, 5, 3, 11, 0, 0);
     	out2 = new DateTime(2010, 5, 3, 0, 0, 0);
 		
-    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
     			new Long(recordNummer0), cpr, sygehusCode0, afdelingsCode0, in0.toDate(), out0.toDate(), 2);
-    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
     			new Long(recordNummer), cpr, sygehusCode, afdelingsCode, in.toDate(), out.toDate(), 2);
-    	jdbcTemplate.update("insert into T_ADM (k_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
     			new Long(recordNummer2), cpr, sygehusCode2, afdelingsCode2, in2.toDate(), out2.toDate(), 2);
 
     	List<Administration> contactsByCPR = lprDao.getContactsByCPR(cpr);
@@ -238,11 +237,10 @@ public class ProcessRulesIT {
 			next = next.doProcessing();
 		}
 
-		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where k_recnum ="+recordNummer0, String.class));
-		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where k_recnum ="+recordNummer, String.class));
-		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where k_recnum ="+recordNummer2, String.class));
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer0, String.class));
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer, String.class));
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer2, String.class));
 
-		System.out.println(jdbc.queryForObject("select udskrivningsdatotid from Indlaeggelser", String.class));
 		assertEquals(1, jdbc.queryForInt("select count(*) from Indlaeggelser"));
 	}
 	

@@ -28,13 +28,14 @@ package dk.nsi.haiba.lprimporter.dao.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Date;
 
 import org.springframework.jdbc.core.RowMapper;
 
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 
-class LPRProcedureRowMapper extends LPRRowMapper implements RowMapper<LPRProcedure> {
+class LPRProcedureRowMapper implements RowMapper<LPRProcedure> {
 	@Override
 	public LPRProcedure mapRow(ResultSet rs, int rowNum) throws SQLException {
 		
@@ -46,9 +47,10 @@ class LPRProcedureRowMapper extends LPRRowMapper implements RowMapper<LPRProcedu
 		p.setProcedureType(rs.getString("c_oprart"));
 		p.setSygehusCode(rs.getString("c_osgh"));
 		p.setAfdelingsCode(rs.getString("c_oafd"));
-		Date oprDate = rs.getDate("d_odto");
-		int oprHour = rs.getInt("v_otime");
-		p.setProcedureDatetime(addHoursToDate(oprDate, oprHour));
+		Timestamp ts = rs.getTimestamp("d_odto");
+		if(ts != null) {
+			p.setProcedureDatetime(new Date(ts.getTime()));
+		}
 		return p;
 	}
 }
