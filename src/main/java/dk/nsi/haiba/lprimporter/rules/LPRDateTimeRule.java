@@ -107,15 +107,19 @@ public class LPRDateTimeRule implements LPRRule {
 				DateTime admissionEnd = new DateTime(udskrivningsDatetime.getTime());
 				if(admissionEnd.getHourOfDay() == 0) {
 					// does a procedure exist on the same date, set the procedure hour as admission end hour
+					int hourOfDay = 0;
 					for (LPRProcedure procedure : contact.getLprProcedures()) {
 						DateTime procedureTime = new DateTime(procedure.getProcedureDatetime());
 						if(admissionEnd.getYear() == procedureTime.getYear() &&
 								admissionEnd.getMonthOfYear() == procedureTime.getMonthOfYear() &&
 								admissionEnd.getDayOfMonth() == procedureTime.getDayOfMonth()) {
-							admissionEnd = admissionEnd.plusHours(procedureTime.getHourOfDay());
-							break;
+							// examine all procedures from the same day, and get the latest hour of day.
+							if(procedureTime.getHourOfDay() > hourOfDay) {
+								hourOfDay = procedureTime.getHourOfDay();
+							}
 						}
 					}
+					admissionEnd = admissionEnd.plusHours(hourOfDay);
 				}
 
 				// Then if admissionEnd still is 0, check the in date time is the same day 
