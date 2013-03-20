@@ -58,6 +58,10 @@ public class Log {
 		}
 	}
 
+	public void warn(String message) {
+		logger.warn(message);
+	}
+
 	public void info(String message) {
 		if(logger.isInfoEnabled()) {
 			logger.info(message);

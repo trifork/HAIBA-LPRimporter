@@ -97,6 +97,7 @@ public class ImportExecutorTest {
 	public void executorDoesntFecthAnyContacts() throws Exception {
 		
 		Mockito.when(lprdao.getCPRnumberBatch(20)).thenReturn(new ArrayList<String>());
+		Mockito.when(lprdao.isdatabaseReadyForImport()).thenReturn(1l);
 		
 		executor.doProcess();
 		
@@ -112,6 +113,7 @@ public class ImportExecutorTest {
 		Mockito.when(lprdao.hasUnprocessedCPRnumbers()).thenReturn(true);
 		// first return the list, then return an empty list to finish processing
 		Mockito.when(lprdao.getCPRnumberBatch(20)).thenReturn(cprList).thenReturn(new ArrayList<String>());
+		Mockito.when(lprdao.isdatabaseReadyForImport()).thenReturn(1l);
 		
 		executor.doProcess();
 		
@@ -120,4 +122,14 @@ public class ImportExecutorTest {
 		Mockito.verify(rulesEngine, Mockito.atLeastOnce()).processRuleChain(Mockito.anyListOf(Administration.class));
 	}
 
+	@Test
+	public void lprIsNotReadyForImport() throws Exception {
+		// return 0 for isdatabaseReadyForImport, which means Carecom job isn't finished yet
+		Mockito.when(lprdao.isdatabaseReadyForImport()).thenReturn(0l);
+		
+		executor.doProcess();
+		
+		// this should not be called, when LPR database isn't ready for import
+		Mockito.verify(lprdao, Mockito.never()).hasUnprocessedCPRnumbers();
+	}
 }

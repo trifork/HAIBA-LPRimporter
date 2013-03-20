@@ -77,13 +77,19 @@ public class ImportExecutor {
 		}
 	}
 
-	
 	/*
 	 * Separated into its own method for testing purpose, because testing a scheduled method isn't good
 	 */
 	public void doProcess() {
 		// Fetch new records from LPR contact table
 		try {
+			// if syncId > 0, the Carecom job is finished, and the database is ready for import.
+			long syncId = lprdao.isdatabaseReadyForImport();
+			if(syncId == 0) {
+				log.warn("HAIBA_LPR_REPLIKA is not ready for import, Carecom job is not finished yet.");
+				return;
+			}
+			
 			if(lprdao.hasUnprocessedCPRnumbers()) {
 				log.debug("LPR has unprocessed CPR numbers, starting import");
 				statusRepo.importStartedAt(new DateTime());
