@@ -31,6 +31,7 @@ import java.util.List;
 
 import dk.nsi.haiba.lprimporter.exception.DAOException;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
+import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.rules.BusinessRuleError;
 
 public interface HAIBADAO {
@@ -50,7 +51,7 @@ public interface HAIBADAO {
 	 * @param A list of Indlaeggelse objects
 	 * @throws DAOException if something goes wrong in the process
 	 */
-	public void saveAmbulantIndlaeggelser(List<Indlaeggelse> indlaeggelser) throws DAOException;
+	public void saveAmbulantIndlaeggelser(List<Administration> contacts) throws DAOException;
 
 	/**
 	 * Takes a BusinessRuleError and saves it to the RegelFejlbeskedertable in the database

@@ -75,8 +75,6 @@ public class LPRIntegrationTestConfiguration extends LPRConfiguration {
 	public DataSource lprDataSource() throws Exception{
 		String jdbcUrlPrefix = "jdbc:mysql://127.0.0.1:" + mysqlPort + "/";
 
-		// TODO Create a test version of the database only used in integrationtests.
-
 		return new SimpleDriverDataSource(new Driver(), jdbcUrlPrefix + testLPRDbName + "?createDatabaseIfNotExist=true", testLPRDbUsername, testLPRDbPassword);
 	}
 
@@ -95,8 +93,6 @@ public class LPRIntegrationTestConfiguration extends LPRConfiguration {
 	@Qualifier("haibaDataSource")
 	public DataSource haibaDataSource() throws Exception{
 		String jdbcUrlPrefix = "jdbc:mysql://127.0.0.1:" + mysqlPort + "/";
-
-		// TODO Create a test version of the database only used in integrationtests.
 
 		return new SimpleDriverDataSource(new Driver(), jdbcUrlPrefix + testHAIBADbName + "?createDatabaseIfNotExist=true", testHAIBADbUsername, testHAIBADbPassword);
 	}

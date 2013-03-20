@@ -58,6 +58,9 @@ import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
+import dk.nsi.haiba.lprimporter.model.lpr.Administration;
+import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
+import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 import dk.nsi.haiba.lprimporter.rules.BusinessRuleError;
 
 /*
@@ -138,11 +141,46 @@ public class HAIBADAOIT {
      */
     @Test
 	public void insertsSingleAmbulantContact() {
+		List<Administration> contacts = new ArrayList<Administration>();
+		Administration contact = new Administration();
+		contact.setRecordNumber(1234);
+		contact.setSygehusCode(sygehusCode);
+		contact.setAfdelingsCode(afdelingsCode);
+		contact.setCpr(cpr);
+		contact.setIndlaeggelsesDatetime(in);
+		contact.setUdskrivningsDatetime(out);
+		contact.setPatientType(2);
+		
+		List<LPRProcedure> procedures = new ArrayList<LPRProcedure>();
+		LPRProcedure procedure = new LPRProcedure();
+		procedure.setAfdelingsCode(afdelingsCode);
+		procedure.setSygehusCode(sygehusCode);
+		procedure.setRecordNumber(1234);
+		procedure.setProcedureCode("A");
+		procedure.setProcedureType("B");
+		procedure.setProcedureDatetime(out);
+		procedure.setTillaegsProcedureCode("1");
+		procedures.add(procedure);
+		contact.setLprProcedures(procedures);
+		
+		List<LPRDiagnose> diagnoses = new ArrayList<LPRDiagnose>();
+		LPRDiagnose diagnosis = new LPRDiagnose();
+		diagnosis.setRecordNumber(1234);
+		diagnosis.setDiagnoseCode("B");
+		diagnosis.setDiagnoseType("A");
+		diagnosis.setTillaegsDiagnose("C");
+		diagnoses.add(diagnosis);
+		contact.setLprDiagnoses(diagnoses);
+		
+		List<LPRReference> lprRefs = new ArrayList<LPRReference>();
+		lprRefs.add(new LPRReference(2345));
+		contact.setLprReferencer(lprRefs);
+		
+		contacts.add(contact);
     	
-		List<Indlaeggelse> indlaeggelser = createIndlaeggelser(false);
 		
     	assertNotNull(haibaDao);
-		haibaDao.saveAmbulantIndlaeggelser(indlaeggelser);
+		haibaDao.saveAmbulantIndlaeggelser(contacts);
 		
 		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from AmbulantKontakt"));
 		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from AmbulantLPR_Reference"));
@@ -155,7 +193,7 @@ public class HAIBADAOIT {
 		assertEquals(sdf.format(in), sdf.format(jdbc.queryForObject("select indlaeggelsesdatotid from AmbulantKontakt", Date.class)));
 		assertEquals(sdf.format(out), sdf.format(jdbc.queryForObject("select udskrivningsdatotid from AmbulantKontakt", Date.class)));
 
-		assertEquals(sdf.format(in), sdf.format(jdbc.queryForObject("select proceduredatotid from AmbulantProcedurer", Date.class)));
+		assertEquals(sdf.format(out), sdf.format(jdbc.queryForObject("select proceduredatotid from AmbulantProcedurer", Date.class)));
     
     }
 

@@ -184,7 +184,7 @@ public class LPRDateTimeRule implements LPRRule {
 				}
 			}
 			
-			// Rule #3
+			// Rule #3 in time is after out time
 			DateTime in = new DateTime(contact.getIndlaeggelsesDatetime());
 			DateTime out = new DateTime(contact.getUdskrivningsDatetime());
 			if(in.isAfter(out)) {

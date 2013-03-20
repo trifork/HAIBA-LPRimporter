@@ -69,7 +69,6 @@ public class LPRRulesEngine implements RulesEngine {
 			// An error occured, log the exceptions attached dataobject into the business rule log (both file and database).
 			businessRuleErrorLog.log(e.getBusinessRuleError());
 			
-			// TODO find out how to detect errors next time importer runs, for nor just write a dummy date to import timestamp
 			for (Administration contact : contacts) {
 				lprDao.updateImportTime(contact.getRecordNumber(), Outcome.FAILURE);
 			}

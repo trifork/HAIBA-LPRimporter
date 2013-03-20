@@ -34,10 +34,14 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
+import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
+import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
+import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 /*
  * This is the 4. rule to be applied to LPR data
@@ -48,6 +52,12 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 
 	private static Log log = new Log(Logger.getLogger(RemoveIdenticalContactsRule.class));
 	private List<Administration> contacts;
+
+	@Autowired
+	HAIBADAO haibaDao;
+	
+	@Autowired
+	LPRDAO lprDao;
 
 	@Autowired
 	ExtendContactEndtimeRule extendContactEndtimeRule;
@@ -75,7 +85,23 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 				items.put(item,item);
 			}
 		}
-		contacts = new ArrayList<Administration>(items.values());
+		
+		// This is the last rule where ambulant contacts are processed, so save them
+		List<Administration> ambulantContacts = new ArrayList<Administration>();
+		List<Administration> nonAmbulantContacts = new ArrayList<Administration>();
+		for (Administration contact : items.values()) {
+			if(contact.getPatientType() == 0) {
+				nonAmbulantContacts.add(contact);
+			} else if(contact.getPatientType() == 2) {
+				ambulantContacts.add(contact);
+			} else {
+				// ignore
+				log.warn("Contact with patienttype "+contact.getPatientType() + " is ignored, recordnumber =" +contact.getRecordNumber());
+			}
+		}
+		saveAmbulantContacts(ambulantContacts);
+		
+		contacts = nonAmbulantContacts;
 		
 		// setup the next rule in the chain
 		extendContactEndtimeRule.setContacts(contacts);
@@ -93,4 +119,16 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 	List<Administration> getContacts() {
 		return contacts;
 	}
+
+	private void saveAmbulantContacts(List<Administration> contacts) {
+		haibaDao.saveAmbulantIndlaeggelser(contacts);
+		for (Administration contact : contacts) {
+			// Rules are complete, update LPR with the import timestamp so they are not imported again
+			for (LPRReference lprRef : contact.getLprReferencer()) {
+				lprDao.updateImportTime(lprRef.getLprRecordNumber(), Outcome.SUCCESS);
+			}
+			lprDao.updateImportTime(contact.getRecordNumber(), Outcome.SUCCESS);
+		}
+	}
+
 }

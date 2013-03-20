@@ -49,6 +49,9 @@ import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
+import dk.nsi.haiba.lprimporter.model.lpr.Administration;
+import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
+import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 import dk.nsi.haiba.lprimporter.rules.BusinessRuleError;
 
 public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
@@ -292,20 +295,19 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 
 
 	@Override
-	public void saveAmbulantIndlaeggelser(List<Indlaeggelse> indlaeggelser)
-			throws DAOException {
+	public void saveAmbulantIndlaeggelser(List<Administration> contacts) throws DAOException {
 		try {
-			for (Indlaeggelse indlaeggelse : indlaeggelser) {
+			for (Administration contact : contacts) {
 				
 				final String sql = "INSERT INTO AmbulantKontakt (CPR, Sygehuskode, Afdelingskode, Indlaeggelsesdatotid, Udskrivningsdatotid, aktuel) VALUES (?,?,?,?,?,?)";				
 				
 				final Object[] args = new Object[] {
-						indlaeggelse.getCpr(), 
-						indlaeggelse.getSygehusCode(),
-						indlaeggelse.getAfdelingsCode(),
-						indlaeggelse.getIndlaeggelsesDatetime(),
-						indlaeggelse.getUdskrivningsDatetime(),
-						indlaeggelse.isAktuel()};
+						contact.getCpr(), 
+						contact.getSygehusCode(),
+						contact.getAfdelingsCode(),
+						contact.getIndlaeggelsesDatetime(),
+						contact.getUdskrivningsDatetime(),
+						contact.isCurrentPatient()};
 				
 
 				long ambulantContactId = -1;
@@ -328,9 +330,9 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 					throw new DAOException("Unknown SQL dialect: "+ getDialect());
 				}
 
-		        saveAmbulantDiagnoses(indlaeggelse.getDiagnoses(), ambulantContactId);
-		        saveAmbulantProcedures(indlaeggelse.getProcedures(), ambulantContactId);
-		        saveAmbulantLPRReferences(indlaeggelse.getLprReferencer(), ambulantContactId);
+		        saveAmbulantDiagnoses(contact.getLprDiagnoses(), ambulantContactId);
+		        saveAmbulantProcedures(contact.getLprProcedures(), ambulantContactId);
+		        saveAmbulantLPRReferences(contact.getLprReferencer(), ambulantContactId);
 			}
 		} catch(DataAccessException e) {
 			throw new DAOException(e.getMessage(), e);
@@ -347,11 +349,11 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 	}
 
 
-	private void saveAmbulantProcedures(List<Procedure> procedures, long ambulantContactId) {
+	private void saveAmbulantProcedures(List<LPRProcedure> procedures, long ambulantContactId) {
 		
 		String sql = "INSERT INTO AmbulantProcedurer (AmbulantKontaktID, Procedurekode, Proceduretype, Tillaegsprocedurekode, Sygehuskode, Afdelingskode, Proceduredatotid) VALUES (?, ?, ?, ?, ?, ?, ?)";
 		
-		for (Procedure p : procedures) {
+		for (LPRProcedure p : procedures) {
 			jdbc.update(sql, 
 					ambulantContactId, 
 					p.getProcedureCode(),
@@ -364,11 +366,11 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 	}
 
 
-	private void saveAmbulantDiagnoses(List<Diagnose> diagnoses, long ambulantContactId) {
+	private void saveAmbulantDiagnoses(List<LPRDiagnose> diagnoses, long ambulantContactId) {
 		
 		String sql = "INSERT INTO AmbulantDiagnoser (AmbulantKontaktID, Diagnoseskode, Diagnosetype, Tillaegsdiagnose) VALUES (?, ?, ?, ?)";
 
-		for (Diagnose d : diagnoses) {
+		for (LPRDiagnose d : diagnoses) {
 			jdbc.update(sql, 
 					ambulantContactId, 
 					d.getDiagnoseCode(),
