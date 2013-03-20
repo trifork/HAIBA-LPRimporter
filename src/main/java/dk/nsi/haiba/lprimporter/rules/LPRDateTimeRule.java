@@ -138,21 +138,32 @@ public class LPRDateTimeRule implements LPRRule {
 				}
 				
 				contact.setUdskrivningsDatetime(admissionEnd.toDate());
-				
+
+				List<LPRProcedure> processedProcedures = new ArrayList<LPRProcedure>();
 				for (LPRProcedure procedure : contact.getLprProcedures()) {
 					// if procedure time is set to 0 - set it to 12 the same day
 					Date procedureDatetime = procedure.getProcedureDatetime(); 
 					if(procedureDatetime != null) {
-						DateTime procedureStart = new DateTime(procedureDatetime.getTime());
-						if(procedureStart.getHourOfDay() == 0) {
-							procedureStart = procedureStart.plusHours(defaultProcedureHours);
-							procedure.setProcedureDatetime(procedureStart.toDate());
+						DateTime procedureDate = new DateTime(procedureDatetime.getTime());
+						// if procedureDate is more than 24 hours after admissionEndDate it is an error
+						if(procedureDate.isAfter(admissionEnd.plusHours(24))) {
+							BusinessRuleError be = new BusinessRuleError(contact.getRecordNumber(),resolver.getMessage("rule.datetime.proceduredate.is.more.than.24hous.after.enddate"), resolver.getMessage("rule.datetime.name"));
+							businessRuleErrorLog.log(be);
+							// error, procedure is deleted from the contact.
+							continue;
 						}
+						
+						if(procedureDate.getHourOfDay() == 0) {
+							procedureDate = procedureDate.plusHours(defaultProcedureHours);
+							procedure.setProcedureDatetime(procedureDate.toDate());
+						}
+						processedProcedures.add(procedure);
 					} else {
 						BusinessRuleError error = new BusinessRuleError(contact.getRecordNumber(), resolver.getMessage("rule.datetime.proceduredate.isempty"), resolver.getMessage("rule.datetime.name"));
 						throw new RuleAbortedException("Rule aborted due to BusinessRuleError", error);
 					}
 				}
+				contact.setLprProcedures(processedProcedures);
 				
 			} else {
 				// patient is currently at the hospital

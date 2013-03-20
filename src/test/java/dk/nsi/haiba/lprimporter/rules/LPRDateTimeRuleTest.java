@@ -37,7 +37,9 @@ import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
@@ -45,6 +47,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
+import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
@@ -56,7 +59,14 @@ public class LPRDateTimeRuleTest {
 	@Configuration
     @Import({LPRTestConfiguration.class})
 	static class TestConfiguration {
+		@Bean
+		public HAIBADAO haibaDao() {
+			return Mockito.mock(HAIBADAO.class);
+		}
 	}
+	
+	@Autowired
+	HAIBADAO haibaDao;
 	
 	@Autowired
 	LPRDateTimeRule lprDateTimeRule;
@@ -152,6 +162,27 @@ public class LPRDateTimeRuleTest {
 		assertEquals(out.toDate(), contacts.get(0).getUdskrivningsDatetime());
 		assertEquals(1, contacts.get(0).getLprProcedures().size());
 		assertEquals("Expect 12 hours added to  procedure date", op1.plusHours(12).toDate(), contacts.get(0).getLprProcedures().get(0).getProcedureDatetime());
+	}
+
+	/*
+	 * Procedure date is 0, so it should be set to 12 the same day.
+	 */
+	@Test
+	public void procedureDateIsMoreThan24HoursAfterEnddate() {
+
+    	op1 = new DateTime(2010, 6, 6, 12, 0, 0);
+    	
+		List<Administration> contacts = setupContacts();
+		
+		lprDateTimeRule.setContacts(contacts);
+		lprDateTimeRule.doProcessing();
+		
+		assertNotNull("1 contact is still expected", contacts);
+		assertEquals(1, contacts.size());
+		assertEquals(in.toDate(), contacts.get(0).getIndlaeggelsesDatetime());
+		assertEquals(out.toDate(), contacts.get(0).getUdskrivningsDatetime());
+
+		assertEquals("No procedures expected", 0, contacts.get(0).getLprProcedures().size());
 	}
 
 	/*
