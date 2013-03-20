@@ -37,12 +37,20 @@ import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 public interface LPRDAO {
 
 	/**
+	 * Fetches a list of CPRnumbers where contacts are deleted, they need to be recalculated
+	 * 
+	 * @param syncId - the current synchronisationid to lookup deleted contacts.
+	 * @return A list of CPRnumbers as String
+	 * @throws DAOException if something goes wrong in the process
+	 */
+	public List<String> getCPRnumbersFromDeletedContacts(long syncId) throws DAOException;
+
+	/**
 	 * Fetches a list of CPRnumbers that have not been processed (Where the Import date is empty)
 	 * 
 	 * @param batchsize
 	 * @return A list of CPRnumbers as String
-	 * @throws DAOException
-	 *             if something goes wrong in the process
+	 * @throws DAOException if something goes wrong in the process
 	 */
 	public List<String> getCPRnumberBatch(int batchsize) throws DAOException;
 

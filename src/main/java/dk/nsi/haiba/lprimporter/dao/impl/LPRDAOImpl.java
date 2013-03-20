@@ -201,4 +201,21 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
     	return 0;
 	}
 
+	@Override
+	public List<String> getCPRnumbersFromDeletedContacts(long syncId) throws DAOException {
+		log.trace("BEGIN getCPRnumbersFromDeletedContacts");
+		String sql = "select v_cpr from T_ADM where v_recnum in ("+
+				"select AFFECTED_V_RECNUM from T_LOG_SYNC_HISTORY where "+
+				" (C_ACTION_TYPE = 'DELETE' or C_ACTION_TYPE = 'DELETE_IMPLICIT') and v_sync_id = ?)";
+		
+		List<String> cprNumbersWithDeletedContacts = new ArrayList<String>();
+	    try {
+	    	cprNumbersWithDeletedContacts = jdbcTemplate.queryForList(sql,new Object[] {new Long(syncId)}, String.class);
+        } catch (RuntimeException e) {
+            throw new DAOException("Error fetching CPR numbers from deleted contacts in LPR", e);
+        }
+		log.trace("END getCPRnumbersFromDeletedContacts");
+	    return cprNumbersWithDeletedContacts;
+	}
+
 }

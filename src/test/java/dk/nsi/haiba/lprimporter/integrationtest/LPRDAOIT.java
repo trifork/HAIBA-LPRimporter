@@ -275,4 +275,29 @@ public class LPRDAOIT {
     	assertEquals("Database is ready for import", 3, maxSyncId);
     }
     
+
+    @Test
+    public void checkForDeletedContacts() {
+
+        long recordNumber = 1234;
+    	String cpr = "1111111111";
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr) values (?, ?)", new Long(recordNumber), cpr);
+
+    	// check delete
+    	jdbcTemplate.update("insert into T_LOG_SYNC_HISTORY (v_sync_id, v_recnum, affected_v_recnum, c_action_type) values (1, 111, ?, 'DELETE')", recordNumber);
+    	List<String> cprnumbersFromDeletedContacts = lprdao.getCPRnumbersFromDeletedContacts(1);
+    	assertEquals("Expect 1 CPR number", 1, cprnumbersFromDeletedContacts.size());
+    	assertEquals(cpr, cprnumbersFromDeletedContacts.get(0));
+
+    	// check delete_implicit
+    	jdbcTemplate.update("update T_LOG_SYNC_HISTORY set c_action_type = 'DELETE_IMPLICIT' where v_sync_id =1");
+    	cprnumbersFromDeletedContacts = lprdao.getCPRnumbersFromDeletedContacts(1);
+    	assertEquals("Expect 1 CPR number", 1, cprnumbersFromDeletedContacts.size());
+    	assertEquals(cpr, cprnumbersFromDeletedContacts.get(0));
+    	
+    	// check empty list is returned
+    	cprnumbersFromDeletedContacts = lprdao.getCPRnumbersFromDeletedContacts(2);
+    	assertEquals("Expect 0 CPR numbers", 0, cprnumbersFromDeletedContacts.size());
+    }
+
 }

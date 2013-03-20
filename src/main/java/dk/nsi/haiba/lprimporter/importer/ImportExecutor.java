@@ -94,6 +94,13 @@ public class ImportExecutor {
 				log.debug("LPR has unprocessed CPR numbers, starting import");
 				statusRepo.importStartedAt(new DateTime());
 				
+				//check if any contacts are deleted, and recalculate the affected CPR numbers
+				List<String> cprNumbersWithDeletedContacts = lprdao.getCPRnumbersFromDeletedContacts(syncId);
+				log.debug("processing "+cprNumbersWithDeletedContacts.size()+ " cprnumbers with deleted contacts");
+				for (String cpr : cprNumbersWithDeletedContacts) {
+					processCPRNumber(cpr);
+				}
+				
 				// new data has arrived, check if any of the processed current patients are discharged
 				List<String> currentPatients = haibaDao.getCurrentPatients();
 				log.debug("processing "+currentPatients.size()+ " current patients cprnumbers");
