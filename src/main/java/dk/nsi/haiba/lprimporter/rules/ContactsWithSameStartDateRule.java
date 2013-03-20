@@ -29,8 +29,10 @@ package dk.nsi.haiba.lprimporter.rules;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
@@ -74,11 +76,13 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 		// sort list after inDate
 		Collections.sort(contacts, new AdministrationInDateComparator());
 
+		Set<Administration> contactsWithErrors = new HashSet<Administration>(); 
 		if(contacts.size() == 1) {
 			// only 1 contact for the same hospital and department - so no overlapping
 			processedContacts.addAll(contacts);
 		} else {
 			Administration previousContact = null;
+			
 			for (Administration contact : contacts) {
 				if(previousContact == null) {
 					previousContact = contact;
@@ -95,15 +99,15 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 					if(previousOut.isEqual(out) &&
 							(!previousContact.getSygehusCode().equals(contact.getSygehusCode()) ||
 							!previousContact.getAfdelingsCode().equals(contact.getAfdelingsCode()))) {
-						log.debug("outdates are equal but dep. or hos differs for contacts: "+ previousContact.getRecordNumber() + " and: "+contact.getRecordNumber());
-						// error, ignore the contact, 
+						log.debug("in and outdates are equal but department or hospital differs for contacts: "+ previousContact.getRecordNumber() + " and: "+contact.getRecordNumber());
+						// error, ignore the contacts, 
 						BusinessRuleError be = new BusinessRuleError(previousContact.getRecordNumber(), resolver.getMessage("rule.contactswithsamestartdate.different.hospitalordepartment", new Object[] {"["+contact.getRecordNumber()+"]"}), resolver.getMessage("rule.contactswithsamestartdate.name"));
 						businessRuleErrorLog.log(be);
-						// mark contact and its earlier refs. as failed
-						lprDao.updateImportTime(previousContact.getRecordNumber(), Outcome.FAILURE);
-						for (LPRReference earlierRefs : previousContact.getLprReferencer()) {
-							lprDao.updateImportTime(earlierRefs.getLprRecordNumber(), Outcome.FAILURE);
-						}
+						
+						// mark contacts and their earlier refs. as failed
+						contactsWithErrors.add(previousContact);
+						contactsWithErrors.add(contact);
+
 						previousContact = contact;
 						continue;
 					} else {
@@ -133,7 +137,19 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 			// add the last one - if duplicate it is sorted out later
 			processedContacts.add(previousContact);
 			
-		} 
+		}
+		
+		if(contactsWithErrors.size() > 0) {
+			// delete all contacts with errors from processedcontacts
+			for (Administration administration : contactsWithErrors) {
+				lprDao.updateImportTime(administration.getRecordNumber(), Outcome.FAILURE);
+				for (LPRReference earlierRefs : administration.getLprReferencer()) {
+					lprDao.updateImportTime(earlierRefs.getLprRecordNumber(), Outcome.FAILURE);
+				}
+				processedContacts.remove(administration);
+			}
+		}
+		
 		contacts = processedContacts;
 		if(contacts.size() == 0) {
 			// all contacts were prone to error, abort the flow

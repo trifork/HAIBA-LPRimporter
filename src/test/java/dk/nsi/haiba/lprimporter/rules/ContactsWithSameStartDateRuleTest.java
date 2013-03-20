@@ -146,15 +146,15 @@ public class ContactsWithSameStartDateRuleTest {
 		
 		List<Administration> processedContacts = contactsWithSameStartDateRule.getContacts();
 		
-		assertTrue("Expecting 2 contacts", processedContacts.size() == 2);
+		assertEquals("Expecting 1 contacts", 1, processedContacts.size());
 
 		// Expect 1 error to be logged
 		Mockito.verify(haibaDao, Mockito.atLeastOnce()).saveBusinessRuleError((BusinessRuleError) Mockito.any());
 
 		Collections.sort(processedContacts, new AdministrationInDateComparator());
 		
-		// contact #3 should still be processed, don't know which one of the 2 with same in and outdate that is kept - it is up to the sortingalgorithm - and it doesn't matter anyway because the other one is logged as an error.
-		Administration last = processedContacts.get(1);
+		// contact #3 should still be processed
+		Administration last = processedContacts.get(0);
 		assertEquals(recordNummer3, last.getRecordNumber());
 	}
 
@@ -175,7 +175,7 @@ public class ContactsWithSameStartDateRuleTest {
 		
 		List<Administration> processedContacts = contactsWithSameStartDateRule.getContacts();
 		
-		assertTrue("Expecting 1 contacts", processedContacts.size() == 1);
+		assertEquals("Expecting 0 contacts",0, processedContacts.size());
 
 		// Expect 2 error to be logged
 		Mockito.verify(haibaDao, Mockito.atLeastOnce()).saveBusinessRuleError((BusinessRuleError) Mockito.any());

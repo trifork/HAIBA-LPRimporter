@@ -266,6 +266,12 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 			jdbc.update("DELETE FROM Indlaeggelsesforloeb WHERE indlaeggelsesID IN (SELECT indlaeggelsesID FROM Indlaeggelser WHERE cpr=?)", cpr);
 			jdbc.update("DELETE FROM LPR_Reference WHERE indlaeggelsesID IN (SELECT indlaeggelsesID FROM Indlaeggelser WHERE cpr=?)", cpr);
 			jdbc.update("DELETE FROM Indlaeggelser WHERE cpr=?", cpr);
+			// delete ambulant contacts
+			jdbc.update("DELETE FROM AmbulantDiagnoser WHERE AmbulantKontaktId IN (SELECT ambulantKontaktId FROM AmbulantKontakt WHERE cpr=?)", cpr);
+			jdbc.update("DELETE FROM AmbulantProcedurer WHERE AmbulantKontaktId IN (SELECT ambulantKontaktId FROM AmbulantKontakt WHERE cpr=?)", cpr);
+			jdbc.update("DELETE FROM AmbulantLPR_Reference WHERE AmbulantKontaktId IN (SELECT ambulantKontaktId FROM AmbulantKontakt WHERE cpr=?)", cpr);
+			jdbc.update("DELETE FROM AmbulantKontakt WHERE cpr=?", cpr);
+			
 	    }
 	    
 	}
@@ -283,5 +289,93 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
         }
 	    return currentPatientCPRNumbers;
 	}
+
+
+	@Override
+	public void saveAmbulantIndlaeggelser(List<Indlaeggelse> indlaeggelser)
+			throws DAOException {
+		try {
+			for (Indlaeggelse indlaeggelse : indlaeggelser) {
+				
+				final String sql = "INSERT INTO AmbulantKontakt (CPR, Sygehuskode, Afdelingskode, Indlaeggelsesdatotid, Udskrivningsdatotid, aktuel) VALUES (?,?,?,?,?,?)";				
+				
+				final Object[] args = new Object[] {
+						indlaeggelse.getCpr(), 
+						indlaeggelse.getSygehusCode(),
+						indlaeggelse.getAfdelingsCode(),
+						indlaeggelse.getIndlaeggelsesDatetime(),
+						indlaeggelse.getUdskrivningsDatetime(),
+						indlaeggelse.isAktuel()};
+				
+
+				long ambulantContactId = -1;
+				if(MYSQL.equals(getDialect())) {
+					KeyHolder keyHolder = new GeneratedKeyHolder();
+			        jdbc.update(new PreparedStatementCreator() {
+			            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+			                PreparedStatement ps = connection.prepareStatement(sql, new String[] { "id" });
+			                for (int i = 0; i < args.length; i++) {
+			                    ps.setObject(i + 1, args[i]);
+			                }
+			                return ps;
+			            }
+			        }, keyHolder);
+			        ambulantContactId = keyHolder.getKey().longValue();
+				} else if(MSSQL.equals(getDialect())) {
+					jdbc.update(sql, args);
+					ambulantContactId = jdbc.queryForLong("SELECT @@IDENTITY");
+				} else {
+					throw new DAOException("Unknown SQL dialect: "+ getDialect());
+				}
+
+		        saveAmbulantDiagnoses(indlaeggelse.getDiagnoses(), ambulantContactId);
+		        saveAmbulantProcedures(indlaeggelse.getProcedures(), ambulantContactId);
+		        saveAmbulantLPRReferences(indlaeggelse.getLprReferencer(), ambulantContactId);
+			}
+		} catch(DataAccessException e) {
+			throw new DAOException(e.getMessage(), e);
+		}
+	}
+
+	private void saveAmbulantLPRReferences(List<LPRReference> lprReferencer, long ambulantContactId) {
+		
+		String sql = "INSERT INTO AmbulantLPR_Reference (AmbulantKontaktID, LPR_recordnummer) VALUES (?, ?)";
+		
+		for (LPRReference ref : lprReferencer) {
+			jdbc.update(sql, ambulantContactId, ref.getLprRecordNumber());
+		}
+	}
+
+
+	private void saveAmbulantProcedures(List<Procedure> procedures, long ambulantContactId) {
+		
+		String sql = "INSERT INTO AmbulantProcedurer (AmbulantKontaktID, Procedurekode, Proceduretype, Tillaegsprocedurekode, Sygehuskode, Afdelingskode, Proceduredatotid) VALUES (?, ?, ?, ?, ?, ?, ?)";
+		
+		for (Procedure p : procedures) {
+			jdbc.update(sql, 
+					ambulantContactId, 
+					p.getProcedureCode(),
+					p.getProcedureType(),
+					p.getTillaegsProcedureCode(),
+					p.getSygehusCode(),
+					p.getAfdelingsCode(),
+					p.getProcedureDatetime());
+		}
+	}
+
+
+	private void saveAmbulantDiagnoses(List<Diagnose> diagnoses, long ambulantContactId) {
+		
+		String sql = "INSERT INTO AmbulantDiagnoser (AmbulantKontaktID, Diagnoseskode, Diagnosetype, Tillaegsdiagnose) VALUES (?, ?, ?, ?)";
+
+		for (Diagnose d : diagnoses) {
+			jdbc.update(sql, 
+					ambulantContactId, 
+					d.getDiagnoseCode(),
+					d.getDiagnoseType(),
+					d.getTillaegsDiagnose());
+		}
+	}
+
 	
 }

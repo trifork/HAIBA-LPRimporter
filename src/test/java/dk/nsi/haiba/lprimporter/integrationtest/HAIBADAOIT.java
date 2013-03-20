@@ -133,6 +133,33 @@ public class HAIBADAOIT {
     
     }
 
+    /*
+     * Inserts an Ambulant Contact into the HAIBA db, and tests data is inserted correct by DAO
+     */
+    @Test
+	public void insertsSingleAmbulantContact() {
+    	
+		List<Indlaeggelse> indlaeggelser = createIndlaeggelser(false);
+		
+    	assertNotNull(haibaDao);
+		haibaDao.saveAmbulantIndlaeggelser(indlaeggelser);
+		
+		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from AmbulantKontakt"));
+		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from AmbulantLPR_Reference"));
+		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from AmbulantDiagnoser"));
+		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from AmbulantProcedurer"));
+
+		assertEquals(sygehusCode, jdbc.queryForObject("select sygehuskode from AmbulantKontakt", String.class));
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.0");
+		assertEquals(sdf.format(in), sdf.format(jdbc.queryForObject("select indlaeggelsesdatotid from AmbulantKontakt", Date.class)));
+		assertEquals(sdf.format(out), sdf.format(jdbc.queryForObject("select udskrivningsdatotid from AmbulantKontakt", Date.class)));
+
+		assertEquals(sdf.format(in), sdf.format(jdbc.queryForObject("select proceduredatotid from AmbulantProcedurer", Date.class)));
+    
+    }
+
+    
     @Test
 	public void insertsIndlaeggelseAndDeleteIt() {
     	

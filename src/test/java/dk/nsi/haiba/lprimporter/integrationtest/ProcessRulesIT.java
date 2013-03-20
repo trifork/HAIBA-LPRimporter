@@ -93,14 +93,14 @@ public class ProcessRulesIT {
 
 	String cpr;
 	long recordNummer0;
-	long recordNummer;
+	long recordNummer1;
 	long recordNummer2;
 	long recordNummer3;
 	long recordNummer4;
 	String sygehusCode0;
 	String afdelingsCode0;
-	String sygehusCode;
-	String afdelingsCode;
+	String sygehusCode1;
+	String afdelingsCode1;
 	String sygehusCode2;
 	String afdelingsCode2;
 	String sygehusCode3;
@@ -109,8 +109,8 @@ public class ProcessRulesIT {
 	String afdelingsCode4;
 	DateTime in0;
 	DateTime out0;
-	DateTime in;
-	DateTime out;
+	DateTime in1;
+	DateTime out1;
 	DateTime in2;
 	DateTime out2;
 	DateTime in3;
@@ -133,11 +133,11 @@ public class ProcessRulesIT {
     	in0 = new DateTime(2019, 5, 3, 0, 0, 0);
     	out0 = new DateTime(2019, 5, 3, 0, 0, 0);
 		
-		recordNummer = 1234;
-    	sygehusCode = "csgh";
-    	afdelingsCode = "234";
-    	in = new DateTime(2010, 5, 3, 0, 0, 0);
-    	out = new DateTime(2010, 6, 4, 0, 0, 0);
+		recordNummer1 = 1234;
+    	sygehusCode1 = "csgh";
+    	afdelingsCode1 = "234";
+    	in1 = new DateTime(2010, 5, 3, 0, 0, 0);
+    	out1 = new DateTime(2010, 6, 4, 0, 0, 0);
 
     	recordNummer2 = 1235;
     	sygehusCode2 = "csgh";
@@ -175,7 +175,7 @@ public class ProcessRulesIT {
     	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
     			new Long(recordNummer0), cpr, sygehusCode0, afdelingsCode0, in0.toDate(), out0.toDate(), 2);
     	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
-    			new Long(recordNummer), cpr, sygehusCode, afdelingsCode, in.toDate(), out.toDate(), 2);
+    			new Long(recordNummer1), cpr, sygehusCode1, afdelingsCode1, in1.toDate(), out1.toDate(), 2);
     	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
     			new Long(recordNummer2), cpr, sygehusCode2, afdelingsCode2, in2.toDate(), out2.toDate(), 2);
     	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
@@ -197,33 +197,33 @@ public class ProcessRulesIT {
 
 		// check updated status flag in T_ADM
 		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer0, String.class));
-		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer, String.class));
+		assertEquals("FAILURE",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer1, String.class));
 		assertEquals("FAILURE",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer2, String.class));
 		assertEquals("FAILURE",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer3, String.class));
 		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer4, String.class));
 		
-		assertEquals(3, jdbc.queryForInt("select count(*) from Indlaeggelser"));
+		assertEquals(2, jdbc.queryForInt("select count(*) from Indlaeggelser"));
 	}
 	
 	@Test 
 	public void threeIdenticalContactsButDifferentInTimeShouldBeMergedToOneAdmission() {
 		assertNotNull(lprPrepareDataRule);
 		
-		sygehusCode0 = sygehusCode;
-		sygehusCode2 = sygehusCode;
-		afdelingsCode0 = afdelingsCode;
-		afdelingsCode2 = afdelingsCode;
+		sygehusCode0 = sygehusCode1;
+		sygehusCode2 = sygehusCode1;
+		afdelingsCode0 = afdelingsCode1;
+		afdelingsCode2 = afdelingsCode1;
     	in0 = new DateTime(2010, 5, 3, 9, 0, 0);
     	out0 = new DateTime(2010, 5, 3, 0, 0, 0);
-    	in = new DateTime(2010, 5, 3, 10, 0, 0);
-    	out = new DateTime(2010, 5, 3, 0, 0, 0);
+    	in1 = new DateTime(2010, 5, 3, 10, 0, 0);
+    	out1 = new DateTime(2010, 5, 3, 0, 0, 0);
     	in2 = new DateTime(2010, 5, 3, 11, 0, 0);
     	out2 = new DateTime(2010, 5, 3, 0, 0, 0);
 		
     	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
     			new Long(recordNummer0), cpr, sygehusCode0, afdelingsCode0, in0.toDate(), out0.toDate(), 2);
     	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
-    			new Long(recordNummer), cpr, sygehusCode, afdelingsCode, in.toDate(), out.toDate(), 2);
+    			new Long(recordNummer1), cpr, sygehusCode1, afdelingsCode1, in1.toDate(), out1.toDate(), 2);
     	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
     			new Long(recordNummer2), cpr, sygehusCode2, afdelingsCode2, in2.toDate(), out2.toDate(), 2);
 
@@ -238,7 +238,7 @@ public class ProcessRulesIT {
 		}
 
 		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer0, String.class));
-		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer, String.class));
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer1, String.class));
 		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer2, String.class));
 
 		assertEquals(1, jdbc.queryForInt("select count(*) from Indlaeggelser"));

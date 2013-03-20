@@ -45,6 +45,14 @@ public interface HAIBADAO {
 	public void saveIndlaeggelsesForloeb(List<Indlaeggelse> indlaeggelser) throws DAOException;
 
 	/**
+	 * Takes a list of indlaeggelser and saves it in the ambulant tables
+	 * 
+	 * @param A list of Indlaeggelse objects
+	 * @throws DAOException if something goes wrong in the process
+	 */
+	public void saveAmbulantIndlaeggelser(List<Indlaeggelse> indlaeggelser) throws DAOException;
+
+	/**
 	 * Takes a BusinessRuleError and saves it to the RegelFejlbeskedertable in the database
 	 * 
 	 * @param BusinessRuleError
