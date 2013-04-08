@@ -140,4 +140,8 @@ public class ImportExecutor {
 		rulesEngine.processRuleChain(contactsByCPR);
 		log.debug("Rules processed for CPR number");
 	}
+	
+	private void prepareStatisticObjectsForThisRun() {
+		
+	}
 }

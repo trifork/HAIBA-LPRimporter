@@ -117,3 +117,36 @@ CREATE TABLE AmbulantLPR_Reference (
     LPR_recordnummer BIGINT(15) NOT NULL,
     FOREIGN KEY (AmbulantKontaktID) REFERENCES AmbulantKontakt(AmbulantKontaktID)
 ) ENGINE=InnoDB COLLATE=utf8_bin;
+
+CREATE TABLE StatistikDataProcesseret (
+    ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    KoerselsDato DATETIME NOT NULL,
+    AntalKontakter BIGINT(15) NULL,
+    AntalCPRNumre BIGINT(15) NULL,
+    AntalKontakterFejlet BIGINT(15) NULL,
+    AntalCPRNumreEksporteret BIGINT(15) NULL,
+    AntalIndlaeggelserEksporteret BIGINT(15) NULL,
+    AntalForloebEksporteret BIGINT(15) NULL,
+    AntalAmbulanteKontakterEksporteret BIGINT(15) NULL
+) ENGINE=InnoDB COLLATE=utf8_bin;
+
+CREATE TABLE StatistikReglerProcesseret (
+    ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    KoerselsDato DATETIME NOT NULL,
+    Regel1 BIGINT(15) NULL,
+    Regel2 BIGINT(15) NULL,
+    Regel3 BIGINT(15) NULL,
+    Regel4 BIGINT(15) NULL,
+    Regel5 BIGINT(15) NULL,
+    Regel6 BIGINT(15) NULL,
+    Regel7 BIGINT(15) NULL,
+    Regel8 BIGINT(15) NULL,
+    Regel9 BIGINT(15) NULL,
+    Regel10 BIGINT(15) NULL,
+    Regel11 BIGINT(15) NULL,
+    Regel12 BIGINT(15) NULL,
+    Regel13 BIGINT(15) NULL,
+    Regel14 BIGINT(15) NULL,
+    Regel15 BIGINT(15) NULL,
+    Regel16 BIGINT(15) NULL
+) ENGINE=InnoDB COLLATE=utf8_bin;

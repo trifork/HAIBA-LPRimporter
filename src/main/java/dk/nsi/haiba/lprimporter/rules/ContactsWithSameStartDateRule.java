@@ -146,6 +146,7 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 				for (LPRReference earlierRefs : administration.getLprReferencer()) {
 					lprDao.updateImportTime(earlierRefs.getLprRecordNumber(), Outcome.FAILURE);
 				}
+				log.debug("5 Contact remove:"+administration);
 				processedContacts.remove(administration);
 			}
 		}
@@ -162,8 +163,7 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 			if (items.values().contains(item)) {
 				// ignore duplicate items
 			} else {
-				// use the indate, outdate as keys to sort out duplicates
-				items.put(""+item.getIndlaeggelsesDatetime()+item.getUdskrivningsDatetime(),item);
+				items.put("Item"+item.hashCode(),item);
 			}
 		}
 		contacts = new ArrayList<Administration>(items.values());

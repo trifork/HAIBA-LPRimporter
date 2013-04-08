@@ -102,6 +102,11 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 		saveAmbulantContacts(ambulantContacts);
 		
 		contacts = nonAmbulantContacts;
+		if(contacts.size() == 0) {
+			// Only ambulant contacts for this patient, end rules processing
+			return null;
+		}
+		
 		
 		// setup the next rule in the chain
 		extendContactEndtimeRule.setContacts(contacts);

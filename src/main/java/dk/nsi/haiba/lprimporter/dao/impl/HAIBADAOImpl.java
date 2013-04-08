@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
@@ -45,6 +46,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import dk.nsi.haiba.lprimporter.dao.CommonDAO;
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.exception.DAOException;
+import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
@@ -55,6 +57,8 @@ import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 import dk.nsi.haiba.lprimporter.rules.BusinessRuleError;
 
 public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
+
+	private static Log log = new Log(Logger.getLogger(HAIBADAOImpl.class));
 
 	@Autowired
 	@Qualifier("haibaJdbcTemplate")
@@ -233,7 +237,8 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 	    	}
         } catch(EmptyResultDataAccessException e) {
         	// no name found
-        	return null;
+        	log.warn("No SygehusInitials found for Code:"+sygehuscode+", department:"+afdelingsCode+" and date:"+in);
+        	return "";
         } catch (RuntimeException e) {
             throw new DAOException("Error Fetching initials for hospital from FGR", e);
         }

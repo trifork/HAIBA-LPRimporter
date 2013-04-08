@@ -59,6 +59,7 @@ public class ExtendContactEndtimeRule implements LPRRule {
 		
 		for (Administration contact : contacts) {
 			
+			// contact.getUdskrivningsDatetime() is set in the datetimerule, and will not be null
 			DateTime contactEndDateTime = new DateTime(contact.getUdskrivningsDatetime());
 			DateTime latestProcedureDateTime = null; 
 			
