@@ -48,6 +48,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
 import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -113,7 +114,7 @@ public class OverlappingContactsRuleTest {
 		List<Administration> contacts = setupContacts();
 
 		overlappingContactsRule.setContacts(contacts);
-		overlappingContactsRule.doProcessing();
+		overlappingContactsRule.doProcessing(Statistics.getInstance());
 		
 		List<Administration> processedContacts = overlappingContactsRule.getContacts();
 		
@@ -148,7 +149,7 @@ public class OverlappingContactsRuleTest {
 		List<Administration> contacts = setupContacts();
 
 		overlappingContactsRule.setContacts(contacts);
-		overlappingContactsRule.doProcessing();
+		overlappingContactsRule.doProcessing(Statistics.getInstance());
 		
 		List<Administration> processedContacts = overlappingContactsRule.getContacts();
 		
@@ -183,7 +184,7 @@ public class OverlappingContactsRuleTest {
 		List<Administration> contacts = setupContacts();
 
 		overlappingContactsRule.setContacts(contacts);
-		overlappingContactsRule.doProcessing();
+		overlappingContactsRule.doProcessing(Statistics.getInstance());
 		
 		List<Administration> processedContacts = overlappingContactsRule.getContacts();
 		assertEquals("List size must be 2", 2, processedContacts.size());
@@ -201,7 +202,7 @@ public class OverlappingContactsRuleTest {
 		overlappingContactsRule.setContacts(contacts);
 		boolean ruleWasAborted = false;
 		try {
-			overlappingContactsRule.doProcessing();
+			overlappingContactsRule.doProcessing(Statistics.getInstance());
 		} catch(RuleAbortedException e) {
 			BusinessRuleError error = e.getBusinessRuleError();
 			assertEquals(1234, error.getLprReference());
@@ -232,7 +233,7 @@ public class OverlappingContactsRuleTest {
 		List<Administration> contacts = setupContacts();
 
 		overlappingContactsRule.setContacts(contacts);
-		overlappingContactsRule.doProcessing();
+		overlappingContactsRule.doProcessing(Statistics.getInstance());
 		
 		List<Administration> processedContacts = overlappingContactsRule.getContacts();
 		assertEquals("List size must be 5", 5, processedContacts.size());

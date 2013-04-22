@@ -38,6 +38,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.log.Log;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.rules.RulesEngine;
 import dk.nsi.haiba.lprimporter.status.ImportStatusRepository;
@@ -91,6 +92,8 @@ public class ImportExecutor {
 			}
 			
 			if(lprdao.hasUnprocessedCPRnumbers()) {
+				Statistics statistics = Statistics.getInstance();
+
 				log.debug("LPR has unprocessed CPR numbers, starting import");
 				statusRepo.importStartedAt(new DateTime());
 				
@@ -98,27 +101,37 @@ public class ImportExecutor {
 				List<String> cprNumbersWithDeletedContacts = lprdao.getCPRnumbersFromDeletedContacts(syncId);
 				log.debug("processing "+cprNumbersWithDeletedContacts.size()+ " cprnumbers with deleted contacts");
 				for (String cpr : cprNumbersWithDeletedContacts) {
-					processCPRNumber(cpr);
+					// count CPR numbers with deleted contacts
+					statistics.cprNumbersWithDeletedContactsCounter += cprNumbersWithDeletedContacts.size();
+					processCPRNumber(cpr, statistics);
 				}
 				
 				// new data has arrived, check if any of the processed current patients are discharged
 				List<String> currentPatients = haibaDao.getCurrentPatients();
 				log.debug("processing "+currentPatients.size()+ " current patients cprnumbers");
 				for (String cpr : currentPatients) {
-					processCPRNumber(cpr);
+					// count CPR numbers processed for current patients
+					statistics.currentPatientsCounter += currentPatients.size();
+					processCPRNumber(cpr, statistics);
 				}
 
 				// process the new data
 				List<String> unprocessedCPRnumbers = lprdao.getCPRnumberBatch(batchsize);
 				while(unprocessedCPRnumbers.size() > 0) {
+					// count the unprocessed CPR numbers
+					statistics.cprCounter += unprocessedCPRnumbers.size();
+
 					log.debug("processing "+unprocessedCPRnumbers.size()+ " cprnumbers");
 					for (String cpr : unprocessedCPRnumbers) {
-						processCPRNumber(cpr);
+						processCPRNumber(cpr, statistics);
 					}
 					// fetch the next batch
 					unprocessedCPRnumbers = lprdao.getCPRnumberBatch(batchsize);
 				}
 				statusRepo.importEndedWithSuccess(new DateTime());
+				
+				haibaDao.saveStatistics(statistics);
+				statistics.resetInstance();
 			}
 			
 		} catch(Exception e) {
@@ -128,8 +141,11 @@ public class ImportExecutor {
 	}
 
 
-	private void processCPRNumber(String cpr) {
+	private void processCPRNumber(String cpr, Statistics statistics) {
 		List<Administration> contactsByCPR = lprdao.getContactsByCPR(cpr);
+		// count the processed contacts
+		statistics.contactCounter += contactsByCPR.size();
+		
 		log.debug("Fetched "+contactsByCPR.size()+ " contacts");
 
 		// ensure old data for this cpr number is removed before applying businessrules.
@@ -137,11 +153,8 @@ public class ImportExecutor {
 		log.debug("Removed earlier processed admissions for CPR number");
 		
 		// Process the LPR data according to the defined business rules
-		rulesEngine.processRuleChain(contactsByCPR);
+		rulesEngine.processRuleChain(contactsByCPR, statistics);
 		log.debug("Rules processed for CPR number");
 	}
 	
-	private void prepareStatisticObjectsForThisRun() {
-		
-	}
 }

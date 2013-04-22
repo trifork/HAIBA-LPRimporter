@@ -26,8 +26,10 @@
  */
 package dk.nsi.haiba.lprimporter.rules;
 
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
+
 public interface LPRRule {
 	
-	public LPRRule doProcessing();
+	public LPRRule doProcessing(Statistics statistics);
 
 }

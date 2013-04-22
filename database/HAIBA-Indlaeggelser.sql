@@ -130,9 +130,18 @@ CREATE TABLE StatistikDataProcesseret (
     AntalAmbulanteKontakterEksporteret BIGINT(15) NULL
 ) ENGINE=InnoDB COLLATE=utf8_bin;
 
-CREATE TABLE StatistikReglerProcesseret (
+CREATE TABLE Statistik (
     ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     KoerselsDato DATETIME NOT NULL,
+    AntalKontakter BIGINT(15) NULL,
+    AntalCPRNumre BIGINT(15) NULL,
+    AntalKontakterFejlet BIGINT(15) NULL,
+    AntalCPRNumreEksporteret BIGINT(15) NULL,
+    AntalIndlaeggelserEksporteret BIGINT(15) NULL,
+    AntalForloebEksporteret BIGINT(15) NULL,
+    AntalAmbulanteKontakterEksporteret BIGINT(15) NULL,
+    AntalCPRNumreMedSlettedeKontakterBehandlet BIGINT(15) NULL,
+    AntalNuvaerendePatienterBehandlet BIGINT(15) NULL,
     Regel1 BIGINT(15) NULL,
     Regel2 BIGINT(15) NULL,
     Regel3 BIGINT(15) NULL,
@@ -146,7 +155,5 @@ CREATE TABLE StatistikReglerProcesseret (
     Regel11 BIGINT(15) NULL,
     Regel12 BIGINT(15) NULL,
     Regel13 BIGINT(15) NULL,
-    Regel14 BIGINT(15) NULL,
-    Regel15 BIGINT(15) NULL,
-    Regel16 BIGINT(15) NULL
+    Regel14 BIGINT(15) NULL
 ) ENGINE=InnoDB COLLATE=utf8_bin;

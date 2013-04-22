@@ -44,6 +44,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.rules.RulesEngine;
 import dk.nsi.haiba.lprimporter.status.ImportStatusRepository;
@@ -119,7 +120,7 @@ public class ImportExecutorTest {
 		
 		Mockito.verify(lprdao, Mockito.atLeastOnce()).getCPRnumberBatch(20);
 		Mockito.verify(lprdao, Mockito.atLeastOnce()).getContactsByCPR(cprList.get(0));
-		Mockito.verify(rulesEngine, Mockito.atLeastOnce()).processRuleChain(Mockito.anyListOf(Administration.class));
+		Mockito.verify(rulesEngine, Mockito.atLeastOnce()).processRuleChain(Mockito.anyListOf(Administration.class), Mockito.any(Statistics.class));
 	}
 
 	@Test

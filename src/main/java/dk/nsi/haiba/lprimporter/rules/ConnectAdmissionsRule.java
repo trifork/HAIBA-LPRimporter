@@ -39,10 +39,11 @@ import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 /*
- * This is the 12. (13. and 14.) rule to be applied to LPR data
+ * This is the 15? rule to be applied to LPR data (Rule 15 doesn't have a number in the demands)
  * It takes a list of admissions from a single CPR number, and processes the data with the connect admissions rule
  * See the solution document for details about this rule.
  */public class ConnectAdmissionsRule implements LPRRule {
@@ -56,11 +57,11 @@ import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 	LPRDAO lprDao;
 
 	@Override
-	public LPRRule doProcessing() {
+	public LPRRule doProcessing(Statistics statistics) {
 
 		if(admissions.size() == 1) {
 			// only 1 connection
-			saveConnectedAdmissions(admissions);
+			saveConnectedAdmissions(admissions, statistics);
 			return null; // end rules processing
 		} 
 		
@@ -86,19 +87,26 @@ import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 			} else {
 				// There is a gap between previousOut and currentIn
 				// so save the connected list and start a new one.
-				saveConnectedAdmissions(connectedAdmissions);
+				saveConnectedAdmissions(connectedAdmissions, statistics);
 				connectedAdmissions.clear();
 				connectedAdmissions.add(admission);
 			}
 			previousAdmission = admission;
 		}
 		// loop has ended, save the list containing the last admission(s) from the loop
-		saveConnectedAdmissions(connectedAdmissions);
+		saveConnectedAdmissions(connectedAdmissions, statistics);
 		
 		return null;
 	}
 
-	private void saveConnectedAdmissions(List<Indlaeggelse> admissions) {
+	private void saveConnectedAdmissions(List<Indlaeggelse> admissions, Statistics statistics) {
+		// increment counter for CPR numbers exported
+		statistics.cprExportedCounter += 1;
+		// increment counter for admissionsseries exported
+		statistics.admissionsSeriesExportedCounter += 1;
+		// increment counter for admissions exported
+		statistics.admissionsExportedCounter += admissions.size();
+		
 		for (Indlaeggelse admission : admissions) {
 			// Rules are complete, update LPR with the import timestamp so they are not imported again
 			for (LPRReference lprRef : admission.getLprReferencer()) {

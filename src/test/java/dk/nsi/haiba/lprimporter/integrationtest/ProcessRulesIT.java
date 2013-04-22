@@ -52,6 +52,7 @@ import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.dao.impl.HAIBADAOImpl;
 import dk.nsi.haiba.lprimporter.dao.impl.LPRDAOImpl;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.rules.LPRPrepareDataRule;
 import dk.nsi.haiba.lprimporter.rules.LPRRule;
@@ -185,11 +186,12 @@ public class ProcessRulesIT {
     	List<Administration> contactsByCPR = lprDao.getContactsByCPR(cpr);
 
 		lprPrepareDataRule.setContacts(contactsByCPR);
-		LPRRule next = lprPrepareDataRule.doProcessing();
+		Statistics statistics = Statistics.getInstance();
+		LPRRule next = lprPrepareDataRule.doProcessing(statistics);
 		
 		// Process rest of the rules and save admission
 		while(next != null) {
-			next = next.doProcessing();
+			next = next.doProcessing(statistics);
 		}
 		
 		// Expect 2 errors logged
@@ -230,11 +232,12 @@ public class ProcessRulesIT {
     	List<Administration> contactsByCPR = lprDao.getContactsByCPR(cpr);
 
 		lprPrepareDataRule.setContacts(contactsByCPR);
-		LPRRule next = lprPrepareDataRule.doProcessing();
+		Statistics statistics = Statistics.getInstance();
+		LPRRule next = lprPrepareDataRule.doProcessing(statistics);
 		
 		// Process rest of the rules and save admission
 		while(next != null) {
-			next = next.doProcessing();
+			next = next.doProcessing(statistics);
 		}
 
 		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer0, String.class));

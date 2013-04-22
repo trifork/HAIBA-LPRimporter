@@ -51,6 +51,7 @@ import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
@@ -384,5 +385,36 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 		}
 	}
 
-	
+
+	@Override
+	public void saveStatistics(Statistics statistics) {
+		String sql = "INSERT INTO Statistik (KoerselsDato,AntalKontakter,AntalCPRNumre,AntalKontakterFejlet,AntalCPRNumreEksporteret,AntalIndlaeggelserEksporteret,AntalForloebEksporteret,AntalAmbulanteKontakterEksporteret,AntalCPRNumreMedSlettedeKontakterBehandlet,AntalNuvaerendePatienterBehandlet,Regel1,Regel2,Regel3,Regel4,Regel5,Regel6,Regel7,Regel8,Regel9,Regel10,Regel11,Regel12,Regel13,Regel14) " +
+		" VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+
+		jdbc.update(sql,
+				statistics.getDate(),
+				statistics.contactCounter,
+				statistics.cprCounter,
+				statistics.contactErrorCounter,
+				statistics.cprExportedCounter,
+				statistics.admissionsExportedCounter,
+				statistics.admissionsSeriesExportedCounter,
+				statistics.ambulantContactsExportedCounter,
+				statistics.cprNumbersWithDeletedContactsCounter,
+				statistics.currentPatientsCounter,
+				statistics.rule1Counter,
+				statistics.rule2Counter,
+				statistics.rule3Counter,
+				statistics.rule4Counter,
+				statistics.rule5Counter,
+				statistics.rule6Counter,
+				statistics.rule7Counter,
+				statistics.rule8Counter,
+				statistics.rule9Counter,
+				statistics.rule10Counter,
+				statistics.rule11Counter,
+				statistics.rule12Counter,
+				statistics.rule13Counter,
+				statistics.rule14Counter);
+	}
 }

@@ -56,6 +56,7 @@ import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.rules.ConnectAdmissionsRule;
 import dk.nsi.haiba.lprimporter.rules.LPRRule;
 
@@ -171,7 +172,7 @@ public class ConnectAdmissionsRuleIT {
 		
 		List<Indlaeggelse> admissions = setupAdmissions();
 		connectAdmissionsRule.setAdmissions(admissions);
-		LPRRule nextRule = connectAdmissionsRule.doProcessing();
+		LPRRule nextRule = connectAdmissionsRule.doProcessing(Statistics.getInstance());
 
 		assertNull("This is the last rule", nextRule);
 		

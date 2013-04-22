@@ -49,6 +49,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 
@@ -110,7 +111,7 @@ public class LPRDateTimeRuleTest {
 		List<Administration> contacts = setupContacts();
 
 		lprDateTimeRule.setContacts(contacts);
-		lprDateTimeRule.doProcessing();
+		lprDateTimeRule.doProcessing(Statistics.getInstance());
 		
 		assertNotNull("1 contact is still expected", contacts);
 		assertEquals(1, contacts.size());
@@ -132,7 +133,7 @@ public class LPRDateTimeRuleTest {
 		List<Administration> contacts = setupContacts();
 		
 		lprDateTimeRule.setContacts(contacts);
-		lprDateTimeRule.doProcessing();
+		lprDateTimeRule.doProcessing(Statistics.getInstance());
 		
 		assertNotNull("1 contact is still expected", contacts);
 		assertEquals(1, contacts.size());
@@ -154,7 +155,7 @@ public class LPRDateTimeRuleTest {
 		List<Administration> contacts = setupContacts();
 		
 		lprDateTimeRule.setContacts(contacts);
-		lprDateTimeRule.doProcessing();
+		lprDateTimeRule.doProcessing(Statistics.getInstance());
 		
 		assertNotNull("1 contact is still expected", contacts);
 		assertEquals(1, contacts.size());
@@ -175,7 +176,7 @@ public class LPRDateTimeRuleTest {
 		List<Administration> contacts = setupContacts();
 		
 		lprDateTimeRule.setContacts(contacts);
-		lprDateTimeRule.doProcessing();
+		lprDateTimeRule.doProcessing(Statistics.getInstance());
 		
 		assertNotNull("1 contact is still expected", contacts);
 		assertEquals(1, contacts.size());
@@ -197,7 +198,7 @@ public class LPRDateTimeRuleTest {
 		lprDateTimeRule.setContacts(contacts);
 		
 		try {
-			lprDateTimeRule.doProcessing();
+			lprDateTimeRule.doProcessing(Statistics.getInstance());
 		} catch(RuleAbortedException e) {
 			BusinessRuleError businessRuleError = e.getBusinessRuleError();
 			assertEquals(recordNummer, businessRuleError.getLprReference());

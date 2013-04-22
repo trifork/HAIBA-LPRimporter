@@ -40,12 +40,13 @@ import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
 import dk.nsi.haiba.lprimporter.log.BusinessRuleErrorLog;
 import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 /*
- * This is the 2 and 3. rule to be applied to LPR data
+ * This is the 4., 5. and 6. rule to be applied to LPR data (Rule 5 is not really a rule. but a demand)
  * It takes a list of contacts from a single CPR number, and processes the data with the Date/Time rule
  * See the solution document for details about this rule.
  */
@@ -88,11 +89,13 @@ public class LPRDateTimeRule implements LPRRule {
 	private int currentPatientDaysIfGreaterThanInterval;
 
 	@Override
-	public LPRRule doProcessing() {
+	public LPRRule doProcessing(Statistics statistics) {
 		
 		List<Administration> adjustedContacts = new ArrayList<Administration>();
 		
 		for (Administration contact : contacts) {
+			// Increment counter for rule #4
+			statistics.rule4Counter += 1;
 			
 			// AdmissionStartHour for the contact is default set to 0 if not applied in the database, adjust it with the default value from the propertiesfile
 			DateTime admissionStart = new DateTime(contact.getIndlaeggelsesDatetime());
@@ -184,13 +187,17 @@ public class LPRDateTimeRule implements LPRRule {
 				}
 			}
 			
-			// Rule #3 in time is after out time
+			// Rule #6 in time is after out time
 			DateTime in = new DateTime(contact.getIndlaeggelsesDatetime());
 			DateTime out = new DateTime(contact.getUdskrivningsDatetime());
 			if(in.isAfter(out)) {
+				// Increment counter for rule #6
+				statistics.rule6Counter += 1;
 				// log the error and ignore the contact.
 				BusinessRuleError be = new BusinessRuleError(contact.getRecordNumber(), resolver.getMessage("rule.datetime.indate.isafter.outdate"), resolver.getMessage("rule.datetime.name"));
 				businessRuleErrorLog.log(be);
+				// Increment count for contacts with errors
+				statistics.contactErrorCounter += 1;
 				lprDao.updateImportTime(contact.getRecordNumber(), Outcome.FAILURE);
 				continue;
 			}
@@ -201,7 +208,7 @@ public class LPRDateTimeRule implements LPRRule {
 		// set this for unittesting purpose
 		contacts = adjustedContacts;
 		if(contacts.size() == 0) {
-			// all contacts were prone to error, abort the flow
+			log.debug("all contacts were prone to error, abort the flow");
 			return null;
 		}
 		

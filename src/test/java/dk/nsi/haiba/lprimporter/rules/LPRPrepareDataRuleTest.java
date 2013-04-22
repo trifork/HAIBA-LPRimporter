@@ -48,6 +48,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -98,7 +99,7 @@ public class LPRPrepareDataRuleTest {
 		List<Administration> contacts = setupContacts();
 
 		lprPrepareDataRule.setContacts(contacts);
-		lprPrepareDataRule.doProcessing();
+		lprPrepareDataRule.doProcessing(Statistics.getInstance());
 		
 		List<Administration> preparedContacts = lprPrepareDataRule.getContacts();
 		
@@ -113,7 +114,7 @@ public class LPRPrepareDataRuleTest {
 		List<Administration> contacts = setupContacts();
 
 		lprPrepareDataRule.setContacts(contacts);
-		lprPrepareDataRule.doProcessing();
+		lprPrepareDataRule.doProcessing(Statistics.getInstance());
 		
 		List<Administration> preparedContacts = lprPrepareDataRule.getContacts();
 		
@@ -129,7 +130,7 @@ public class LPRPrepareDataRuleTest {
 		List<Administration> contacts = setupContacts();
 
 		lprPrepareDataRule.setContacts(contacts);
-		lprPrepareDataRule.doProcessing();
+		lprPrepareDataRule.doProcessing(Statistics.getInstance());
 		
 		List<Administration> preparedContacts = lprPrepareDataRule.getContacts();
 		
@@ -145,7 +146,7 @@ public class LPRPrepareDataRuleTest {
 		List<Administration> contacts = setupContacts();
 
 		lprPrepareDataRule.setContacts(contacts);
-		lprPrepareDataRule.doProcessing();
+		lprPrepareDataRule.doProcessing(Statistics.getInstance());
 		
 		List<Administration> preparedContacts = lprPrepareDataRule.getContacts();
 		
@@ -161,7 +162,7 @@ public class LPRPrepareDataRuleTest {
 		List<Administration> contacts = setupContacts();
 
 		lprPrepareDataRule.setContacts(contacts);
-		lprPrepareDataRule.doProcessing();
+		lprPrepareDataRule.doProcessing(Statistics.getInstance());
 		
 		List<Administration> preparedContacts = lprPrepareDataRule.getContacts();
 		
@@ -177,7 +178,7 @@ public class LPRPrepareDataRuleTest {
 		List<Administration> contacts = setupContacts();
 
 		lprPrepareDataRule.setContacts(contacts);
-		lprPrepareDataRule.doProcessing();
+		lprPrepareDataRule.doProcessing(Statistics.getInstance());
 		
 		List<Administration> preparedContacts = lprPrepareDataRule.getContacts();
 		
@@ -195,7 +196,7 @@ public class LPRPrepareDataRuleTest {
 		Mockito.when(haibaDao.getSygehusInitials(sygehusCode, afdelingsCode, in.toDate())).thenReturn("HOL");
 		
 		lprPrepareDataRule.setContacts(contacts);
-		lprPrepareDataRule.doProcessing();
+		lprPrepareDataRule.doProcessing(Statistics.getInstance());
 		
 		List<Administration> preparedContacts = lprPrepareDataRule.getContacts();
 		

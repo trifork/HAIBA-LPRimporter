@@ -43,11 +43,12 @@ import dk.nsi.haiba.lprimporter.log.BusinessRuleErrorLog;
 import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 /*
- * This is the 6. and 7. rule to be applied to LPR data
+ * This is the 9. and 10. rule to be applied to LPR data
  * It takes a list of contacts from a single CPR number, and processes the data with the Overlapping contacts rule
  * See the solution document for details about this rule.
  */
@@ -69,7 +70,7 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 	LPRDAO lprDao;
 
 	@Override
-	public LPRRule doProcessing() {
+	public LPRRule doProcessing(Statistics statistics) {
 		
 		List<Administration> processedContacts = new ArrayList<Administration>();
 		
@@ -99,6 +100,8 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 					if(previousOut.isEqual(out) &&
 							(!previousContact.getSygehusCode().equals(contact.getSygehusCode()) ||
 							!previousContact.getAfdelingsCode().equals(contact.getAfdelingsCode()))) {
+						// increment counter for rule #9
+						statistics.rule9Counter += 1;
 						log.debug("in and outdates are equal but department or hospital differs for contacts: "+ previousContact.getRecordNumber() + " and: "+contact.getRecordNumber());
 						// error, ignore the contacts, 
 						BusinessRuleError be = new BusinessRuleError(previousContact.getRecordNumber(), resolver.getMessage("rule.contactswithsamestartdate.different.hospitalordepartment", new Object[] {"["+contact.getRecordNumber()+"]"}), resolver.getMessage("rule.contactswithsamestartdate.name"));
@@ -111,6 +114,9 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 						previousContact = contact;
 						continue;
 					} else {
+						// increment counter for rule #10
+						statistics.rule10Counter += 1;
+
 						Administration preservedContact = null;
 						Administration deletedContact = null;
 						if(out.isAfter(previousOut)) {
@@ -142,11 +148,13 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 		if(contactsWithErrors.size() > 0) {
 			// delete all contacts with errors from processedcontacts
 			for (Administration administration : contactsWithErrors) {
+				// Increment count for contacts with errors
+				statistics.contactErrorCounter += 1;
 				lprDao.updateImportTime(administration.getRecordNumber(), Outcome.FAILURE);
 				for (LPRReference earlierRefs : administration.getLprReferencer()) {
+					statistics.contactErrorCounter += 1;
 					lprDao.updateImportTime(earlierRefs.getLprRecordNumber(), Outcome.FAILURE);
 				}
-				log.debug("5 Contact remove:"+administration);
 				processedContacts.remove(administration);
 			}
 		}

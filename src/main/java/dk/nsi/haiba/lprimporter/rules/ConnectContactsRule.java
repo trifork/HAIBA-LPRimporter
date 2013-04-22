@@ -37,10 +37,11 @@ import org.springframework.beans.factory.annotation.Value;
 
 import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 
 /*
- * This is the 10. rule to be applied to LPR data
+ * This is the 13. rule to be applied to LPR data
  * It takes a list of contacts from a single CPR number, and processes the data with the Connect contacts rule
  * See the solution document for details about this rule.
  */
@@ -62,7 +63,7 @@ public class ConnectContactsRule implements LPRRule {
 	private int differentHospitalDifference;
 
 	@Override
-	public LPRRule doProcessing() {
+	public LPRRule doProcessing(Statistics statistics) {
 
 		// Overlapping contacts has been sorted out now, so sort the contacts by in date
 		Collections.sort(contacts, new AdministrationInDateComparator());
@@ -85,6 +86,8 @@ public class ConnectContactsRule implements LPRRule {
 					if(Minutes.minutesBetween(previousOut, in).isGreaterThan(Minutes.minutes(0)) && 
 							Minutes.minutesBetween(previousOut, in).isLessThan(Minutes.minutes(sameHospitalDifference*60 +1))) {
 						
+						// Increment counter for rule #13
+						statistics.rule13Counter += 1;
 						previousContact.setUdskrivningsDatetime(contact.getIndlaeggelsesDatetime());
 					}
 				} else {
@@ -94,6 +97,8 @@ public class ConnectContactsRule implements LPRRule {
 					if(Minutes.minutesBetween(previousOut, in).isGreaterThan(Minutes.minutes(0)) && 
 							Minutes.minutesBetween(previousOut, in).isLessThan(Minutes.minutes(differentHospitalDifference*60 +1))) {
 						
+						// Increment counter for rule #13
+						statistics.rule13Counter += 1;
 						previousContact.setUdskrivningsDatetime(contact.getIndlaeggelsesDatetime());
 					}
 				}

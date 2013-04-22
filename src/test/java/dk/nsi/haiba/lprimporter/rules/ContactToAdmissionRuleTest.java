@@ -46,6 +46,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
@@ -119,7 +120,7 @@ public class ContactToAdmissionRuleTest {
 		List<Administration> contacts = setupContacts();
 		contactToAdmissionRule.setContacts(contacts);
 		
-		LPRRule nextRule = contactToAdmissionRule.doProcessing();
+		LPRRule nextRule = contactToAdmissionRule.doProcessing(Statistics.getInstance());
 		 
 		assertTrue(nextRule instanceof ConnectAdmissionsRule);
 		
@@ -137,7 +138,7 @@ public class ContactToAdmissionRuleTest {
 		List<Administration> contacts = setupContacts();
 		contactToAdmissionRule.setContacts(contacts);
 		
-		LPRRule nextRule = contactToAdmissionRule.doProcessing();
+		LPRRule nextRule = contactToAdmissionRule.doProcessing(Statistics.getInstance());
 		 
 		assertTrue(nextRule instanceof ConnectAdmissionsRule);
 		

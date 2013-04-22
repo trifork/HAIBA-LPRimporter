@@ -31,6 +31,7 @@ import java.util.List;
 
 import dk.nsi.haiba.lprimporter.exception.DAOException;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.rules.BusinessRuleError;
 
@@ -93,5 +94,12 @@ public interface HAIBADAO {
 	 * @throws DAOException if something goes wrong in the process
 	 */
 	public List<String> getCurrentPatients();
+
+	/**
+	 * saves statistics for a single run, saving all the counters to the database 
+	 * 
+	 * @param the collected counters
+	 */
+	public void saveStatistics(Statistics statistics);
 	
 }

@@ -35,11 +35,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
 import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 
 /*
- * This is the 5. rule to be applied to LPR data
+ * This is the 7. rule to be applied to LPR data
  * It takes a list of contacts from a single CPR number, and processes the data with the Extend Contact EndDate rule
  * See the solution document for details about this rule.
  */
@@ -55,7 +56,7 @@ public class ExtendContactEndtimeRule implements LPRRule {
 	MessageResolver resolver;
 
 	@Override
-	public LPRRule doProcessing() {
+	public LPRRule doProcessing(Statistics statistics) {
 		
 		for (Administration contact : contacts) {
 			
@@ -83,6 +84,8 @@ public class ExtendContactEndtimeRule implements LPRRule {
 				
 				// if procedureDateTime is after contact enddatetime, set it to procedureDateTime
 				if(latestProcedureDateTime.isAfter(contactEndDateTime)) {
+					// Increment the count for rule #7
+					statistics.rule7Counter += 1;
 					log.debug("procedureDateTime is after contact enddatetime for contact ref + " + contact.getRecordNumber());
 					contact.setUdskrivningsDatetime(latestProcedureDateTime.toDate());
 				}

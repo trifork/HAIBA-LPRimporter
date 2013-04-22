@@ -33,13 +33,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
 import dk.nsi.haiba.lprimporter.log.BusinessRuleErrorLog;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 /*
  * Simple RulesEngine - this could be enhanced by using Spring Integration
  * but for this P.O.C. the processflow is very simple, without contentbased routing, no external triggers e.t.c
- * The rules can be used directly with Spring Integration, just needs the channel mapping etc. But for now we keeps it simple.
+ * The rules can be used directly with Spring Integration, just needs the channel mapping etc. But for now we keep it simple.
  */
 public class LPRRulesEngine implements RulesEngine {
 
@@ -53,23 +54,23 @@ public class LPRRulesEngine implements RulesEngine {
 	LPRDAO lprDao;
 	
 	@Override
-	public void processRuleChain(List<Administration> contacts) {
+	public void processRuleChain(List<Administration> contacts, Statistics statistics) {
 		
-		// The first rule in the sequence is the LPRPrepareDataRule, 
-		// This rule returns the next rule, which carries on until either an error occurs or the end of the flow is reached
 		lprPrepareDataRule.setContacts(contacts);
 		
 		try {
-			LPRRule next = lprPrepareDataRule.doProcessing();
+			LPRRule next = lprPrepareDataRule.doProcessing(statistics);
 			while(next != null) {
 				// Execute the next rule until the end of the flow
-				next = next.doProcessing();
+				next = next.doProcessing(statistics);
 			}
 		} catch(RuleAbortedException e) {
 			// An error occured, log the exceptions attached dataobject into the business rule log (both file and database).
 			businessRuleErrorLog.log(e.getBusinessRuleError());
 			
 			for (Administration contact : contacts) {
+				// Increment counter for rule #1
+				statistics.rule1Counter += 1;
 				lprDao.updateImportTime(contact.getRecordNumber(), Outcome.FAILURE);
 			}
 		}

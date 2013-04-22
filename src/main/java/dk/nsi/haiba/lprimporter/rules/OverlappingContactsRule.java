@@ -39,10 +39,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
 import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 
 /*
- * This is the 8. and 9. rule to be applied to LPR data
+ * This is the 11. and 12. rule to be applied to LPR data
  * It takes a list of contacts from a single CPR number, and processes the data with the Overlapping contacts rule
  * See the solution document for details about this rule.
  */
@@ -58,7 +59,7 @@ public class OverlappingContactsRule implements LPRRule {
 	MessageResolver resolver;
 
 	@Override
-	public LPRRule doProcessing() {
+	public LPRRule doProcessing(Statistics statistics) {
 		
 		List<Administration> processedContacts = new ArrayList<Administration>();
 		
@@ -89,12 +90,15 @@ public class OverlappingContactsRule implements LPRRule {
 				}
 				
 				if((in.isAfter(previousIn)||in.isEqual(previousIn)) && (in.isBefore(previousOut) || in.isEqual(previousOut))) {
+					// Increment counter for rule #11
+					statistics.rule11Counter += 1;
+
 					// contact is overlapping
-					List<Administration> splittedContacts = splitContacts(previousContact, contact);
+					List<Administration> splittedContacts = splitContacts(previousContact, contact, statistics);
 					processedContacts.addAll(splittedContacts);
 					previousContact = contact;
 				} else {
-					processedContacts.add(previousContact); // add previous to ensure it is added, this could be added twice but is filtered at the end og this rule
+					processedContacts.add(previousContact); // add previous to ensure it is added, this could be added twice but is filtered at the end of this rule
 					processedContacts.add(contact); // also add current, in case no splitting should occur
 					previousContact = contact;
 				}
@@ -120,7 +124,7 @@ public class OverlappingContactsRule implements LPRRule {
 		return connectContactsRule;
 	}
 
-	private List<Administration> splitContacts(Administration previous, Administration current) {
+	private List<Administration> splitContacts(Administration previous, Administration current, Statistics statistics) {
 		List<Administration> splittedContacts = new ArrayList<Administration>();
 		
 		DateTime previousIn = new DateTime(previous.getIndlaeggelsesDatetime());
@@ -139,6 +143,9 @@ public class OverlappingContactsRule implements LPRRule {
 			// split on outTime, where current is the first
 			previous.setIndlaeggelsesDatetime(current.getUdskrivningsDatetime());
 		} else if(previousIn.isBefore(in) && previousOut.isAfter(out)) {
+			// Increment counter for rule #12
+			statistics.rule12Counter += 1;
+			
 			// create new contact from out to previousout
 			Administration newContact = new Administration();
 			newContact.setCpr(previous.getCpr());

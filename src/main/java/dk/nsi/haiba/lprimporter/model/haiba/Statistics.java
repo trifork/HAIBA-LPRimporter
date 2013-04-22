@@ -39,6 +39,7 @@ public class Statistics {
 	public static Statistics getInstance() {
 		if(instance == null) {
 			instance = new Statistics();
+			instance.date = new Date();
 		}
 		return instance;
 	}
@@ -52,15 +53,18 @@ public class Statistics {
 	
 	
 	Date date;
+	public Date getDate() {
+		return date;
+	}
 	
 	// A counter for the number of contacts processed
-	public long ContactCounter;
+	public long contactCounter;
 
 	// A counter for the number of CPR numbers processed
 	public long cprCounter;
 
 	// A counter for the number of contacts ending up in errors
-	public long ContactErrorCounter;
+	public long contactErrorCounter;
 
 	// A counter for the number of CPR numbers exported (less or the the same as cprCounter)
 	public long cprExportedCounter;
@@ -73,32 +77,29 @@ public class Statistics {
 
 	// A counter for the number of ambulant contacts exported
 	public long ambulantContactsExportedCounter;
+	
+	// A counter for processed CPR numbers with deleted contacts
+	public long cprNumbersWithDeletedContactsCounter;
+
+	// A counter for processed CPR numbers for current patients
+	public long currentPatientsCounter;
 
 	/*
 	 * Rule numbers are defined in the solution description.
 	 */
-	public long Rule1Counter;
-	public long Rule2Counter;
-	public long Rule3Counter;
-	public long Rule4Counter;
-	public long Rule5Counter;
-	public long Rule6Counter;
-	public long Rule7Counter;
-	public long Rule8Counter;
-	public long Rule9Counter;
-	public long Rule10Counter;
-	public long Rule11Counter;
-	public long Rule12Counter;
-	public long Rule13Counter;
-	public long Rule14Counter;
-	public long Rule15Counter;
-	public long Rule16Counter;
+	public long rule1Counter;
+	public long rule2Counter;
+	public long rule3Counter;
+	public long rule4Counter;
+	public long rule5Counter;
+	public long rule6Counter;
+	public long rule7Counter;
+	public long rule8Counter;
+	public long rule9Counter;
+	public long rule10Counter;
+	public long rule11Counter;
+	public long rule12Counter;
+	public long rule13Counter;
+	public long rule14Counter;
 	
-
-	/*
-	 * Saves all current counters to the database
-	 */
-	public void saveStatistics() {
-		// TODO
-	}
 }

@@ -45,6 +45,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 
@@ -109,7 +110,7 @@ public class RemoveIdenticalContactsRuleTest {
 		List<Administration> contacts = setupContacts();
 
 		removeIdenticalContactsRule.setContacts(contacts);
-		removeIdenticalContactsRule.doProcessing();
+		removeIdenticalContactsRule.doProcessing(Statistics.getInstance());
 		
 		assertTrue("Expecting 1 contact removed from the list", removeIdenticalContactsRule.getContacts().size() == 2);
 		
@@ -131,7 +132,7 @@ public class RemoveIdenticalContactsRuleTest {
 		List<Administration> contacts = setupContacts();
 
 		removeIdenticalContactsRule.setContacts(contacts);
-		removeIdenticalContactsRule.doProcessing();
+		removeIdenticalContactsRule.doProcessing(Statistics.getInstance());
 		
 		List<Administration> contactsAfterProcessing = removeIdenticalContactsRule.getContacts();
 		

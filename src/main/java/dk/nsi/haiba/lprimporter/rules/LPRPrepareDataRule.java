@@ -37,11 +37,12 @@ import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.log.BusinessRuleErrorLog;
 import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 /*
- * This is the 1. rule to be applied to LPR data
+ * This is the 1. and 3. rule to be applied to LPR data (2. rule is not really a rule, just a demand)
  * It takes a list of contacts from a single CPR number, and processes the data with the PrepareData rule
  * See the solution document for details about this rule.
  */
@@ -66,7 +67,7 @@ public class LPRPrepareDataRule implements LPRRule {
 	LPRDAO lprDao;
 
 	@Override
-	public LPRRule doProcessing() {
+	public LPRRule doProcessing(Statistics statistics) {
 		
 		List<Administration> preparedContacts = new ArrayList<Administration>();
 		
@@ -74,33 +75,36 @@ public class LPRPrepareDataRule implements LPRRule {
 			
 			if(contact.getRecordNumber() == 0) {
 				// log and ignore this contact
-				logErrorContact(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.recordnumber.isempty"));
+				logErrorContact(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.recordnumber.isempty"), statistics);
 				continue;
 			}
 			if(contact.getCpr() == null || contact.getCpr().length() == 0) {
 				// log and ignore this contact
-				logErrorContact(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.cprnumber.isempty"));
+				logErrorContact(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.cprnumber.isempty"), statistics);
 				continue;
 			}
 			if(contact.getSygehusCode() == null || contact.getSygehusCode().length() == 0) {
 				// log and ignore this contact
-				logErrorContact(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.sygehuscode.isempty"));
+				logErrorContact(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.sygehuscode.isempty"), statistics);
 				continue;
 			}
 			if(contact.getAfdelingsCode() == null || contact.getAfdelingsCode().length() == 0) {
 				// log and ignore this contact
-				logErrorContact(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.afdelingscode.isempty"));
+				logErrorContact(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.afdelingscode.isempty"), statistics);
 				continue;
 			}
 			if(contact.getIndlaeggelsesDatetime() == null) {
 				// log and ignore this contact
-				logErrorContact(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.indate.isempty"));
+				logErrorContact(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.indate.isempty"), statistics);
 				continue;
 			}
 			
 			// Fetch sygehus codes from FGR if code is 3800
 			if(contact.getSygehusCode().equals("3800")) {
+				// Increment counter for rule #3
+				statistics.rule3Counter += 1;
 				String sygehusInitials = haibaDao.getSygehusInitials(contact.getSygehusCode(), contact.getAfdelingsCode(), contact.getIndlaeggelsesDatetime());
+				log.debug("Sygehusinitials from FGR: ["+sygehusInitials+"]");
 				contact.setSygehusCode(contact.getSygehusCode()+sygehusInitials);
 			}
 			
@@ -109,7 +113,7 @@ public class LPRPrepareDataRule implements LPRRule {
 		// to ensure unittest can get the prepared contacts
 		contacts = preparedContacts;
 		if(contacts.size() == 0) {
-			// all contacts were prone to error, abort the flow
+			log.debug("all contacts were prone to error, abort the rules flow");
 			return null;
 		}
 		
@@ -120,9 +124,14 @@ public class LPRPrepareDataRule implements LPRRule {
 	}
 	
 	
-	private void logErrorContact(long recordNumber, String message) {
+	private void logErrorContact(long recordNumber, String message, Statistics statistics) {
+		// Increment counter for rule #1
+		statistics.rule1Counter += 1;
+
 		BusinessRuleError be = new BusinessRuleError(recordNumber, message, resolver.getMessage("rule.preparedata.name"));
 		businessRuleErrorLog.log(be);
+		// Increment count for contacts with errors
+		statistics.contactErrorCounter += 1;
 		lprDao.updateImportTime(recordNumber, Outcome.FAILURE);
 	}
 

@@ -45,6 +45,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -112,7 +113,7 @@ public class ConnectContactsRuleTest {
 		List<Administration> contacts = setupContacts();
 
 		connectContactsRule.setContacts(contacts);
-		connectContactsRule.doProcessing();
+		connectContactsRule.doProcessing(Statistics.getInstance());
 		
 		List<Administration> processedContacts = connectContactsRule.getContacts();
 		assertTrue("Still expecting 3 contacts", processedContacts.size() == 3);
@@ -152,7 +153,7 @@ public class ConnectContactsRuleTest {
 		List<Administration> contacts = setupContacts();
 
 		connectContactsRule.setContacts(contacts);
-		connectContactsRule.doProcessing();
+		connectContactsRule.doProcessing(Statistics.getInstance());
 		
 		List<Administration> processedContacts = connectContactsRule.getContacts();
 		assertTrue("Still expecting 3 contacts", processedContacts.size() == 3);
@@ -180,7 +181,7 @@ public class ConnectContactsRuleTest {
 		List<Administration> contacts = setupContacts();
 
 		connectContactsRule.setContacts(contacts);
-		connectContactsRule.doProcessing();
+		connectContactsRule.doProcessing(Statistics.getInstance());
 		
 		List<Administration> processedContacts = connectContactsRule.getContacts();
 		assertTrue("Still expecting 3 contacts", processedContacts.size() == 3);

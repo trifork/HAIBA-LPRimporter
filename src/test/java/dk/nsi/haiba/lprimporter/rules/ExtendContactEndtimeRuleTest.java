@@ -46,6 +46,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
 import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 
@@ -102,7 +103,7 @@ public class ExtendContactEndtimeRuleTest {
 		List<Administration> contacts = setupContacts();
 		
 		extendContactEndtimeRule.setContacts(contacts);
-		extendContactEndtimeRule.doProcessing();
+		extendContactEndtimeRule.doProcessing(Statistics.getInstance());
 		
 		assertEquals(out.toDate(), contacts.get(0).getUdskrivningsDatetime());
 	}
@@ -119,7 +120,7 @@ public class ExtendContactEndtimeRuleTest {
 		List<Administration> contacts = setupContacts();
 		
 		extendContactEndtimeRule.setContacts(contacts);
-		extendContactEndtimeRule.doProcessing();
+		extendContactEndtimeRule.doProcessing(Statistics.getInstance());
 		
 		assertEquals(op1.toDate(), contacts.get(0).getUdskrivningsDatetime());
 	}
@@ -137,7 +138,7 @@ public class ExtendContactEndtimeRuleTest {
 		extendContactEndtimeRule.setContacts(contacts);
 		
 		try {
-			extendContactEndtimeRule.doProcessing();
+			extendContactEndtimeRule.doProcessing(Statistics.getInstance());
 		} catch(RuleAbortedException e) {
 			BusinessRuleError businessRuleError = e.getBusinessRuleError();
 			assertEquals(recordNummer, businessRuleError.getLprReference());

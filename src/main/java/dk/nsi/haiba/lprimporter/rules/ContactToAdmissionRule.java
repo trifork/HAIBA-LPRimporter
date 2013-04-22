@@ -39,12 +39,13 @@ import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 
 /*
- * This is the 11. rule to be applied to LPR data
+ * This is the 14. rule to be applied to LPR data
  * It takes a list of contacts from a single CPR number, and processes the data with the contacts to admissions rule
  * See the solution document for details about this rule.
  */public class ContactToAdmissionRule implements LPRRule {
@@ -57,7 +58,7 @@ import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 	
 
 	@Override
-	public LPRRule doProcessing() {
+	public LPRRule doProcessing(Statistics statistics) {
 
 		List<Indlaeggelse> indlaeggelser = new ArrayList<Indlaeggelse>();
 
@@ -79,6 +80,9 @@ import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 					
 					// check if there is a gap between the contact and admission, if not merge them to one admission
 					if(hospitalAndDepartmentAreIdentical(indlaeggelse, contact) && previousOut.isEqual(currentIn)) {
+						// Increment counter for rule #14
+						statistics.rule14Counter += 1;
+						
 						Indlaeggelse tempIndlaeggelse = convertContact(contact);
 						// preserve diagnoses and procedures, adjust the outDate and save the LPR refnumber
 						indlaeggelse.getDiagnoses().addAll(tempIndlaeggelse.getDiagnoses());

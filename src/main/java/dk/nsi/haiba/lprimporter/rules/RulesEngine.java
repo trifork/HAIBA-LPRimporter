@@ -28,10 +28,11 @@ package dk.nsi.haiba.lprimporter.rules;
 
 import java.util.List;
 
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 
 public interface RulesEngine {
 	
-	public void processRuleChain(List<Administration> contactsByCPR);
+	public void processRuleChain(List<Administration> contactsByCPR, Statistics statistics);
 
 }

@@ -69,7 +69,7 @@ CREATE TABLE AmbulantKontakt (
     Afdelingskode VARCHAR(3),
     Indlaeggelsesdatotid datetime,
     Udskrivningsdatotid datetime,
-    Aktuel varchar(1)
+    Aktuel Bit default 0
 );
 
 CREATE TABLE AmbulantDiagnoser (

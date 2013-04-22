@@ -50,6 +50,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
@@ -142,7 +143,7 @@ public class ContactsWithSameStartDateRuleTest {
 		List<Administration> contacts = setupContacts();
 
 		contactsWithSameStartDateRule.setContacts(contacts);
-		contactsWithSameStartDateRule.doProcessing();
+		contactsWithSameStartDateRule.doProcessing(Statistics.getInstance());
 		
 		List<Administration> processedContacts = contactsWithSameStartDateRule.getContacts();
 		
@@ -171,7 +172,7 @@ public class ContactsWithSameStartDateRuleTest {
 		List<Administration> contacts = setupContacts();
 
 		contactsWithSameStartDateRule.setContacts(contacts);
-		contactsWithSameStartDateRule.doProcessing();
+		contactsWithSameStartDateRule.doProcessing(Statistics.getInstance());
 		
 		List<Administration> processedContacts = contactsWithSameStartDateRule.getContacts();
 		
@@ -191,7 +192,7 @@ public class ContactsWithSameStartDateRuleTest {
 		List<Administration> contacts = setupContacts();
 
 		contactsWithSameStartDateRule.setContacts(contacts);
-		contactsWithSameStartDateRule.doProcessing();
+		contactsWithSameStartDateRule.doProcessing(Statistics.getInstance());
 		
 		List<Administration> processedContacts = contactsWithSameStartDateRule.getContacts();
 		

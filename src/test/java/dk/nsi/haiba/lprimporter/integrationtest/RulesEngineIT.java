@@ -55,6 +55,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.Transactional;
 
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 import dk.nsi.haiba.lprimporter.rules.LPRRulesEngine;
@@ -138,7 +139,7 @@ public class RulesEngineIT {
 		op1 = null;
 
 		List<Administration> contacts = setupContacts();
-		rulesEngine.processRuleChain(contacts);
+		rulesEngine.processRuleChain(contacts, Statistics.getInstance());
 		
 		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from RegelFejlbeskeder"));
 		assertEquals(recordNummer, jdbc.queryForLong("select LPR_recordnummer from RegelFejlbeskeder"));

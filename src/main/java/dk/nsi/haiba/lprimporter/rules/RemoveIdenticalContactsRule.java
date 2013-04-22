@@ -38,13 +38,13 @@ import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
-import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 /*
- * This is the 4. rule to be applied to LPR data
+ * This is the 8. rule to be applied to LPR data
  * It takes a list of contacts from a single CPR number, and processes the data with the Remove Identical Contacts rule
  * See the solution document for details about this rule.
  */
@@ -66,13 +66,16 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 	MessageResolver resolver;
 
 	@Override
-	public LPRRule doProcessing() {
+	public LPRRule doProcessing(Statistics statistics) {
 
 		// if identical procedures and diagnoses exists on the identical contacts, they are cleaned up in a later rule
 		
 		Map<Administration, Administration> items = new HashMap<Administration,Administration>();
 		for (Administration item : contacts) {
 			if (items.values().contains(item)) {
+				// Increment the count for rule #8
+				statistics.rule8Counter += 1;
+				
 				log.debug("Found duplicate contact with recordnumber: "+item.getRecordNumber());
 				//preserve linked diagnoses and procedures before its removed.
 				Administration preserve = items.get(item);
@@ -99,6 +102,8 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 				log.warn("Contact with patienttype "+contact.getPatientType() + " is ignored, recordnumber =" +contact.getRecordNumber());
 			}
 		}
+		// count the number of ambulant contacts exported
+		statistics.ambulantContactsExportedCounter += ambulantContacts.size();
 		saveAmbulantContacts(ambulantContacts);
 		
 		contacts = nonAmbulantContacts;

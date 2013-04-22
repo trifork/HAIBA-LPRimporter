@@ -36,6 +36,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,6 +59,7 @@ import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
+import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
@@ -292,4 +294,22 @@ public class HAIBADAOIT {
 		indlaeggelser.add(indlaeggelse);
 		return indlaeggelser;
 	}
+
+
+    @Test 
+    public void testStatistics() {
+    	
+    	Statistics stat = Statistics.getInstance();
+    	stat.rule1Counter +=1;
+    	stat.rule1Counter +=1;
+    	DateTime d = new DateTime(stat.getDate().getTime()).withMillisOfSecond(0);
+    	
+    	haibaDao.saveStatistics(stat);
+    	
+    	DateTime d2 = new DateTime(jdbc.queryForObject("select KoerselsDato from Statistik", Date.class).getTime());
+    	assertEquals(d, d2);
+    	
+    	assertEquals("Expected 2", 2, jdbc.queryForInt("select Regel1 from Statistik"));
+    }
+
 }
