@@ -104,7 +104,7 @@ public class OverlappingContactsRuleTest {
 	}
 	
 	/*
-	 * 2 overlapping contacts where outdatetime for the first is set to indatetime for the last, so no overlap occurs
+	 * 2 overlapping contacts where indatetime for the last is set to outdatetime for the first, so no overlap occurs
 	 */
 	@Test 
 	public void overlappingContactWhereEnddatetimeIsAdjusted() {
@@ -131,10 +131,10 @@ public class OverlappingContactsRuleTest {
 		DateTime nextIn = new DateTime(next.getIndlaeggelsesDatetime());
 		DateTime nextOut = new DateTime(next.getUdskrivningsDatetime());
 		
-		assertTrue(firstIn.isEqual(in));
-		assertTrue(firstOut.isEqual(in2)); // first out should have been set to next in
-		assertTrue(nextIn.isEqual(in2));
-		assertTrue(nextOut.isEqual(out2));
+		assertEquals("Intime should not have changed", firstIn, in);
+		assertEquals("Outtime should not have changed", firstOut, out);
+		assertEquals("Next in should have been set to first out",nextIn,out);
+		assertEquals("Next out should not have changed",nextOut,out2);
 		
 		// last contact shouldn't have been touched
 		assertTrue(contacts.get(2).equals(last));

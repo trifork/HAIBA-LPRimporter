@@ -90,10 +90,11 @@ public class OverlappingContactsRule implements LPRRule {
 				}
 				
 				if((in.isAfter(previousIn)||in.isEqual(previousIn)) && (in.isBefore(previousOut) || in.isEqual(previousOut))) {
+					// contact is overlapping
+
 					// Increment counter for rule #11
 					statistics.rule11Counter += 1;
 
-					// contact is overlapping
 					List<Administration> splittedContacts = splitContacts(previousContact, contact, statistics);
 					processedContacts.addAll(splittedContacts);
 					previousContact = contact;
@@ -133,7 +134,7 @@ public class OverlappingContactsRule implements LPRRule {
 		DateTime out = new DateTime(current.getUdskrivningsDatetime());
 
 		if(in.isEqual(previousIn) && out.isEqual(previousOut)) {
-			// choose the first - merge diagnoses and procedures
+			// in and out datetimes are equal, choose the first - merge diagnoses and procedures
 			previous.getLprDiagnoses().addAll(current.getLprDiagnoses());
 			previous.getLprProcedures().addAll(current.getLprProcedures());
 			previous.addLPRReference(current.getRecordNumber());
@@ -161,8 +162,8 @@ public class OverlappingContactsRule implements LPRRule {
 			// Then set previous out to current in
 			previous.setUdskrivningsDatetime(current.getIndlaeggelsesDatetime());
 		} else if(out.equals(previousOut) || out.isAfter(previousOut) ) {
-			// set previous out to current in
-			previous.setUdskrivningsDatetime(current.getIndlaeggelsesDatetime());
+			// set current in to previous out
+			current.setIndlaeggelsesDatetime(previous.getUdskrivningsDatetime());
 		}
 		
 		splittedContacts.add(previous);
