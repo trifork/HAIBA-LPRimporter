@@ -1,5 +1,5 @@
 CREATE TABLE T_ADM (
-       K_RECNUM BIGINT NOT NULL,
+       V_RECNUM BIGINT NOT NULL,
        C_SGH varchar(4) NULL,
        C_AFD varchar(3) NULL,
        C_PATTYPE varchar(1) NULL,

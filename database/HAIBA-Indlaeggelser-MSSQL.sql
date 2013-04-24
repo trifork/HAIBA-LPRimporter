@@ -95,6 +95,34 @@ CREATE TABLE AmbulantLPR_Reference (
     LPR_recordnummer BIGINT NOT NULL
 );
 
+CREATE TABLE Statistik (
+    ID BIGINT NOT NULL IDENTITY PRIMARY KEY,
+    KoerselsDato DATETIME NOT NULL,
+    AntalKontakter BIGINT NULL,
+    AntalCPRNumre BIGINT NULL,
+    AntalKontakterFejlet BIGINT NULL,
+    AntalCPRNumreEksporteret BIGINT NULL,
+    AntalIndlaeggelserEksporteret BIGINT NULL,
+    AntalForloebEksporteret BIGINT NULL,
+    AntalAmbulanteKontakterEksporteret BIGINT NULL,
+    AntalCPRNumreMedSlettedeKontakterBehandlet BIGINT NULL,
+    AntalNuvaerendePatienterBehandlet BIGINT NULL,
+    Regel1 BIGINT NULL,
+    Regel2 BIGINT NULL,
+    Regel3 BIGINT NULL,
+    Regel4 BIGINT NULL,
+    Regel5 BIGINT NULL,
+    Regel6 BIGINT NULL,
+    Regel7 BIGINT NULL,
+    Regel8 BIGINT NULL,
+    Regel9 BIGINT NULL,
+    Regel10 BIGINT NULL,
+    Regel11 BIGINT NULL,
+    Regel12 BIGINT NULL,
+    Regel13 BIGINT NULL,
+    Regel14 BIGINT NULL
+);
+
 
 go;
 

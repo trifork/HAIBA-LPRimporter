@@ -79,7 +79,7 @@ public class SQLStatementsFromcpr34200CSV {
 			}
 			
 			StringBuffer sql = new StringBuffer();
-			sql.append("INSERT INTO T_ADM (K_RECNUM, C_SGH, C_AFD, V_CPR, D_INDDTO,D_UDDTO,V_INDTIME,V_UDTIME, C_PATTYPE) VALUES (");
+			sql.append("INSERT INTO T_ADM (V_RECNUM, C_SGH, C_AFD, V_CPR, D_INDDTO,D_UDDTO,V_INDTIME,V_UDTIME, C_PATTYPE) VALUES (");
 			sql.append(recnum);
 			sql.append(", '");
 			sql.append(sygehus);

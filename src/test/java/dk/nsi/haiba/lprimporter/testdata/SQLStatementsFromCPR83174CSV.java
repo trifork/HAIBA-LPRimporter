@@ -61,7 +61,7 @@ public class SQLStatementsFromCPR83174CSV {
 				first=false;
 				continue;
 			}
-			//k_recnum;c_sgh;c_afd;c_pattype;v_cpr;d_inddto;d_uddto;v_indtime;v_udtime
+			//v_recnum;c_sgh;c_afd;c_pattype;v_cpr;d_inddto;d_uddto;v_indtime;v_udtime
 			
 			String[] splits = line.split(";");
 			String recnum=splits[0];
@@ -84,7 +84,7 @@ public class SQLStatementsFromCPR83174CSV {
 			}
 			
 			StringBuffer sql = new StringBuffer();
-			sql.append("INSERT INTO T_ADM (K_RECNUM, C_SGH, C_AFD, V_CPR, D_INDDTO,D_UDDTO,V_INDTIME,V_UDTIME, C_PATTYPE) VALUES (");
+			sql.append("INSERT INTO T_ADM (v_RECNUM, C_SGH, C_AFD, V_CPR, D_INDDTO,D_UDDTO,V_INDTIME,V_UDTIME, C_PATTYPE) VALUES (");
 			sql.append(recnum);
 			sql.append(", '");
 			sql.append(sygehus);

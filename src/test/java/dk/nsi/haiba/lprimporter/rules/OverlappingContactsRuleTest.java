@@ -142,7 +142,7 @@ public class OverlappingContactsRuleTest {
 	}
 
 	/*
-	 * 2 overlapping contacts one should be split up into two, so no overlap occurs
+	 * 2 overlapping contacts one should be split up into three, so no overlap occurs
 	 */
 	@Test 
 	public void overlappingContactIsSplittedIntoTwo() {

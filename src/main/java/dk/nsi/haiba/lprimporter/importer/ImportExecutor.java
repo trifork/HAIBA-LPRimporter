@@ -68,7 +68,7 @@ public class ImportExecutor {
 	@Autowired
 	ImportStatusRepository statusRepo;
 	
-	@Scheduled(fixedDelay = 10000)
+	@Scheduled(cron = "${cron.import.job}")
 	public void run() {
 		if(!manualOverride) {
 			log.trace("Running Importer: " + new Date().toString());

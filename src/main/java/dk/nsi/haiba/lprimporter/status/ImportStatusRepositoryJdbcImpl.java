@@ -186,10 +186,10 @@ public class ImportStatusRepositoryJdbcImpl extends CommonDAO implements ImportS
 	public boolean isLPRDBAlive() {
 		String sql = null;
 		if(MYSQL.equals(getDialect())) {
-			sql = "SELECT k_recnum from T_ADM  LIMIT 1";
+			sql = "SELECT v_recnum from T_ADM  LIMIT 1";
 		} else {
 			// MSSQL
-			sql = "SELECT Top 1 k_recnum from T_ADM";
+			sql = "SELECT Top 1 v_recnum from T_ADM";
 		}
 
 		try {
