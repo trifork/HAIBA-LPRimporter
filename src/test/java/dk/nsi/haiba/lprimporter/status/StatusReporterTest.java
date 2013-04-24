@@ -29,6 +29,7 @@ package dk.nsi.haiba.lprimporter.status;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 
 import org.junit.Before;
@@ -42,11 +43,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
+import dk.nsi.haiba.lprimporter.importer.ImportExecutor;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class)
@@ -60,6 +64,16 @@ public class StatusReporterTest {
             return new StatusReporter();
         }
         
+        @Bean
+        public ImportExecutor importExecutor() {
+            return new ImportExecutor();
+        }
+
+        @Bean
+        public HttpServletRequest request() {
+    		return Mockito.mock(HttpServletRequest.class);
+        }
+        
     	@Bean
     	public JdbcTemplate jdbcTemplate(@Qualifier("lprDataSource") DataSource dataSource) {
     		return Mockito.mock(JdbcTemplate.class);
@@ -69,6 +83,13 @@ public class StatusReporterTest {
     	public JdbcTemplate haibaJdbcTemplate(@Qualifier("haibaDataSource") DataSource ds) {
     		return Mockito.mock(JdbcTemplate.class);
     	}
+    	
+    	@Bean
+    	public TaskScheduler scheduler() {
+    		ThreadPoolTaskScheduler sc = new ThreadPoolTaskScheduler();
+    		sc.setPoolSize(1);
+    		return sc;    		
+    	}    	
     }
 
     @Autowired
@@ -80,10 +101,15 @@ public class StatusReporterTest {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
+	@Autowired 
+	private HttpServletRequest request;
+    
 	@Before
 	public void resetMocks() {
 		Mockito.reset(haibaJdbcTemplate);
 		Mockito.reset(jdbcTemplate);
+		Mockito.reset(request);
+		Mockito.when(request.getRequestURL()).thenReturn(new StringBuffer("testURL"));
 	}
 
 	@Test

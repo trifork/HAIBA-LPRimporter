@@ -26,13 +26,20 @@
  */
 package dk.nsi.haiba.lprimporter.status;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import dk.nsi.haiba.lprimporter.importer.ImportExecutor;
 
 /*
  * This class is responsible for showing a statuspage, this page contains information about the general health of the application.
@@ -40,13 +47,46 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * If it returns HTTP 500, an error is detected and must be taken care of before further operation. 
  */
 @Controller
+@Scope("request")
 public class StatusReporter {
 	
 	@Autowired
 	ImportStatusRepository statusRepo;
 
+	@Autowired
+	ImportExecutor importExecutor;
+
+	@Autowired
+    private TaskScheduler scheduler;
+	
+	@Value("${cron.import.job}")
+	String cron;
+
+	@Autowired 
+	private HttpServletRequest request;
+	
 	@RequestMapping(value = "/status")
 	public ResponseEntity<String> reportStatus() {
+		
+		String manual = request.getParameter("manual");
+		if(manual == null || manual.trim().length() == 0) {
+			// no value set, use default set in the import executor
+			manual = ""+importExecutor.isManualOverride();
+		} else {
+			// manual flag is set on the request
+			if(manual.equalsIgnoreCase("true")) {
+				// flag is true, start the importer in a new thread
+				importExecutor.setManualOverride(true);
+		        scheduler.scheduleWithFixedDelay(new Runnable() {
+		            public void run() {
+		            	importExecutor.doProcess();
+		            }
+		        }, 10*60*1000); //This will start now and run every 10 minutes after it has completed execution 
+			} else {
+				importExecutor.setManualOverride(false);
+			}
+		}
+		
 		HttpHeaders headers = new HttpHeaders();
 		String body = "OK";
 		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -67,8 +107,24 @@ public class StatusReporter {
 			body = e.getMessage();
 		}
 
+		body += "</br>";
 		body = addLastRunInformation(body);
-		headers.setContentType(MediaType.TEXT_PLAIN);
+		
+		body += "</br>------------------</br>";
+		
+		String url = request.getRequestURL().toString();
+		body += "<a href=\""+url+"?manual=true\">Manual start importer</a>";
+		body += "</br>";
+		body += "<a href=\""+url+"?manual=false\">Scheduled start importer</a>";
+		body += "</br>";
+		if(manual.equalsIgnoreCase("true")) {
+			body += "status: MANUAL";
+		} else {
+			// default
+			body += "status: SCHEDULED - "+cron;
+		}
+
+		headers.setContentType(MediaType.TEXT_HTML);
 		
 		return new ResponseEntity<String>(body, headers, status);
 	}

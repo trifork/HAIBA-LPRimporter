@@ -53,8 +53,7 @@ public class ImportExecutor {
 	@Value("${lpr.cpr.batchsize}")
 	int batchsize;
 	
-	@Value("${scheduling.manual.override}")
-	boolean manualOverride;
+	private boolean manualOverride;
 	
 	@Autowired
 	LPRDAO lprdao;
@@ -70,7 +69,7 @@ public class ImportExecutor {
 	
 	@Scheduled(cron = "${cron.import.job}")
 	public void run() {
-		if(!manualOverride) {
+		if(!isManualOverride()) {
 			log.trace("Running Importer: " + new Date().toString());
 			doProcess();
 		} else {
@@ -155,6 +154,14 @@ public class ImportExecutor {
 		// Process the LPR data according to the defined business rules
 		rulesEngine.processRuleChain(contactsByCPR, statistics);
 		log.debug("Rules processed for CPR number");
+	}
+
+	public boolean isManualOverride() {
+		return manualOverride;
+	}
+
+	public void setManualOverride(boolean manualOverride) {
+		this.manualOverride = manualOverride;
 	}
 	
 }
