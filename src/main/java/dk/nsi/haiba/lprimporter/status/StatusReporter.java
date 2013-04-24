@@ -35,7 +35,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -56,9 +55,6 @@ public class StatusReporter {
 	@Autowired
 	ImportExecutor importExecutor;
 
-	@Autowired
-    private TaskScheduler scheduler;
-	
 	@Value("${cron.import.job}")
 	String cron;
 
@@ -77,11 +73,12 @@ public class StatusReporter {
 			if(manual.equalsIgnoreCase("true")) {
 				// flag is true, start the importer in a new thread
 				importExecutor.setManualOverride(true);
-		        scheduler.scheduleWithFixedDelay(new Runnable() {
+		        Runnable importer = new Runnable() {
 		            public void run() {
 		            	importExecutor.doProcess();
 		            }
-		        }, 10*60*1000); //This will start now and run every 10 minutes after it has completed execution 
+		        }; 
+		        importer.run();
 			} else {
 				importExecutor.setManualOverride(false);
 			}

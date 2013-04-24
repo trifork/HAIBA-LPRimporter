@@ -40,9 +40,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jndi.JndiObjectFactoryBean;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
@@ -236,10 +234,4 @@ public class LPRConfiguration {
 		return new ContactsWithSameStartDateRule();
 	}
 	
-	@Bean
-	public TaskScheduler scheduler() {
-		ThreadPoolTaskScheduler sc = new ThreadPoolTaskScheduler();
-		sc.setPoolSize(1);
-		return sc;    		
-	}    	
 }

@@ -43,8 +43,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
@@ -84,12 +82,6 @@ public class StatusReporterTest {
     		return Mockito.mock(JdbcTemplate.class);
     	}
     	
-    	@Bean
-    	public TaskScheduler scheduler() {
-    		ThreadPoolTaskScheduler sc = new ThreadPoolTaskScheduler();
-    		sc.setPoolSize(1);
-    		return sc;    		
-    	}    	
     }
 
     @Autowired

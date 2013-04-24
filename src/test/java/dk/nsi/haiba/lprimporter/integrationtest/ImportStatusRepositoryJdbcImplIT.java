@@ -213,13 +213,15 @@ public class ImportStatusRepositoryJdbcImplIT {
 		statusRepo.importStartedAt(startTime);
 		DateTime endTime = new DateTime().withMillisOfSecond(0);
 
+		ImportStatus expectedStatus = new ImportStatus();
+
 		if (outcome == ImportStatus.Outcome.SUCCESS) {
 			statusRepo.importEndedWithSuccess(endTime);
 		} else {
 			statusRepo.importEndedWithFailure(endTime, "ErrorMessage");
+			expectedStatus.setErrorMessage("ErrorMessage");
 		}
 
-		ImportStatus expectedStatus = new ImportStatus();
 		expectedStatus.setStartTime(startTime);
 		expectedStatus.setEndTime(endTime);
 		expectedStatus.setOutcome(outcome);

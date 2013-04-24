@@ -86,7 +86,10 @@ public class ImportExecutor {
 			// if syncId > 0, the Carecom job is finished, and the database is ready for import.
 			long syncId = lprdao.isdatabaseReadyForImport();
 			if(syncId == 0) {
-				log.warn("HAIBA_LPR_REPLIKA is not ready for import, Carecom job is not finished yet.");
+				String status = "HAIBA_LPR_REPLIKA is not ready for import, Carecom job is not finished yet.";
+				log.warn(status);
+				statusRepo.importStartedAt(new DateTime());
+				statusRepo.importEndedWithFailure(new DateTime(), status);
 				return;
 			}
 			

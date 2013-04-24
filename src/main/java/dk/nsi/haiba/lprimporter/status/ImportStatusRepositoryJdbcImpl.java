@@ -157,6 +157,7 @@ public class ImportStatusRepositoryJdbcImpl extends CommonDAO implements ImportS
 			if (dbOutcome != null) {
 				status.setOutcome(ImportStatus.Outcome.valueOf(dbOutcome));
 			}
+			status.setErrorMessage(rs.getString("ErrorMessage"));
 
 			return status;
 		}
