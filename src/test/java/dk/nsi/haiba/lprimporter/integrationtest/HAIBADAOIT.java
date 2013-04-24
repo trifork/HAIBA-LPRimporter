@@ -298,8 +298,11 @@ public class HAIBADAOIT {
 
     @Test 
     public void testStatistics() {
-    	
+
     	Statistics stat = Statistics.getInstance();
+    	stat.resetInstance();
+    	stat = Statistics.getInstance();
+    	
     	stat.rule1Counter +=1;
     	stat.rule1Counter +=1;
     	DateTime d = new DateTime(stat.getDate().getTime()).withMillisOfSecond(0);
