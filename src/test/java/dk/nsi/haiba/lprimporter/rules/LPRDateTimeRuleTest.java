@@ -208,6 +208,28 @@ public class LPRDateTimeRuleTest {
 			fail("Unexpected exception: "+ e);
 		}
 	}
+	
+	/*
+	 * Use procedureDate as OutDate
+	 */
+	@Test
+	public void endTimeIs0SetItToProcedureEndtime() {
+		
+    	in = new DateTime(2011, 10, 30, 11, 0, 0);
+    	out = new DateTime(2011, 10, 30, 0, 0, 0);
+    	op1 = new DateTime(2011, 10, 30, 11, 0, 0);
+
+    	List<Administration> contacts = setupContacts();
+		
+		lprDateTimeRule.setContacts(contacts);
+		lprDateTimeRule.doProcessing(Statistics.getInstance());
+		
+		assertNotNull("1 contact is still expected", contacts);
+		assertEquals(1, contacts.size());
+		assertEquals(op1.toDate(), contacts.get(0).getUdskrivningsDatetime());
+		
+	}
+	
 
 	private List<Administration> setupContacts() {
 		List<Administration> contacts = new ArrayList<Administration>();

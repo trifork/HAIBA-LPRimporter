@@ -122,7 +122,7 @@ public class LPRDateTimeRule implements LPRRule {
 							}
 						}
 					}
-					admissionEnd = admissionEnd.plusHours(hourOfDay);
+					admissionEnd.withHourOfDay(hourOfDay);
 				}
 
 				// Then if admissionEnd still is 0, check the in date time is the same day 
