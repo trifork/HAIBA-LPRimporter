@@ -26,6 +26,7 @@
  */
 package dk.nsi.haiba.lprimporter.rules;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -174,7 +175,7 @@ public class ConnectContactsRuleTest {
 	 *  hours.between.contacts.different.hospital=10
 	 */
 	@Test 
-	public void gapsAreToBigSonNoConnectingShouldOccur() {
+	public void gapsAreToBigSoNoConnectingShouldOccur() {
     	out2 = new DateTime(2010, 8, 4, 1, 0, 0);
     	in3 = new DateTime(2010, 8, 4, 11, 0, 0);
 		
@@ -203,6 +204,30 @@ public class ConnectContactsRuleTest {
 		assertTrue(lastOut.isEqual(out3)); 
 		
 	}
+	
+	/*
+	 * 3 overlapping contacts, One with same starttime and endtime but on another department  
+	 */
+	@Test 
+	public void overlappingContactsOneWith0TimeOnAnotherDepartment() {
+	   	in = new DateTime(2010, 6, 12, 14, 0, 0);
+	   	out = new DateTime(2010, 6, 17, 16, 0, 0);
+	   	in2 = new DateTime(2010, 6, 17, 16, 0, 0);
+	   	out2 = new DateTime(2010, 6, 17, 21, 0, 0);
+	   	in3 = new DateTime(2010, 6, 17, 16, 0, 0);
+	   	out3 = new DateTime(2010, 6, 17, 16, 0, 0);
+		afdelingsCode3 = "xxx";
+		sygehusCode3 = "csgh";
+		
+		List<Administration> contacts = setupContacts();
+
+		connectContactsRule.setContacts(contacts);
+		connectContactsRule.doProcessing(Statistics.getInstance());
+		
+		List<Administration> processedContacts = connectContactsRule.getContacts();
+		assertEquals("List size must be 3", 3, processedContacts.size());
+	}
+
 
 	private List<Administration> setupContacts() {
 		List<Administration> contacts = new ArrayList<Administration>();

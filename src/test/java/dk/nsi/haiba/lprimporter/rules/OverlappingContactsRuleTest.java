@@ -174,23 +174,6 @@ public class OverlappingContactsRuleTest {
 	}
 	
 	/*
-	 * 2 overlapping contacts with the same in and out date, choose the first one
-	 */
-	@Test 
-	public void overlappingContactWithIdenticalInAndOutTimestamps() {
-		
-    	in2 = in;
-    	out2 = out;
-		List<Administration> contacts = setupContacts();
-
-		overlappingContactsRule.setContacts(contacts);
-		overlappingContactsRule.doProcessing(Statistics.getInstance());
-		
-		List<Administration> processedContacts = overlappingContactsRule.getContacts();
-		assertEquals("List size must be 2", 2, processedContacts.size());
-	}
-
-	/*
 	 * 2 overlapping contacts but one without enddatetime, so don't know how to merge them
 	 */
 	@Test 
@@ -239,6 +222,60 @@ public class OverlappingContactsRuleTest {
 		assertEquals("List size must be 5", 5, processedContacts.size());
 	}
 	
+	/*
+	 * 3 overlapping contacts, splitting results in 2 identical contacts 
+	 */
+	@Test 
+	public void overlappingContactsResultsInIdenticalContacts() {
+		
+	   	in = new DateTime(2010, 6, 12, 14, 0, 0);
+	   	out = new DateTime(2010, 6, 17, 16, 0, 0);
+	   	in2 = new DateTime(2010, 6, 13, 8, 0, 0);
+	   	out2 = new DateTime(2010, 6, 13, 10, 0, 0);
+	   	in3 = new DateTime(2010, 6, 13, 10, 0, 0);
+	   	out3 = new DateTime(2010, 6, 17, 16, 0, 0);
+		sygehusCode3 = "csgh";
+		afdelingsCode3 = "afd";
+		
+		List<Administration> contacts = setupContacts();
+
+		overlappingContactsRule.setContacts(contacts);
+
+		try {
+			overlappingContactsRule.doProcessing(Statistics.getInstance());
+			List<Administration> processedContacts = overlappingContactsRule.getContacts();
+			fail("Expects error, not a List with "+processedContacts.size()+ " contacts");
+		} catch(RuleAbortedException e) {
+			assertEquals(e.getBusinessRuleError().getDescription(), "Opdeling af overlappende kontakter har resulteret i identiske kontakter");
+		} catch(Exception e) {
+			fail("Expected RuleAbortedException, not "+ e.getMessage());
+		}
+	}
+
+	/*
+	 * 3 overlapping contacts, One with same end and starttime 
+	 */
+	@Test 
+	public void overlappingContactsOneWith0TimeOnAnotherDepartment() {
+	   	in = new DateTime(2010, 6, 12, 14, 0, 0);
+	   	out = new DateTime(2010, 6, 17, 16, 0, 0);
+	   	in3 = new DateTime(2010, 6, 17, 16, 0, 0);
+	   	out3 = new DateTime(2010, 6, 17, 16, 0, 0);
+	   	in2 = new DateTime(2010, 6, 17, 16, 0, 0);
+	   	out2 = new DateTime(2010, 6, 17, 21, 0, 0);
+		afdelingsCode3 = "xxx";
+		sygehusCode3 = "csgh";
+		
+		List<Administration> contacts = setupContacts();
+
+		overlappingContactsRule.setContacts(contacts);
+		overlappingContactsRule.doProcessing(Statistics.getInstance());
+		
+		List<Administration> processedContacts = overlappingContactsRule.getContacts();
+		assertEquals("List size must be 3", 3, processedContacts.size());
+	}
+
+		
 	private List<Administration> setupContacts() {
 		List<Administration> contacts = new ArrayList<Administration>();
 		Administration contact = new Administration();

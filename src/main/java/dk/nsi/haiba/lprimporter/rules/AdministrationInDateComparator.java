@@ -33,6 +33,11 @@ import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 public class AdministrationInDateComparator implements Comparator<Administration> {
     @Override
     public int compare(Administration o1, Administration o2) {
+    	// if indates are equal, the two contacts must be sorted on outdates to get the right sequence
+    	
+    	if(o1.getIndlaeggelsesDatetime().equals(o2.getIndlaeggelsesDatetime())) {
+            return o1.getUdskrivningsDatetime().compareTo(o2.getUdskrivningsDatetime());
+    	}
         return o1.getIndlaeggelsesDatetime().compareTo(o2.getIndlaeggelsesDatetime());
     }
 }

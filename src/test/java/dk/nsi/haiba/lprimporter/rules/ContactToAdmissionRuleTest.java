@@ -151,6 +151,42 @@ public class ContactToAdmissionRuleTest {
 		}
 	}
 
+	/*
+	 * 3 overlapping contacts, One with same starttime and endtime but on another department  
+	 */
+	@Test 
+	public void overlappingContactsOneWith0TimeOnAnotherDepartment() {
+	   	in = new DateTime(2010, 6, 12, 14, 0, 0);
+	   	out = new DateTime(2010, 6, 17, 16, 0, 0);
+	   	in2 = new DateTime(2010, 6, 17, 16, 0, 0);
+	   	out2 = new DateTime(2010, 6, 17, 21, 0, 0);
+	   	
+	   	DateTime in3 = new DateTime(2010, 6, 17, 16, 0, 0);
+	   	DateTime out3  = new DateTime(2010, 6, 17, 16, 0, 0);
+		String afdelingsCode3 = "xxx";
+
+	   	Administration contact3 = new Administration();
+		contact3.setRecordNumber(recordNummer2+1);
+		contact3.setSygehusCode(sygehusCode2);
+		contact3.setAfdelingsCode(afdelingsCode3);
+		contact3.setCpr(cpr);
+		contact3.setIndlaeggelsesDatetime(in3.toDate());
+		contact3.setUdskrivningsDatetime(out3.toDate());
+	   	
+		
+		List<Administration> contacts = setupContacts();
+		contacts.add(contact3);
+
+		contactToAdmissionRule.setContacts(contacts);
+		
+		LPRRule nextRule = contactToAdmissionRule.doProcessing(Statistics.getInstance());
+		ConnectAdmissionsRule connectAdmissionsRule = (ConnectAdmissionsRule)nextRule;
+		List<Indlaeggelse> admissions = connectAdmissionsRule.getAdmissions();
+		assertNotNull(admissions);
+		assertEquals("Expected 3 admissions", 3, admissions.size());
+	}
+	
+	
 	private List<Administration> setupContacts() {
 		List<Administration> contacts = new ArrayList<Administration>();
 		Administration contact = new Administration();

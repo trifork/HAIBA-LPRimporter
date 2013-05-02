@@ -41,6 +41,7 @@ import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
 import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
+import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 /*
  * This is the 11. and 12. rule to be applied to LPR data
@@ -108,13 +109,19 @@ public class OverlappingContactsRule implements LPRRule {
 		} 
 		contacts = processedContacts;
 
-		Map<String, Administration> items = new HashMap<String,Administration>();
+		Map<Administration, Administration> items = new HashMap<Administration,Administration>();
 		for (Administration item : contacts) {
 			if (items.values().contains(item)) {
-				// ignore duplicate items
+				// ignore duplicate items, but check the record number, because splitting up a contact can result in identical contacts occur.
+				Administration containedItem = items.get(item);
+				if(containedItem.getRecordNumber() != item.getRecordNumber()) {
+					// splitting contacts have resulted in identical contacts, log error
+					BusinessRuleError be = new BusinessRuleError(item.getRecordNumber(), resolver.getMessage("splitting.contacts.have.resulted.in.identical.contacts"), resolver.getMessage("rule.overlapping.contact.name"));
+					throw new RuleAbortedException("Business rule aborted", be);
+				}
+				
 			} else {
-				// use the indate, outdate as keys to sort out duplicates
-				items.put(""+item.getIndlaeggelsesDatetime()+item.getUdskrivningsDatetime(),item);
+				items.put(item ,item);
 			}
 		}
 		contacts = new ArrayList<Administration>(items.values());
