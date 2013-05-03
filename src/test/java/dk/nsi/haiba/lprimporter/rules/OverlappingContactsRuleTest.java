@@ -241,15 +241,9 @@ public class OverlappingContactsRuleTest {
 
 		overlappingContactsRule.setContacts(contacts);
 
-		try {
-			overlappingContactsRule.doProcessing(Statistics.getInstance());
-			List<Administration> processedContacts = overlappingContactsRule.getContacts();
-			fail("Expects error, not a List with "+processedContacts.size()+ " contacts");
-		} catch(RuleAbortedException e) {
-			assertEquals(e.getBusinessRuleError().getDescription(), "Opdeling af overlappende kontakter har resulteret i identiske kontakter");
-		} catch(Exception e) {
-			fail("Expected RuleAbortedException, not "+ e.getMessage());
-		}
+		overlappingContactsRule.doProcessing(Statistics.getInstance());
+		List<Administration> processedContacts = overlappingContactsRule.getContacts();
+		assertEquals(3,  processedContacts.size());
 	}
 
 	/*
@@ -275,7 +269,55 @@ public class OverlappingContactsRuleTest {
 		assertEquals("List size must be 3", 3, processedContacts.size());
 	}
 
+	/*
+	 * 3 contacts, but two are nested 
+	 */
+	@Test 
+	public void overlappingContactsWith2NestedContacts() {
+	   	in = new DateTime(2010, 8, 4, 13, 0, 0);
+	   	out = new DateTime(2010, 8, 9, 16, 0, 0);
+	   	in2 = new DateTime(2010, 8, 7, 7, 0, 0);
+	   	out2 = new DateTime(2010, 8, 7, 12, 0, 0);
+	   	in3 = new DateTime(2010, 8, 7, 12, 0, 0);
+	   	out3 = new DateTime(2010, 8, 8, 12, 0, 0);
+		afdelingsCode2 = "xxx";
+		sygehusCode3 = "csgh";
+		afdelingsCode3 = "xxx";
+		sygehusCode3 = "csgh";
 		
+		List<Administration> contacts = setupContacts();
+
+		overlappingContactsRule.setContacts(contacts);
+		overlappingContactsRule.doProcessing(Statistics.getInstance());
+		
+		List<Administration> processedContacts = overlappingContactsRule.getContacts();
+		assertEquals("List size must be 4", 4, processedContacts.size());
+		
+		Collections.sort(processedContacts, new AdministrationInDateComparator());
+		
+		DateTime firstIn = new DateTime(processedContacts.get(0).getIndlaeggelsesDatetime());
+		DateTime firstOut = new DateTime(processedContacts.get(0).getUdskrivningsDatetime());
+		assertEquals("Intime should not have changed", in, firstIn);
+		assertEquals("Outtime should be the same as second intime", in2, firstOut);
+
+		DateTime secondIn = new DateTime(processedContacts.get(1).getIndlaeggelsesDatetime());
+		DateTime secondOut = new DateTime(processedContacts.get(1).getUdskrivningsDatetime());
+		assertEquals("Intime should not have changed", in2, secondIn);
+		assertEquals("Outtime should not have changed", out2, secondOut);
+
+		DateTime thirdIn = new DateTime(processedContacts.get(2).getIndlaeggelsesDatetime());
+		DateTime thirdOut = new DateTime(processedContacts.get(2).getUdskrivningsDatetime());
+		assertEquals("Intime should not have changed", in3, thirdIn);
+		assertEquals("Outtime should not have changed", out3, thirdOut);
+
+		DateTime fourthIn = new DateTime(processedContacts.get(3).getIndlaeggelsesDatetime());
+		DateTime fourthOut = new DateTime(processedContacts.get(3).getUdskrivningsDatetime());
+		assertEquals("Intime should be the same as thirdOut", thirdOut, fourthIn);
+		assertEquals("Outtime should be the same as firstOut", out, fourthOut);
+	
+	}
+
+	
 	private List<Administration> setupContacts() {
 		List<Administration> contacts = new ArrayList<Administration>();
 		Administration contact = new Administration();

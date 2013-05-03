@@ -62,69 +62,94 @@ public class OverlappingContactsRule implements LPRRule {
 	@Override
 	public LPRRule doProcessing(Statistics statistics) {
 		
-		List<Administration> processedContacts = new ArrayList<Administration>();
-		
-		// sort list after inDate
-		Collections.sort(contacts, new AdministrationInDateComparator());
-
-		if(contacts.size() == 1) {
-			// only 1 contact for the same hospital and department - so no overlapping
-			processedContacts.addAll(contacts);
-		} else {
-			Administration previousContact = null;
-			for (Administration contact : contacts) {
-				if(previousContact == null) {
-					previousContact = contact;
-					continue;
-				}
-				
-				DateTime previousIn = new DateTime(previousContact.getIndlaeggelsesDatetime());
-				DateTime previousOut = null;
-				if(previousContact.getUdskrivningsDatetime() != null) {
-					previousOut = new DateTime(previousContact.getUdskrivningsDatetime());
-				} 
-				DateTime in = new DateTime(contact.getIndlaeggelsesDatetime());
-				
-				if(previousOut == null) {
-					BusinessRuleError be = new BusinessRuleError(previousContact.getRecordNumber(), resolver.getMessage("rule.overlapping.contact.no.endddatetime"), resolver.getMessage("rule.overlapping.contact.name"));
-					throw new RuleAbortedException("Business rule aborted", be);
-				}
-				
-				if((in.isAfter(previousIn)||in.isEqual(previousIn)) && (in.isBefore(previousOut) || in.isEqual(previousOut))) {
-					// contact is overlapping
-
-					// Increment counter for rule #11
-					statistics.rule11Counter += 1;
-
-					List<Administration> splittedContacts = splitContacts(previousContact, contact, statistics);
-					processedContacts.addAll(splittedContacts);
-					previousContact = contact;
-				} else {
-					processedContacts.add(previousContact); // add previous to ensure it is added, this could be added twice but is filtered at the end of this rule
-					processedContacts.add(contact); // also add current, in case no splitting should occur
-					previousContact = contact;
-				}
-			}
+			List<Administration> processedContacts = new ArrayList<Administration>();
 			
-		} 
-		contacts = processedContacts;
+			// sort list after inDate
+			Collections.sort(contacts, new AdministrationInDateComparator());
 
-		Map<Administration, Administration> items = new HashMap<Administration,Administration>();
-		for (Administration item : contacts) {
-			if (items.values().contains(item)) {
-				// ignore duplicate items, but check the record number, because splitting up a contact can result in identical contacts occur.
-				Administration containedItem = items.get(item);
-				if(containedItem.getRecordNumber() != item.getRecordNumber()) {
-					// splitting contacts have resulted in identical contacts, log error
-					BusinessRuleError be = new BusinessRuleError(item.getRecordNumber(), resolver.getMessage("splitting.contacts.have.resulted.in.identical.contacts"), resolver.getMessage("rule.overlapping.contact.name"));
-					throw new RuleAbortedException("Business rule aborted", be);
+			if(contacts.size() == 1) {
+				// only 1 contact for the same hospital and department - so no overlapping
+				processedContacts.addAll(contacts);
+			} else {
+				Administration previousContact = null;
+				for (int i=0; i< contacts.size(); i++) {
+					Administration contact = contacts.get(i);
+					if(previousContact == null) {
+						previousContact = contact;
+						continue;
+					}
+					
+					DateTime previousIn = new DateTime(previousContact.getIndlaeggelsesDatetime());
+					DateTime previousOut = null;
+					if(previousContact.getUdskrivningsDatetime() != null) {
+						previousOut = new DateTime(previousContact.getUdskrivningsDatetime());
+					} 
+					DateTime in = new DateTime(contact.getIndlaeggelsesDatetime());
+					
+					if(previousOut == null) {
+						BusinessRuleError be = new BusinessRuleError(previousContact.getRecordNumber(), resolver.getMessage("rule.overlapping.contact.no.endddatetime"), resolver.getMessage("rule.overlapping.contact.name"));
+						throw new RuleAbortedException("Business rule aborted", be);
+					}
+					
+					if((in.isAfter(previousIn)||in.isEqual(previousIn)) && (in.isBefore(previousOut) || in.isEqual(previousOut))) {
+						// contact is overlapping
+
+						// Increment counter for rule #11
+						statistics.rule11Counter += 1;
+
+						List<Administration> splittedContacts = splitContacts(previousContact, contact, statistics);
+						processedContacts.addAll(splittedContacts);
+						
+						// check if the next contact is overlapped by previousContact, but not by contact
+						if(i < contacts.size()-1) {
+							// more contacts exists
+							Administration nextContact = contacts.get(i+1);
+							DateTime nextIn = new DateTime(nextContact.getIndlaeggelsesDatetime());
+							DateTime nextOut = new DateTime(nextContact.getUdskrivningsDatetime());
+							DateTime out = new DateTime(contact.getUdskrivningsDatetime());
+							if((nextIn.isAfter(out)||nextIn.isEqual(out))) {
+								// next is not overlapping contact
+								if((nextIn.isAfter(previousIn)||nextIn.isEqual(previousIn)) && (nextIn.isBefore(previousOut) || nextIn.isEqual(previousOut))) {
+									// but it is overlapping the previousContact, so sort out the sequence
+									Collections.sort(processedContacts, new AdministrationInDateComparator());
+									// set previous contact to the correct contact from the sequence
+									previousContact = processedContacts.get(processedContacts.size()-1);
+								} else {
+									previousContact = contact;
+								}
+							} else {
+								previousContact = contact;
+							}
+						} else {
+							previousContact = contact;
+						}
+					} else {
+						processedContacts.add(previousContact); // add previous to ensure it is added, this could be added twice but is filtered at the end of this rule
+						processedContacts.add(contact); // also add current, in case no splitting should occur
+						previousContact = contact;
+					}
 				}
 				
-			} else {
-				items.put(item ,item);
+			} 
+			contacts = processedContacts;
+
+			Map<Administration, Administration> items = new HashMap<Administration,Administration>();
+			for (Administration item : contacts) {
+				if (items.values().contains(item)) {
+					// ignore duplicate items, but check the record number, because splitting up a contact can result in identical contacts occur.
+					Administration containedItem = items.get(item);
+//					if(containedItem.getRecordNumber() != item.getRecordNumber()) {
+//						// splitting contacts have resulted in identical contacts, log error
+//						BusinessRuleError be = new BusinessRuleError(item.getRecordNumber(), resolver.getMessage("splitting.contacts.have.resulted.in.identical.contacts"), resolver.getMessage("rule.overlapping.contact.name"));
+//						throw new RuleAbortedException("Business rule aborted", be);
+//					}
+					
+				} else {
+					items.put(item ,item);
+				}
 			}
-		}
-		contacts = new ArrayList<Administration>(items.values());
+			contacts = new ArrayList<Administration>(items.values());
+		
 		
 		// setup the next rule in the chain
 		connectContactsRule.setContacts(contacts);
