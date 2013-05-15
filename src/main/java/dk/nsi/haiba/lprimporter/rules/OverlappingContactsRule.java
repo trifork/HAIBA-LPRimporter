@@ -91,7 +91,7 @@ public class OverlappingContactsRule implements LPRRule {
 						throw new RuleAbortedException("Business rule aborted", be);
 					}
 					
-					if((in.isAfter(previousIn)||in.isEqual(previousIn)) && (in.isBefore(previousOut) || in.isEqual(previousOut))) {
+					if((in.isAfter(previousIn)||in.isEqual(previousIn)) && (in.isBefore(previousOut))) {
 						// contact is overlapping
 
 						// Increment counter for rule #11
@@ -136,14 +136,7 @@ public class OverlappingContactsRule implements LPRRule {
 			Map<Administration, Administration> items = new HashMap<Administration,Administration>();
 			for (Administration item : contacts) {
 				if (items.values().contains(item)) {
-					// ignore duplicate items, but check the record number, because splitting up a contact can result in identical contacts occur.
-					Administration containedItem = items.get(item);
-//					if(containedItem.getRecordNumber() != item.getRecordNumber()) {
-//						// splitting contacts have resulted in identical contacts, log error
-//						BusinessRuleError be = new BusinessRuleError(item.getRecordNumber(), resolver.getMessage("splitting.contacts.have.resulted.in.identical.contacts"), resolver.getMessage("rule.overlapping.contact.name"));
-//						throw new RuleAbortedException("Business rule aborted", be);
-//					}
-					
+					// ignore duplicate items
 				} else {
 					items.put(item ,item);
 				}

@@ -247,4 +247,180 @@ public class ProcessRulesIT {
 		assertEquals(1, jdbc.queryForInt("select count(*) from Indlaeggelser"));
 	}
 	
+	/*
+	 * 3 overlapping contacts, One with same starttime and endtime but on another department  
+	 */
+	@Test 
+	public void overlappingContactsOneWith0TimeOnAnotherDepartment() {
+	   	in0 = new DateTime(2010, 6, 12, 14, 0, 0);
+	   	out0 = new DateTime(2010, 6, 17, 16, 0, 0);
+	   	in1 = new DateTime(2010, 6, 17, 16, 0, 0);
+	   	out1 = new DateTime(2010, 6, 17, 16, 0, 0);
+	   	in2 = new DateTime(2010, 6, 17, 16, 0, 0);
+	   	out2 = new DateTime(2010, 6, 17, 21, 0, 0);
+	   	afdelingsCode1 = "777";
+		sygehusCode1 = sygehusCode0;
+		afdelingsCode2 = afdelingsCode0;
+		sygehusCode2 = sygehusCode0;
+
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    			new Long(recordNummer0), cpr, sygehusCode0, afdelingsCode0, in0.toDate(), out0.toDate(), 0);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    			new Long(recordNummer1), cpr, sygehusCode1, afdelingsCode1, in1.toDate(), out1.toDate(), 0);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    			new Long(recordNummer2), cpr, sygehusCode2, afdelingsCode2, in2.toDate(), out2.toDate(), 0);
+
+    	List<Administration> contactsByCPR = lprDao.getContactsByCPR(cpr);
+
+		lprPrepareDataRule.setContacts(contactsByCPR);
+		Statistics statistics = Statistics.getInstance();
+		LPRRule next = lprPrepareDataRule.doProcessing(statistics);
+		
+		// Process rest of the rules and save admission
+		while(next != null) {
+			next = next.doProcessing(statistics);
+		}
+
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer0, String.class));
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer1, String.class));
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer2, String.class));
+
+		assertEquals(3, jdbc.queryForInt("select count(*) from Indlaeggelser"));
+	}
+	
+	/*
+	 * 2 overlapping contacts, One with same starttime and endtime but on another department  
+	 */
+	@Test 
+	public void twoOverlappingContactsOneWith0TimeOnAnotherDepartment() {
+	   	in0 = new DateTime(2010, 4, 20, 17, 0, 0);
+	   	out0 = new DateTime(2010, 4, 20, 17, 0, 0);
+	   	in1 = new DateTime(2010, 4, 20, 17, 0, 0);
+	   	out1 = new DateTime(2010, 4, 20, 19, 0, 0);
+	   	afdelingsCode1 = "777";
+		sygehusCode1 = sygehusCode0;
+
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    			new Long(recordNummer0), cpr, sygehusCode0, afdelingsCode0, in0.toDate(), out0.toDate(), 0);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    			new Long(recordNummer1), cpr, sygehusCode1, afdelingsCode1, in1.toDate(), out1.toDate(), 0);
+
+    	List<Administration> contactsByCPR = lprDao.getContactsByCPR(cpr);
+
+		lprPrepareDataRule.setContacts(contactsByCPR);
+		Statistics statistics = Statistics.getInstance();
+		LPRRule next = lprPrepareDataRule.doProcessing(statistics);
+		
+		// Process rest of the rules and save admission
+		while(next != null) {
+			next = next.doProcessing(statistics);
+		}
+
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer0, String.class));
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer1, String.class));
+
+		assertEquals(2, jdbc.queryForInt("select count(*) from Indlaeggelser"));
+	}
+	
+	@Test 
+	public void threeOverlappingContactsOneWith0TimeOnAnotherDepartment() {
+	   	in0 = new DateTime(2010, 4, 22, 1, 0, 0);
+	   	out0 = new DateTime(2010, 4, 25, 12, 0, 0);
+	   	afdelingsCode0 = "043";
+	   	sygehusCode0 = "8040";
+	   	in1 = new DateTime(2010, 4, 23, 20, 0, 0);
+	   	out1 = new DateTime(2010, 4, 25, 12, 0, 0);
+	   	afdelingsCode1 = "201";
+	   	sygehusCode1 = "8003";
+	   	in2 = new DateTime(2010, 4, 25, 12, 0, 0);
+	   	out2 = new DateTime(2010, 4, 29, 13, 0, 0);
+	   	afdelingsCode2 = "202";
+	   	sygehusCode2 = "8003";
+
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    			new Long(recordNummer0), cpr, sygehusCode0, afdelingsCode0, in0.toDate(), out0.toDate(), 0);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    			new Long(recordNummer1), cpr, sygehusCode1, afdelingsCode1, in1.toDate(), out1.toDate(), 0);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    			new Long(recordNummer2), cpr, sygehusCode2, afdelingsCode2, in2.toDate(), out2.toDate(), 0);
+
+    	List<Administration> contactsByCPR = lprDao.getContactsByCPR(cpr);
+
+		lprPrepareDataRule.setContacts(contactsByCPR);
+		Statistics statistics = Statistics.getInstance();
+		LPRRule next = lprPrepareDataRule.doProcessing(statistics);
+		
+		// Process rest of the rules and save admission
+		while(next != null) {
+			next = next.doProcessing(statistics);
+		}
+
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer0, String.class));
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer1, String.class));
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer2, String.class));
+
+		assertEquals(3, jdbc.queryForInt("select count(*) from Indlaeggelser"));
+		assertEquals("2010-04-22 01:00:00.0",jdbc.queryForObject("select Indlaeggelsesdatotid from Indlaeggelser where afdelingskode ="+afdelingsCode0, String.class));
+		assertEquals("2010-04-25 12:00:00.0",jdbc.queryForObject("select Indlaeggelsesdatotid from Indlaeggelser where afdelingskode ="+afdelingsCode1, String.class));
+		assertEquals("2010-04-25 12:00:00.0",jdbc.queryForObject("select Indlaeggelsesdatotid from Indlaeggelser where afdelingskode ="+afdelingsCode2, String.class));
+
+		assertEquals("2010-04-25 12:00:00.0",jdbc.queryForObject("select Udskrivningsdatotid from Indlaeggelser where afdelingskode ="+afdelingsCode0, String.class));
+		assertEquals("2010-04-25 12:00:00.0",jdbc.queryForObject("select Udskrivningsdatotid from Indlaeggelser where afdelingskode ="+afdelingsCode1, String.class));
+		assertEquals("2010-04-29 13:00:00.0",jdbc.queryForObject("select Udskrivningsdatotid from Indlaeggelser where afdelingskode ="+afdelingsCode2, String.class));
+		
+	}
+	
+	@Test 
+	public void fiveOverlappingContactsOneWith0TimeOnAnotherDepartment() {
+	   	in0 = new DateTime(2010, 6, 25, 17, 0, 0);
+	   	out0 = new DateTime(2010, 6, 25, 18, 0, 0);
+	   	afdelingsCode0 = "H90";
+	   	sygehusCode0 = "3800";
+	   	in1 = new DateTime(2010, 6, 25, 18, 0, 0);
+	   	out1 = new DateTime(2010, 6, 30, 8, 0, 0);
+	   	afdelingsCode1 = "H00";
+	   	sygehusCode1 = "3800";
+	   	in2 = new DateTime(2010, 6, 30, 19, 0, 0);
+	   	out2 = new DateTime(2010, 6, 30, 22, 0, 0);
+	   	afdelingsCode2 = "H00";
+	   	sygehusCode2 = "3800";
+	   	in3 = new DateTime(2010, 6, 30, 22, 0, 0);
+	   	out3 = new DateTime(2010, 6, 30, 22, 0, 0);
+	   	afdelingsCode3 = "A10";
+	   	sygehusCode3 = "3800";
+	   	in4 = new DateTime(2010, 6, 30, 22, 0, 0);
+	   	out4 = new DateTime(2010, 7, 01, 12, 0, 0);
+	   	afdelingsCode4 = "H00";
+	   	sygehusCode4 = "3800";
+
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    			new Long(recordNummer0), cpr, sygehusCode0, afdelingsCode0, in0.toDate(), out0.toDate(), 0);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    			new Long(recordNummer1), cpr, sygehusCode1, afdelingsCode1, in1.toDate(), out1.toDate(), 0);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    			new Long(recordNummer2), cpr, sygehusCode2, afdelingsCode2, in2.toDate(), out2.toDate(), 0);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    			new Long(recordNummer3), cpr, sygehusCode3, afdelingsCode3, in3.toDate(), out3.toDate(), 0);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)",
+    			new Long(recordNummer4), cpr, sygehusCode4, afdelingsCode4, in4.toDate(), out4.toDate(), 0);
+
+    	List<Administration> contactsByCPR = lprDao.getContactsByCPR(cpr);
+
+		lprPrepareDataRule.setContacts(contactsByCPR);
+		Statistics statistics = Statistics.getInstance();
+		LPRRule next = lprPrepareDataRule.doProcessing(statistics);
+		
+		// Process rest of the rules and save admission
+		while(next != null) {
+			next = next.doProcessing(statistics);
+		}
+
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer0, String.class));
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer1, String.class));
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer2, String.class));
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer3, String.class));
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum ="+recordNummer4, String.class));
+
+		assertEquals(5, jdbc.queryForInt("select count(*) from Indlaeggelser"));
+	}
 }

@@ -26,6 +26,7 @@
  */
 package dk.nsi.haiba.lprimporter.rules;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
@@ -51,6 +52,7 @@ import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
 import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
+import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
@@ -146,6 +148,30 @@ public class ConnectAdmissionsRuleTest {
     	Mockito.reset(lprDao);
 	}
 
+
+	/*
+	 * 3 overlapping contacts, One with same starttime and endtime but on another department  
+	 */
+	@Test 
+	public void overlappingAdmissionsOneWith0TimeOnAnotherDepartment() {
+	   	in = new DateTime(2010, 6, 12, 14, 0, 0);
+	   	out = new DateTime(2010, 6, 17, 16, 0, 0);
+	   	in2 = new DateTime(2010, 6, 17, 16, 0, 0);
+	   	out2 = new DateTime(2010, 6, 17, 21, 0, 0);
+	   	in3 = new DateTime(2010, 6, 17, 16, 0, 0);
+	   	out3 = new DateTime(2010, 6, 17, 16, 0, 0);
+		afdelingsCode3 = "xxx";
+		sygehusCode3 = "csgh";
+		
+		List<Indlaeggelse> admissions = setupAdmissions();
+		connectAdmissionsRule.setAdmissions(admissions);
+		LPRRule nextRule = connectAdmissionsRule.doProcessing(Statistics.getInstance());
+
+		List<Indlaeggelse> processedAdmissions = connectAdmissionsRule.getAdmissions();
+		assertEquals("List size must be 4", 4, processedAdmissions.size());
+	}
+	
+	
 	@Test
 	public void checkAdmissionsAreSaved() {
 		

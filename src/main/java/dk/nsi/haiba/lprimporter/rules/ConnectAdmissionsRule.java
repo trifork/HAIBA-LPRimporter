@@ -96,12 +96,13 @@ import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 		// loop has ended, save the list containing the last admission(s) from the loop
 		saveConnectedAdmissions(connectedAdmissions, statistics);
 		
+		// increment counter for CPR numbers exported
+		statistics.cprExportedCounter += 1;
+
 		return null;
 	}
 
 	private void saveConnectedAdmissions(List<Indlaeggelse> admissions, Statistics statistics) {
-		// increment counter for CPR numbers exported
-		statistics.cprExportedCounter += 1;
 		// increment counter for admissionsseries exported
 		statistics.admissionsSeriesExportedCounter += 1;
 		// increment counter for admissions exported

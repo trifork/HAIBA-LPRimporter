@@ -113,7 +113,8 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 
 						previousContact = contact;
 						continue;
-					} else {
+					} else if(previousContact.getSygehusCode().equals(contact.getSygehusCode()) && 
+							previousContact.getAfdelingsCode().equals(contact.getAfdelingsCode())){
 						// increment counter for rule #10
 						statistics.rule10Counter += 1;
 
@@ -133,6 +134,10 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 						processedContacts.add(preservedContact);
 						previousContact = preservedContact;
 						log.debug("preserve contact: "+ preservedContact.getRecordNumber() + " and discard contact: "+deletedContact.getRecordNumber());
+					} else {
+						log.debug("indates are equal for contacts: "+ previousContact.getRecordNumber() + " and: "+contact.getRecordNumber() + "But department or hospital is different");
+						processedContacts.add(previousContact);
+						previousContact = contact;
 					}
 				} else {
 					log.debug("indates are NOT equal for contacts: "+ previousContact.getRecordNumber() + " and: "+contact.getRecordNumber());
