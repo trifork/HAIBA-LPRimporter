@@ -27,6 +27,7 @@
 package dk.nsi.haiba.lprimporter.rules;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -92,6 +93,9 @@ public class LPRDateTimeRule implements LPRRule {
 	public LPRRule doProcessing(Statistics statistics) {
 		
 		List<Administration> adjustedContacts = new ArrayList<Administration>();
+
+		// sort list after inDate, if more contacts have same in datetime - then they are sorted after out datetime.
+		Collections.sort(contacts, new AdministrationInDateComparator());
 		
 		for (Administration contact : contacts) {
 			// Increment counter for rule #4
