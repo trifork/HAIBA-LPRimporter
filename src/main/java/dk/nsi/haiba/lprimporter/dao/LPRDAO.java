@@ -30,8 +30,6 @@ import java.util.List;
 
 import dk.nsi.haiba.lprimporter.exception.DAOException;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
-import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
-import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 public interface LPRDAO {
@@ -66,27 +64,6 @@ public interface LPRDAO {
 	 */
 	public List<Administration> getContactsByCPR(String CPR) throws DAOException;
 
-	/**
-	 * Fetches a list of {@link LPRDiagnose} given the recordnummer number
-	 * 
-	 * @param  The recordnumbers from the LPR Contacts as a string to be used directly by as SELECT IN statement  ex. (12,123,1234)
-	 * @return {@link LPRDiagnose} A list of diagnoses for a given CPR number
-	 * @throws DAOException
-	 *             if something goes wrong in the process
-	 */
-	public List<LPRDiagnose> getDiagnosesByRecordnumber(String recordnumbers) throws DAOException;
-
-	/**
-	 * Fetches a list of {@link LPRProcedure} given the recordnummer number
-	 * 
-	 * @param  The recordnumbers from the LPR Contacts as a string to be used directly by as SELECT IN statement  ex. (12,123,1234)
-	 * @return {@link LPRProcedure} A list of procedures for a given CPR number
-	 * @throws DAOException
-	 *             if something goes wrong in the process
-	 */
-	public List<LPRProcedure> getProceduresByRecordnumber(String recordnumbers) throws DAOException;
-
-	
 	/**
 	 * Updates the import timstamp in the T_ADM table for the given recordnummer number
 	 * 

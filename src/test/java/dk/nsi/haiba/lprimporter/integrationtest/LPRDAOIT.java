@@ -149,12 +149,12 @@ public class LPRDAOIT {
     	String extraDiagnosisCode2 = "tilB";
     	
     	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_pattype) values (?, ?, ?)", new Long(recordNumber), cpr, 2);
-    	jdbcTemplate.update("insert into T_DIAG (v_recnum, c_diag, c_diagtype, c_tildiag) values (?, ?, ?, ?)", new Long(recordNumber), diagnosisCode1, diagnosisType1, extraDiagnosisCode1);
-    	jdbcTemplate.update("insert into T_DIAG (v_recnum, c_diag, c_diagtype, c_tildiag) values (?, ?, ?, ?)", new Long(recordNumber), diagnosisCode2, diagnosisType2, extraDiagnosisCode2);
+    	jdbcTemplate.update("insert into T_KODER (v_recnum, c_kode, c_kodeart, c_tilkode,v_type) values (?, ?, ?, ?, ?)", new Long(recordNumber), diagnosisCode1, diagnosisType1, extraDiagnosisCode1, "DIA");
+    	jdbcTemplate.update("insert into T_KODER (v_recnum, c_kode, c_kodeart, c_tilkode,v_type) values (?, ?, ?, ?, ?)", new Long(recordNumber), diagnosisCode2, diagnosisType2, extraDiagnosisCode2, "DIA");
 
     	Administration contact = lprdao.getContactsByCPR(cpr).get(0);
     	
-    	List<LPRDiagnose> diagnoses = lprdao.getDiagnosesByRecordnumber("("+contact.getRecordNumber()+")");
+    	List<LPRDiagnose> diagnoses = contact.getLprDiagnoses();
     	
     	assertNotNull("Expected 2 diagnoses from LPR", diagnoses);
     	assertEquals(2, diagnoses.size());
@@ -201,12 +201,12 @@ public class LPRDAOIT {
     	
     	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_pattype) values (?, ?, ?)", new Long(recordNumber), cpr, 2);
     	System.out.println(op1.toDate());
-    	jdbcTemplate.update("insert into T_PROCEDURER (v_recnum, c_opr, c_oprart, c_tilopr, c_osgh, c_oafd, d_odto) values (?, ?, ?, ?, ?, ?, ?)", new Long(recordNumber), oprCode1, oprType1, extraOprCode1, sygehusCode1, afdelingCode1, op1.toDate());
-    	jdbcTemplate.update("insert into T_PROCEDURER (v_recnum, c_opr, c_oprart, c_tilopr, c_osgh, c_oafd, d_odto) values (?, ?, ?, ?, ?, ?, ?)", new Long(recordNumber), oprCode2, oprType2, extraOprCode2, sygehusCode2, afdelingCode2, op2.toDate());
+    	jdbcTemplate.update("insert into T_KODER (v_recnum, c_kode, c_kodeart, c_tilkode, c_psgh, c_pafd, d_pdto, v_type) values (?, ?, ?, ?, ?, ?, ?, ?)", new Long(recordNumber), oprCode1, oprType1, extraOprCode1, sygehusCode1, afdelingCode1, op1.toDate(), "PRO");
+    	jdbcTemplate.update("insert into T_KODER (v_recnum, c_kode, c_kodeart, c_tilkode, c_psgh, c_pafd, d_pdto, v_type) values (?, ?, ?, ?, ?, ?, ?, ?)", new Long(recordNumber), oprCode2, oprType2, extraOprCode2, sygehusCode2, afdelingCode2, op2.toDate(), "PRO");
 
     	Administration contact = lprdao.getContactsByCPR(cpr).get(0);
     	
-    	List<LPRProcedure> procedures = lprdao.getProceduresByRecordnumber("("+contact.getRecordNumber()+")");
+    	List<LPRProcedure> procedures = contact.getLprProcedures();
     	
     	assertNotNull("Expected 2 procedures from LPR", procedures);
     	assertEquals(2, procedures.size());
@@ -230,7 +230,7 @@ public class LPRDAOIT {
     	    	assertEquals(op2.toDate(), p.getProcedureDatetime());
     			procedure2checked = true;
     		} else {
-    			fail("did not expect an proceudre with code: "+p.getProcedureCode());
+    			fail("did not expect an procedure with code: "+p.getProcedureCode());
     		}
 		}
 		assertTrue(procedure1checked);

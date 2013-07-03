@@ -27,6 +27,8 @@
 package dk.nsi.haiba.lprimporter.dao.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -42,8 +44,6 @@ import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.exception.DAOException;
 import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
-import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
-import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 public class LPRDAOImpl extends CommonDAO implements LPRDAO {
@@ -100,77 +100,40 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 		log.trace("BEGIN getContactsByCPR");
 		List<Administration> lprContacts = new ArrayList<Administration>();
 	    try {
-		    lprContacts = jdbcTemplate.query("SELECT v_recnum,c_sgh,c_afd,c_pattype,v_cpr,d_inddto,d_uddto FROM T_ADM WHERE v_cpr=?", new Object[]{cpr}, new LPRContactRowMapper());
+		    lprContacts = jdbcTemplate.query("SELECT a.v_recnum,a.c_sgh,a.c_afd,a.c_pattype,a.v_cpr,a.d_inddto,a.d_uddto," +
+		    		"k.c_kode,k.c_tilkode,k.c_kodeart,k.d_pdto,k.c_psgh,k.c_pafd,k.v_type " +
+		    		"FROM T_ADM a " +
+		    		"left join T_KODER k on a.v_recnum = k.v_recnum " +
+		    		"WHERE a.v_cpr=?", new Object[]{cpr}, new LPRContactRowMapper());
         } catch (RuntimeException e) {
             throw new DAOException("Error fetching contacts from LPR", e);
         }
 	    
-	    // This is an optimization for avoiding lots of queries to the Procedure and Diagnosis table 
-	    // now there is only one to each table for each CPR number
-	    // the Diagnoses and Procedures are then sorted out in code which is faster in case there are more contacts with diagnoses and procedures.
-	    
-	    // Create "IN" string to the SQL queries
-	    StringBuilder recordNumberInString = new StringBuilder("(");
-	    boolean first = true;
-	    for (Administration contact : lprContacts) {
-	    	if(first) {
-	    		recordNumberInString.append(contact.getRecordNumber());
-	    		first = false;
-	    		continue;
-	    	}
-    		recordNumberInString.append(",");
-    		recordNumberInString.append(contact.getRecordNumber());
-		}
-		recordNumberInString.append(")");
-		
-		// save all contacts in a map to find them as easy as possible
-		Map<Long, Administration> contacts = new HashMap<Long, Administration>();
-		for (Administration administration : lprContacts) {
-			contacts.put(administration.getRecordNumber(), administration);
-		}
-		
-		// add each procedure to the corresponding contact
-	    List<LPRProcedure> procedures = getProceduresByRecordnumber(recordNumberInString.toString());
-	    for (LPRProcedure lprProcedure : procedures) {
-	    	long recordNumber = lprProcedure.getRecordNumber();
-	    	contacts.get(recordNumber).addLprProcedure(lprProcedure);
-		}
-	    
-		// add each diagnosis to the corresponding contact
-	    List<LPRDiagnose> diagnoses = getDiagnosesByRecordnumber(recordNumberInString.toString());
-	    for (LPRDiagnose lprDiagnose : diagnoses) {
-	    	long recordNumber = lprDiagnose.getRecordNumber();
-	    	contacts.get(recordNumber).addLprDiagnose(lprDiagnose);
-		}
+	    lprContacts = mergeContacts(lprContacts);
 	    
 		log.trace("END getContactsByCPR");
 	    return lprContacts;
 	}
 
-	@Override
-	public List<LPRDiagnose> getDiagnosesByRecordnumber(String recordNumbers) throws DAOException {
-		log.trace("BEGIN getDiagnosesByRecordnummer");
-		List<LPRDiagnose> lprDiagnoses = new ArrayList<LPRDiagnose>();
-	    try {
-	    	lprDiagnoses = jdbcTemplate.query("SELECT v_recnum,c_diag,c_tildiag,c_diagtype FROM T_DIAG WHERE v_recnum in "+ recordNumbers, new LPRDiagnosisRowMapper());
-        } catch (RuntimeException e) {
-            throw new DAOException("Error fetching diagnoses from LPR", e);
-        }
-		log.trace("END getDiagnosesByRecordnummer");
-	    return lprDiagnoses;
-	}
-
-	@Override
-	public List<LPRProcedure> getProceduresByRecordnumber(String recordNumbers) throws DAOException {
-		log.trace("BEGIN getProceduresByRecordnummer");
-		List<LPRProcedure> lprProcedures = new ArrayList<LPRProcedure>();
-	    try {
-	    	lprProcedures = jdbcTemplate.query("SELECT v_recnum,c_opr,c_tilopr,c_oprart,d_odto,c_osgh,c_oafd FROM T_PROCEDURER WHERE v_recnum in "+ recordNumbers, new LPRProcedureRowMapper());
-        } catch (RuntimeException e) {
-            throw new DAOException("Error fetching diagnoses from LPR", e);
-        }
-		log.trace("END getProceduresByRecordnummer");
-	    return lprProcedures;
+	private List<Administration> mergeContacts(List<Administration> lprContacts) {
+		
+		if(lprContacts.size() == 1) {
+			return lprContacts;
+		}
+		
+		Map<Long, Administration> contacts = new HashMap<Long, Administration>();
+		for (Administration adm : lprContacts) {
+			Long recordNumber = new Long(adm.getRecordNumber());
+			
+			Administration c = contacts.get(recordNumber);
+			if(c == null) {
+				contacts.put(recordNumber, adm);
+			} else {
+				c.getLprDiagnoses().addAll(adm.getLprDiagnoses());
+				c.getLprProcedures().addAll(adm.getLprProcedures());
+			}
+		}
+		return new ArrayList<Administration>(contacts.values()) ;
 	}
 
 	@Override

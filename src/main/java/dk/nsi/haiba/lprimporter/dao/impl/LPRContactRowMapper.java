@@ -31,11 +31,20 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 
+import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.RowMapper;
 
+import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
+import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
+import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 
 class LPRContactRowMapper implements RowMapper<Administration> {
+	
+	private static Log log = new Log(Logger.getLogger(LPRContactRowMapper.class));
+
+	private static final String DIAGNOSIS = "DIA";
+	private static final String PROCEDURE = "PRO";
 	
 	@Override
 	public Administration mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -54,6 +63,34 @@ class LPRContactRowMapper implements RowMapper<Administration> {
 			Timestamp tsOut = rs.getTimestamp("d_uddto");
 			if(tsOut != null) {
 				adm.setUdskrivningsDatetime(new Date(tsOut.getTime()));
+			}
+			
+			String type = rs.getString("v_type");
+			if(type != null) {
+				if(DIAGNOSIS.equalsIgnoreCase(type)) {
+					LPRDiagnose d = new LPRDiagnose();
+					d.setRecordNumber(rs.getLong("v_recnum"));
+					d.setDiagnoseCode(rs.getString("c_kode"));
+					d.setTillaegsDiagnose(rs.getString("c_tilkode"));
+					d.setDiagnoseType(rs.getString("c_kodeart"));
+					adm.addLprDiagnose(d);
+				} else if(PROCEDURE.equalsIgnoreCase(type)) {
+					LPRProcedure p = new LPRProcedure();
+					
+					p.setRecordNumber(rs.getLong("v_recnum"));
+					p.setProcedureCode(rs.getString("c_kode"));
+					p.setTillaegsProcedureCode(rs.getString("c_tilkode"));
+					p.setProcedureType(rs.getString("c_kodeart"));
+					p.setSygehusCode(rs.getString("c_psgh"));
+					p.setAfdelingsCode(rs.getString("c_pafd"));
+					Timestamp ts = rs.getTimestamp("d_pdto");
+					if(ts != null) {
+						p.setProcedureDatetime(new Date(ts.getTime()));
+					}
+					adm.addLprProcedure(p);
+				} else {
+					log.error("Unknown type for Diagnosis or Procedure ["+type+"]");
+				}
 			}
 			return adm;
 	}

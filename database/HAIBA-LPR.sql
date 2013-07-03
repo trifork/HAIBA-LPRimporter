@@ -15,23 +15,15 @@ CREATE TABLE IF NOT EXISTS T_ADM (
        V_STATUS varchar(10) NULL
 ) ENGINE=InnoDB COLLATE=utf8_bin;
 
-CREATE TABLE IF NOT EXISTS T_DIAG (
+CREATE TABLE IF NOT EXISTS T_KODER(
        V_RECNUM bigint(15) NULL,
-       C_DIAG varchar(10) NULL,
-       C_TILDIAG varchar(10) NULL,
-       C_DIAGTYPE varchar(1) NOT NULL
-       
-) ENGINE=InnoDB COLLATE=utf8_bin;
-
-CREATE TABLE IF NOT EXISTS T_PROCEDURER(
-       V_RECNUM bigint(15) NULL,
-       C_OPR varchar(10) NULL,
-       C_TILOPR varchar(10) NULL,
-       C_OPRART varchar(1) NULL,
-       D_ODTO datetime NULL,
-       C_OSGH varchar(4) NULL,
-       C_OAFD varchar(3) NULL
-       
+       C_KODE varchar(10) NULL,
+       C_TILKODE varchar(10) NULL,
+       C_KODEART varchar(1) NULL,
+       D_PDTO datetime NULL,
+       C_PSGH varchar(4) NULL,
+       C_PAFD varchar(3) NULL,
+       V_TYPE varchar(3) NULL
 ) ENGINE=InnoDB COLLATE=utf8_bin;
 
 CREATE TABLE IF NOT EXISTS T_LOG_SYNC (
