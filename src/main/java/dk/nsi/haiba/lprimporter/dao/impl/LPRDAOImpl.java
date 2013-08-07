@@ -27,8 +27,6 @@
 package dk.nsi.haiba.lprimporter.dao.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -60,7 +58,7 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 			sql = "SELECT V_RECNUM FROM T_ADM WHERE D_IMPORTDTO IS NULL LIMIT 1";
 		} else {
 			// MSSQL
-			sql = "SELECT TOP 1 V_RECNUM FROM T_ADM WHERE D_IMPORTDTO IS NULL";
+			sql = "SELECT TOP 1 V_RECNUM FROM haiba_replica.T_ADM WHERE D_IMPORTDTO IS NULL";
 		}
 		
 	    try {
@@ -82,7 +80,7 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 			sql = "SELECT v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL GROUP BY v_cpr LIMIT "+batchsize;
 		} else {
 			// MSSQL
-			sql = "SELECT TOP "+batchsize+" v_cpr FROM T_ADM WHERE D_IMPORTDTO IS NULL GROUP BY v_cpr";
+			sql = "SELECT TOP "+batchsize+" v_cpr FROM haiba_replica.T_ADM WHERE D_IMPORTDTO IS NULL GROUP BY v_cpr";
 		}
 		
 		List<String> unprocessedCPRNumbers = new ArrayList<String>();
@@ -100,11 +98,22 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 		log.trace("BEGIN getContactsByCPR");
 		List<Administration> lprContacts = new ArrayList<Administration>();
 	    try {
-		    lprContacts = jdbcTemplate.query("SELECT a.v_recnum,a.c_sgh,a.c_afd,a.c_pattype,a.v_cpr,a.d_inddto,a.d_uddto," +
-		    		"k.c_kode,k.c_tilkode,k.c_kodeart,k.d_pdto,k.c_psgh,k.c_pafd,k.v_type " +
-		    		"FROM T_ADM a " +
-		    		"left join T_KODER k on a.v_recnum = k.v_recnum " +
-		    		"WHERE a.v_cpr=?", new Object[]{cpr}, new LPRContactRowMapper());
+			String sql = null;
+			if(MYSQL.equals(getDialect())) {
+				sql = "SELECT a.v_recnum,a.c_sgh,a.c_afd,a.c_pattype,a.v_cpr,a.d_inddto,a.d_uddto," +
+			    		"k.c_kode,k.c_tilkode,k.c_kodeart,k.d_pdto,k.c_psgh,k.c_pafd,k.v_type " +
+			    		"FROM T_ADM a " +
+			    		"left join T_KODER k on a.v_recnum = k.v_recnum " +
+			    		"WHERE a.v_cpr=?";
+			} else {
+				// MSSQL
+				sql = "SELECT a.v_recnum,a.c_sgh,a.c_afd,a.c_pattype,a.v_cpr,a.d_inddto,a.d_uddto," +
+			    		"k.c_kode,k.c_tilkode,k.c_kodeart,k.d_pdto,k.c_psgh,k.c_pafd,k.v_type " +
+			    		"FROM haiba_replica.T_ADM a " +
+			    		"left join haiba_replica.T_KODER k on a.v_recnum = k.v_recnum " +
+			    		"WHERE a.v_cpr=?";
+			}
+		    lprContacts = jdbcTemplate.query(sql, new Object[]{cpr}, new LPRContactRowMapper());
         } catch (RuntimeException e) {
             throw new DAOException("Error fetching contacts from LPR", e);
         }
@@ -139,7 +148,14 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 	@Override
 	public void updateImportTime(long recordNumber, Outcome status) {
 		log.trace("BEGIN updateImportTime");
-		String sql = "update T_ADM set D_IMPORTDTO = ?, V_STATUS =? WHERE V_RECNUM = ?";
+		
+		String sql = null;
+		if(MYSQL.equals(getDialect())) {
+			sql = "update T_ADM set D_IMPORTDTO = ?, V_STATUS =? WHERE V_RECNUM = ?";
+		} else {
+			// MSSQL
+			sql = "update haiba_replica.T_ADM set D_IMPORTDTO = ?, V_STATUS =? WHERE V_RECNUM = ?";
+		}
 
 	    try {
 	    	jdbcTemplate.update(sql, new Object[] {new Date(), status.toString(), new Long(recordNumber)});
@@ -153,8 +169,19 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 	public long isdatabaseReadyForImport() {
 		
 		try {
-			long maxSyncId = jdbcTemplate.queryForLong("select max(v_sync_id) from T_LOG_SYNC");
-			jdbcTemplate.queryForLong("select v_sync_id from T_LOG_SYNC where v_sync_id =  ? and end_time is not null", maxSyncId);
+			String sql1 = null;
+			String sql2 = null;
+			if(MYSQL.equals(getDialect())) {
+				sql1 = "select max(v_sync_id) from T_LOG_SYNC";
+				sql2 = "select v_sync_id from T_LOG_SYNC where v_sync_id =  ? and end_time is not null";
+			} else {
+				// MSSQL
+				sql1 = "select max(v_sync_id) from haiba_etl.T_LOG_SYNC";
+				sql2 = "select v_sync_id from haiba_etl.T_LOG_SYNC where v_sync_id =  ? and end_time is not null";
+			}
+			
+			long maxSyncId = jdbcTemplate.queryForLong(sql1);
+			jdbcTemplate.queryForLong(sql2, maxSyncId);
 	    	return maxSyncId;
         } catch(EmptyResultDataAccessException e) {
         	// LPR is not ready for Import
@@ -167,9 +194,17 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 	@Override
 	public List<String> getCPRnumbersFromDeletedContacts(long syncId) throws DAOException {
 		log.trace("BEGIN getCPRnumbersFromDeletedContacts");
-		String sql = "select v_cpr from T_ADM where v_recnum in ("+
-				"select AFFECTED_V_RECNUM from T_LOG_SYNC_HISTORY where "+
-				" (C_ACTION_TYPE = 'DELETE' or C_ACTION_TYPE = 'DELETE_IMPLICIT') and v_sync_id = ?)";
+		String sql = null;
+		if(MYSQL.equals(getDialect())) {
+			sql = "select v_cpr from T_ADM where v_recnum in ("+
+					"select AFFECTED_V_RECNUM from T_LOG_SYNC_HISTORY where "+
+					" (C_ACTION_TYPE = 'DELETE' or C_ACTION_TYPE = 'DELETE_IMPLICIT') and v_sync_id = ?)";
+		} else {
+			// MSSQL
+			sql = "select v_cpr from haiba_replica.T_ADM where v_recnum in ("+
+					"select AFFECTED_V_RECNUM from haiba_etl.T_LOG_SYNC_HISTORY where "+
+					" (C_ACTION_TYPE = 'DELETE' or C_ACTION_TYPE = 'DELETE_IMPLICIT') and v_sync_id = ?)";
+		}
 		
 		List<String> cprNumbersWithDeletedContacts = new ArrayList<String>();
 	    try {

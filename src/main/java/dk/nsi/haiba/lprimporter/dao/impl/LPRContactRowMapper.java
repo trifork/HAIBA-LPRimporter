@@ -45,6 +45,8 @@ class LPRContactRowMapper implements RowMapper<Administration> {
 
 	private static final String DIAGNOSIS = "DIA";
 	private static final String PROCEDURE = "PRO";
+	private static final String OPERATION = "OPR";
+	private static final String EXAMINATION = "UND";
 	
 	@Override
 	public Administration mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -58,10 +60,14 @@ class LPRContactRowMapper implements RowMapper<Administration> {
 			adm.setPatientType(rs.getInt("c_pattype"));
 			Timestamp tsIn = rs.getTimestamp("d_inddto");
 			if(tsIn != null) {
+				tsIn.setMinutes(0);
+				tsIn.setSeconds(0);
 				adm.setIndlaeggelsesDatetime(new Date(tsIn.getTime()));
 			}
 			Timestamp tsOut = rs.getTimestamp("d_uddto");
 			if(tsOut != null) {
+				tsOut.setMinutes(0);
+				tsOut.setSeconds(0);
 				adm.setUdskrivningsDatetime(new Date(tsOut.getTime()));
 			}
 			
@@ -74,7 +80,7 @@ class LPRContactRowMapper implements RowMapper<Administration> {
 					d.setTillaegsDiagnose(rs.getString("c_tilkode"));
 					d.setDiagnoseType(rs.getString("c_kodeart"));
 					adm.addLprDiagnose(d);
-				} else if(PROCEDURE.equalsIgnoreCase(type)) {
+				} else if(PROCEDURE.equalsIgnoreCase(type) || OPERATION.equalsIgnoreCase(type) || EXAMINATION.equalsIgnoreCase(type)) {
 					LPRProcedure p = new LPRProcedure();
 					
 					p.setRecordNumber(rs.getLong("v_recnum"));
@@ -85,6 +91,8 @@ class LPRContactRowMapper implements RowMapper<Administration> {
 					p.setAfdelingsCode(rs.getString("c_pafd"));
 					Timestamp ts = rs.getTimestamp("d_pdto");
 					if(ts != null) {
+						ts.setMinutes(0);
+						ts.setSeconds(0);
 						p.setProcedureDatetime(new Date(ts.getTime()));
 					}
 					adm.addLprProcedure(p);

@@ -190,7 +190,7 @@ public class ImportStatusRepositoryJdbcImpl extends CommonDAO implements ImportS
 			sql = "SELECT v_recnum from T_ADM  LIMIT 1";
 		} else {
 			// MSSQL
-			sql = "SELECT Top 1 v_recnum from T_ADM";
+			sql = "SELECT Top 1 v_recnum from haiba_replica.T_ADM";
 		}
 
 		try {

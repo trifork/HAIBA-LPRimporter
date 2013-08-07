@@ -28,15 +28,26 @@ package dk.nsi.haiba.lprimporter.rules;
 
 import java.util.Comparator;
 
+import org.apache.log4j.Logger;
+
+import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 
 public class AdministrationInDateComparator implements Comparator<Administration> {
-    @Override
+	private static Log log = new Log(Logger.getLogger(AdministrationInDateComparator.class));
+
+	@Override
     public int compare(Administration o1, Administration o2) {
     	// if indates are equal, the two contacts must be sorted on outdates to get the right sequence
     	
     	if(o1.getIndlaeggelsesDatetime().equals(o2.getIndlaeggelsesDatetime())) {
-            return o1.getUdskrivningsDatetime().compareTo(o2.getUdskrivningsDatetime());
+    		if(o1.getUdskrivningsDatetime() == null || o2.getUdskrivningsDatetime() == null) {
+    			log.warn("UdskrivningsDateTime is null, connot compare it");
+    	        return o1.getIndlaeggelsesDatetime().compareTo(o2.getIndlaeggelsesDatetime());
+    			
+    		} else {
+                return o1.getUdskrivningsDatetime().compareTo(o2.getUdskrivningsDatetime());
+    		}
     	}
         return o1.getIndlaeggelsesDatetime().compareTo(o2.getIndlaeggelsesDatetime());
     }

@@ -45,4 +45,5 @@ public class ExceptionTest {
 		assertEquals(ex2Str, ex2.getMessage());
 		assertEquals(thrStr, ex2.getCause().getMessage());
 	}
+	
 }
