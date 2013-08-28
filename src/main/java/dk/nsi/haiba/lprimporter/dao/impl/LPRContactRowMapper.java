@@ -59,6 +59,7 @@ class LPRContactRowMapper implements RowMapper<Administration> {
 			adm.setCpr(rs.getString("v_cpr"));
 			adm.setPatientType(rs.getInt("c_pattype"));
 			Timestamp tsIn = rs.getTimestamp("d_inddto");
+			// Rule #4 - no minutes and seconds are used in LPR
 			if(tsIn != null) {
 				tsIn.setMinutes(0);
 				tsIn.setSeconds(0);

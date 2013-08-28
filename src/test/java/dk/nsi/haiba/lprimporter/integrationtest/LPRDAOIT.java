@@ -300,4 +300,5 @@ public class LPRDAOIT {
     	assertEquals("Expect 0 CPR numbers", 0, cprnumbersFromDeletedContacts.size());
     }
 
+
 }

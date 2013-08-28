@@ -423,4 +423,67 @@ public class ProcessRulesIT {
 
 		assertEquals(5, jdbc.queryForInt("select count(*) from Indlaeggelser"));
 	}
+	
+    /*
+     * 
+     * 	c_sgh	c_afd	c_pattype	d_inddto	d_uddto	v_recnum	d_importdto	v_status	v_cpr
+        3800	B00		0		2010-04-20 12:00:00	2010-04-26 13:00:00	2924395640	2013-08-21 15:18:41	SUCCESS	1003229
+		3800	B0D		2	2010-04-26 14:00:00	2010-04-29 00:00:00	2946985224	2013-08-21 15:18:40	SUCCESS	1003229
+		1301	521		0	2010-04-12 21:14:00	2010-04-12 22:00:00	3028094565	2013-08-21 15:18:41	SUCCESS	1003229
+		1301	471		0	2010-04-12 21:30:00	2010-04-20 11:00:00	3090869012	2013-08-21 15:18:40	SUCCESS	1003229
+		3800	E3E		2	2010-05-25 09:45:00	2010-07-12 00:00:00	3155646018	2013-08-21 15:18:40	SUCCESS	1003229
+     * 
+     * Expected in indlaeggelser:
+     * 1301	521	12/04/2010 21:14	12/04/2010 22:00
+	   1301	471	12/04/2010 22:00	20/04/2010 12:00
+	  3800ROS	B00	20/04/2010 12:00	26/04/2010 13:00
+
+     */
+    
+    
+    @Test
+    public void testForNegativeAdmissionTime() {
+    	String cpr = "1003229";
+
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)", 
+    			new Long(2924395640l), cpr, "3800", "B00", new DateTime(2010, 4, 20, 12, 0, 0).toDate(), new DateTime(2010, 4, 26, 13, 0, 0).toDate(), 0);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)", 
+    			new Long(2946985224l), cpr, "3800", "B0D", new DateTime(2010, 4, 26, 14, 0, 0).toDate(), new DateTime(2010, 4, 29, 0, 0, 0).toDate(), 2);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)", 
+    			new Long(3028094565l), cpr, "1301", "521", new DateTime(2010, 4, 12, 21, 14, 0).toDate(), new DateTime(2010, 4, 12, 22, 0, 0).toDate(), 0);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)", 
+    			new Long(3090869012l), cpr, "1301", "471", new DateTime(2010, 4, 12, 21, 30, 0).toDate(), new DateTime(2010, 4, 20, 11, 0, 0).toDate(), 0);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)", 
+    			new Long(3155646018l), cpr, "3800", "E3E", new DateTime(2010, 5, 25, 9, 45, 0).toDate(), new DateTime(2010, 7, 12, 0, 0, 0).toDate(), 2);
+    	    	
+    	List<Administration> contactsByCPR = lprDao.getContactsByCPR(cpr);
+
+		lprPrepareDataRule.setContacts(contactsByCPR);
+		Statistics statistics = Statistics.getInstance();
+		
+		//Process rules
+		LPRRule next = lprPrepareDataRule.doProcessing(statistics);
+		
+		// Process rest of the rules and save admission
+		while(next != null) {
+			next = next.doProcessing(statistics);
+		}
+		// Expected 3 Indlaeggelser and 2 ambulantcontacts
+		assertEquals(3, jdbc.queryForInt("select count(*) from Indlaeggelser"));
+		assertEquals(2, jdbc.queryForInt("select count(*) from AmbulantKontakt"));
+		
+		//Expected in and out dates
+		
+		assertEquals("2010-04-12 21:00:00.0",jdbc.queryForObject("select Indlaeggelsesdatotid from Indlaeggelser where afdelingskode ="+521, String.class));
+		assertEquals("2010-04-12 22:00:00.0",jdbc.queryForObject("select Udskrivningsdatotid from Indlaeggelser where afdelingskode ="+521, String.class));
+
+		assertEquals("2010-04-12 22:00:00.0",jdbc.queryForObject("select Indlaeggelsesdatotid from Indlaeggelser where afdelingskode ="+471, String.class));
+		assertEquals("2010-04-20 12:00:00.0",jdbc.queryForObject("select Udskrivningsdatotid from Indlaeggelser where afdelingskode ="+471, String.class));
+		
+		assertEquals("2010-04-20 12:00:00.0",jdbc.queryForObject("select Indlaeggelsesdatotid from Indlaeggelser where afdelingskode ='B00'", String.class));
+		assertEquals("2010-04-26 13:00:00.0",jdbc.queryForObject("select Udskrivningsdatotid from Indlaeggelser where afdelingskode ='B00'", String.class));
+		
+
+    }
+	
 }

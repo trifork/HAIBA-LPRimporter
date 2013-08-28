@@ -166,8 +166,13 @@ public class OverlappingContactsRule implements LPRRule {
 			splittedContacts.add(previous);
 			return splittedContacts;
 		} else if(previousIn.isEqual(in)) {
-			// split on outTime, where current is the first
-			previous.setIndlaeggelsesDatetime(current.getUdskrivningsDatetime());
+			// split on outTime, but check that it is the oldest outtime
+			if(previousOut.isBefore(out)) {
+				current.setIndlaeggelsesDatetime(previous.getUdskrivningsDatetime());
+			} else {
+				previous.setIndlaeggelsesDatetime(current.getUdskrivningsDatetime());
+			}
+			
 		} else if(previousIn.isBefore(in) && previousOut.isAfter(out)) {
 			// Increment counter for rule #12
 			statistics.rule12Counter += 1;
