@@ -53,7 +53,10 @@ public class ImportExecutor {
 	@Value("${lpr.cpr.batchsize}")
 	int batchsize;
 	
-	private boolean manualOverride;
+    @Value("${currentpatient.default.outdate.days.after.indate}")
+	private int currentPatientDaysIfGreaterThanInterval;
+
+    private boolean manualOverride;
 	
 	@Autowired
 	LPRDAO lprdao;
@@ -70,10 +73,10 @@ public class ImportExecutor {
 	@Scheduled(cron = "${cron.import.job}")
 	public void run() {
 		if(!isManualOverride()) {
-			log.trace("Running Importer: " + new Date().toString());
+			log.debug("Running Importer: " + new Date().toString());
 			doProcess();
 		} else {
-			log.trace("Importer must be started manually");
+			log.debug("Importer must be started manually");
 		}
 	}
 
@@ -105,7 +108,7 @@ public class ImportExecutor {
 				for (String cpr : cprNumbersWithDeletedContacts) {
 					// count CPR numbers with deleted contacts
 					statistics.cprNumbersWithDeletedContactsCounter += cprNumbersWithDeletedContacts.size();
-					processCPRNumber(cpr, statistics);
+					processCPRNumber(cpr, statistics, false);
 				}
 				
 				// new data has arrived, check if any of the processed current patients are discharged
@@ -114,7 +117,7 @@ public class ImportExecutor {
 				for (String cpr : currentPatients) {
 					// count CPR numbers processed for current patients
 					statistics.currentPatientsCounter += currentPatients.size();
-					processCPRNumber(cpr, statistics);
+					processCPRNumber(cpr, statistics, true);
 				}
 
 				// process the new data
@@ -125,7 +128,7 @@ public class ImportExecutor {
 
 					log.debug("processing "+unprocessedCPRnumbers.size()+ " cprnumbers");
 					for (String cpr : unprocessedCPRnumbers) {
-						processCPRNumber(cpr, statistics);
+						processCPRNumber(cpr, statistics, false);
 					}
 					// fetch the next batch
 					unprocessedCPRnumbers = lprdao.getCPRnumberBatch(batchsize);
@@ -143,13 +146,36 @@ public class ImportExecutor {
 	}
 
 
-	private void processCPRNumber(String cpr, Statistics statistics) {
+	private void processCPRNumber(String cpr, Statistics statistics, boolean currentPatient) {
 		List<Administration> contactsByCPR = lprdao.getContactsByCPR(cpr);
+		log.debug("Fetched "+contactsByCPR.size()+ " contacts");
+		
+		if(currentPatient) {
+			boolean recalculate = false;
+			// check if data is changed, and if current contact is more than 30 days old.
+			for (Administration contact : contactsByCPR) {
+				// check if any contacts has outdate set to null
+				if(contact.getUdskrivningsDatetime() == null) {
+					// if an outdate is null, check if the indate is more than 30 days old - if so nothing has changed
+					DateTime in = new DateTime(contact.getIndlaeggelsesDatetime());
+					if(in.plusDays(currentPatientDaysIfGreaterThanInterval).isBeforeNow()) {
+						// current patient doesn't need to be recalculated, as nothing has changed
+					} else {
+						recalculate = true;
+						break;
+					}
+					
+				}
+			}
+			if(!recalculate) {
+				log.debug("No need to recalculate current patient data");
+				return;
+			}
+		}
+
 		// count the processed contacts
 		statistics.contactCounter += contactsByCPR.size();
 		
-		log.debug("Fetched "+contactsByCPR.size()+ " contacts");
-
 		// ensure old data for this cpr number is removed before applying businessrules.
 		haibaDao.prepareCPRNumberForImport(cpr);
 		log.debug("Removed earlier processed admissions for CPR number");

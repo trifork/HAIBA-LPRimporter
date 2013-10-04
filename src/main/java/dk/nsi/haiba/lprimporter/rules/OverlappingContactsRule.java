@@ -91,8 +91,9 @@ public class OverlappingContactsRule implements LPRRule {
 						throw new RuleAbortedException("Business rule aborted", be);
 					}
 					
-					if((in.isAfter(previousIn)||in.isEqual(previousIn)) && (in.isBefore(previousOut))) {
-						// contact is overlapping
+					// if contact is overlapping - or previous might be modified so in isbefore previous in
+					if(((in.isAfter(previousIn)||in.isEqual(previousIn)) && (in.isBefore(previousOut))) ||
+							(in.isBefore(previousIn))) {
 
 						// Increment counter for rule #11
 						statistics.rule11Counter += 1;
@@ -136,7 +137,12 @@ public class OverlappingContactsRule implements LPRRule {
 			Map<Administration, Administration> items = new HashMap<Administration,Administration>();
 			for (Administration item : contacts) {
 				if (items.values().contains(item)) {
-					// ignore duplicate items
+					// ignore duplicate items, but ensure all lpr refs are saved
+					Administration administration = items.get(item);
+					if(administration.getRecordNumber() != item.getRecordNumber()) {
+						administration.addLPRReference(item.getRecordNumber());
+						administration.getLprReferencer().addAll(item.getLprReferencer());
+					}
 				} else {
 					items.put(item ,item);
 				}
@@ -185,6 +191,7 @@ public class OverlappingContactsRule implements LPRRule {
 			newContact.setRecordNumber(previous.getRecordNumber());
 			newContact.setLprDiagnoses(previous.getLprDiagnoses());
 			newContact.setLprProcedures(previous.getLprProcedures());
+			newContact.setLprReferencer(previous.getLprReferencer());
 			// set in to current out and out to previous out
 			newContact.setIndlaeggelsesDatetime(current.getUdskrivningsDatetime());
 			newContact.setUdskrivningsDatetime(previous.getUdskrivningsDatetime());

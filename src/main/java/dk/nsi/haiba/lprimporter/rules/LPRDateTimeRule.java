@@ -104,7 +104,7 @@ public class LPRDateTimeRule implements LPRRule {
 			// AdmissionStartHour for the contact is default set to 0 if not applied in the database, adjust it with the default value from the propertiesfile
 			DateTime admissionStart = new DateTime(contact.getIndlaeggelsesDatetime());
 			if(admissionStart.getHourOfDay() == 0 && defaultContactInHour != 0) {
-				admissionStart = admissionStart.plusHours(defaultContactInHour);
+				admissionStart = admissionStart.withHourOfDay(defaultContactInHour);
 				contact.setIndlaeggelsesDatetime(admissionStart.toDate());
 			}
 			
@@ -126,7 +126,7 @@ public class LPRDateTimeRule implements LPRRule {
 							}
 						}
 					}
-					admissionEnd.withHourOfDay(hourOfDay);
+					admissionEnd = admissionEnd.withHourOfDay(hourOfDay);
 				}
 
 				// Then if admissionEnd still is 0, check the in date time is the same day 
@@ -135,13 +135,13 @@ public class LPRDateTimeRule implements LPRRule {
 							admissionEnd.getMonthOfYear() == admissionStart.getMonthOfYear() &&
 							admissionEnd.getDayOfMonth() == admissionStart.getDayOfMonth()) {
 						// if same date, set end-datetime to in-datetime + defaultvalue
-						admissionEnd = admissionEnd.plusHours(admissionStart.getHourOfDay()).plusHours(defaultContactOuthoursAddedInhours);
+						admissionEnd = admissionEnd.withHourOfDay(admissionStart.getHourOfDay()).plusHours(defaultContactOuthoursAddedInhours);
 					}
 				}
 				
 				// Then if admissionEnd still is 0, and the enddate is after indate set it to a configured defaultvalue 
 				if(admissionEnd.getHourOfDay() == 0) {
-					admissionEnd = admissionEnd.plusHours(defaultAdmissionEndHours);
+					admissionEnd = admissionEnd.withHourOfDay(defaultAdmissionEndHours);
 				}
 				
 				contact.setUdskrivningsDatetime(admissionEnd.toDate());
@@ -161,7 +161,7 @@ public class LPRDateTimeRule implements LPRRule {
 						}
 						
 						if(procedureDate.getHourOfDay() == 0) {
-							procedureDate = procedureDate.plusHours(defaultProcedureHours);
+							procedureDate = procedureDate.withHourOfDay(defaultProcedureHours);
 							procedure.setProcedureDatetime(procedureDate.toDate());
 						}
 						processedProcedures.add(procedure);

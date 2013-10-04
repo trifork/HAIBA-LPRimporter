@@ -42,6 +42,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.transaction.annotation.Transactional;
 
 import dk.nsi.haiba.lprimporter.dao.CommonDAO;
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
@@ -71,6 +72,7 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 		List<Long> indlaeggelserInForloeb = new ArrayList<Long>();
 		
 		try {
+			log.debug("* Inserting Indlaeggelsesforloeb");
 			for (Indlaeggelse indlaeggelse : indlaeggelser) {
 				
 				final String sql = "INSERT INTO Indlaeggelser (CPR, Sygehuskode, Afdelingskode, Indlaeggelsesdatotid, Udskrivningsdatotid, aktuel) VALUES (?,?,?,?,?,?)";				
@@ -82,9 +84,8 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 						indlaeggelse.getAfdelingsCode(),
 						indlaeggelse.getIndlaeggelsesDatetime(),
 						indlaeggelse.getUdskrivningsDatetime(),
-						indlaeggelse.isAktuel()};
+						indlaeggelse.isAktuel()?new Integer(1):new Integer(0)};
 				
-
 				long indlaeggelsesId = -1;
 				if(MYSQL.equals(getDialect())) {
 					KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -112,6 +113,7 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 		        saveLPRReferences(indlaeggelse.getLprReferencer(), indlaeggelsesId);
 			}
 			saveForloeb(indlaeggelserInForloeb);
+			log.debug("** Inserted Indlaeggelsesforloeb");
 		} catch(DataAccessException e) {
 			throw new DAOException(e.getMessage(), e);
 		}
@@ -288,11 +290,13 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 
 	@Override
 	public List<String> getCurrentPatients() {
-		String sql = "SELECT cpr FROM Indlaeggelser WHERE Aktuel = 1 GROUP BY CPR";
+		String sql = "SELECT distinct cpr FROM Indlaeggelser WHERE Aktuel = 1";
+		String sql2 = "SELECT distinct cpr FROM AmbulantKontakt WHERE Aktuel = 1";
 		
 		List<String> currentPatientCPRNumbers = new ArrayList<String>();
 	    try {
 	    	currentPatientCPRNumbers = jdbc.queryForList(sql, String.class);
+	    	currentPatientCPRNumbers.addAll(jdbc.queryForList(sql2, String.class));
         } catch (RuntimeException e) {
             throw new DAOException("Error fetching list of current patients", e);
         }
@@ -303,6 +307,7 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 	@Override
 	public void saveAmbulantIndlaeggelser(List<Administration> contacts) throws DAOException {
 		try {
+			log.debug("* Inserting ambulant contact");
 			for (Administration contact : contacts) {
 				
 				final String sql = "INSERT INTO AmbulantKontakt (CPR, Sygehuskode, Afdelingskode, Indlaeggelsesdatotid, Udskrivningsdatotid, aktuel) VALUES (?,?,?,?,?,?)";				
@@ -313,9 +318,8 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 						contact.getAfdelingsCode(),
 						contact.getIndlaeggelsesDatetime(),
 						contact.getUdskrivningsDatetime(),
-						contact.isCurrentPatient()};
+						contact.isCurrentPatient()?new Integer(1):new Integer(0)};
 				
-
 				long ambulantContactId = -1;
 				if(MYSQL.equals(getDialect())) {
 					KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -340,6 +344,7 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 		        saveAmbulantProcedures(contact.getLprProcedures(), ambulantContactId);
 		        saveAmbulantLPRReferences(contact.getLprReferencer(), ambulantContactId);
 			}
+			log.debug("** Inserted ambulant contact");
 		} catch(DataAccessException e) {
 			throw new DAOException(e.getMessage(), e);
 		}

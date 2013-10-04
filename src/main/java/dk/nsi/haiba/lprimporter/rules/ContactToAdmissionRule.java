@@ -56,7 +56,6 @@ import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 	@Autowired
 	ConnectAdmissionsRule connectAdmissionsRule;
 	
-
 	@Override
 	public LPRRule doProcessing(Statistics statistics) {
 

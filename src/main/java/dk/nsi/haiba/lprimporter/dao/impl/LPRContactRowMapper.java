@@ -81,7 +81,8 @@ class LPRContactRowMapper implements RowMapper<Administration> {
 					d.setTillaegsDiagnose(rs.getString("c_tilkode"));
 					d.setDiagnoseType(rs.getString("c_kodeart"));
 					adm.addLprDiagnose(d);
-				} else if(PROCEDURE.equalsIgnoreCase(type) || OPERATION.equalsIgnoreCase(type) || EXAMINATION.equalsIgnoreCase(type)) {
+				} else {
+					// everything not a diagnosis is a procedure.
 					LPRProcedure p = new LPRProcedure();
 					
 					p.setRecordNumber(rs.getLong("v_recnum"));
@@ -97,9 +98,7 @@ class LPRContactRowMapper implements RowMapper<Administration> {
 						p.setProcedureDatetime(new Date(ts.getTime()));
 					}
 					adm.addLprProcedure(p);
-				} else {
-					log.error("Unknown type for Diagnosis or Procedure ["+type+"]");
-				}
+				} 
 			}
 			return adm;
 	}

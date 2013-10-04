@@ -424,23 +424,6 @@ public class ProcessRulesIT {
 		assertEquals(5, jdbc.queryForInt("select count(*) from Indlaeggelser"));
 	}
 	
-    /*
-     * 
-     * 	c_sgh	c_afd	c_pattype	d_inddto	d_uddto	v_recnum	d_importdto	v_status	v_cpr
-        3800	B00		0		2010-04-20 12:00:00	2010-04-26 13:00:00	2924395640	2013-08-21 15:18:41	SUCCESS	1003229
-		3800	B0D		2	2010-04-26 14:00:00	2010-04-29 00:00:00	2946985224	2013-08-21 15:18:40	SUCCESS	1003229
-		1301	521		0	2010-04-12 21:14:00	2010-04-12 22:00:00	3028094565	2013-08-21 15:18:41	SUCCESS	1003229
-		1301	471		0	2010-04-12 21:30:00	2010-04-20 11:00:00	3090869012	2013-08-21 15:18:40	SUCCESS	1003229
-		3800	E3E		2	2010-05-25 09:45:00	2010-07-12 00:00:00	3155646018	2013-08-21 15:18:40	SUCCESS	1003229
-     * 
-     * Expected in indlaeggelser:
-     * 1301	521	12/04/2010 21:14	12/04/2010 22:00
-	   1301	471	12/04/2010 22:00	20/04/2010 12:00
-	  3800ROS	B00	20/04/2010 12:00	26/04/2010 13:00
-
-     */
-    
-    
     @Test
     public void testForNegativeAdmissionTime() {
     	String cpr = "1003229";
@@ -486,4 +469,163 @@ public class ProcessRulesIT {
 
     }
 	
+    @Test
+    public void testImportOfOverlappingContacts() {
+    	// Found this as an error in the test env. where status wasn't updated for all rows.
+    	String cpr = "1016214";
+
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)", 
+    			new Long(1950697931), cpr, "3800", "P61", new DateTime(2009, 4, 17, 0, 10, 0).toDate(), new DateTime(2009, 4, 18, 12, 0, 0).toDate(), 0);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)", 
+    			new Long(1950697952), cpr, "3800", "P61", new DateTime(2009, 4, 16, 14, 42, 0).toDate(), new DateTime(2009, 4, 18, 12, 0, 0).toDate(), 0);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)", 
+    			new Long(1950739455), cpr, "3800", "P6E", new DateTime(2009, 4, 17, 11, 00, 0).toDate(), new DateTime(2009, 4, 27, 0, 0, 0).toDate(), 2);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)", 
+    			new Long(1950817871), cpr, "3800", "N91", new DateTime(2009, 4, 16, 15, 25, 0).toDate(), new DateTime(2009, 4, 17, 0, 0, 0).toDate(), 0);
+    	    	
+    	List<Administration> contactsByCPR = lprDao.getContactsByCPR(cpr);
+
+		lprPrepareDataRule.setContacts(contactsByCPR);
+		Statistics statistics = Statistics.getInstance();
+		
+		//Process rules
+		LPRRule next = lprPrepareDataRule.doProcessing(statistics);
+		
+		// Process rest of the rules and save admission
+		while(next != null) {
+			next = next.doProcessing(statistics);
+		}
+		
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum =1950697931", String.class));
+    	assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum =1950697952", String.class));
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum =1950739455", String.class));
+		assertEquals("SUCCESS",jdbcTemplate.queryForObject("select v_status from T_ADM where v_recnum =1950817871", String.class));
+	
+		assertEquals("expected import_dto is set in t_adm table", 4, jdbcTemplate.queryForInt("select count(*) from T_ADM where d_importdto is not null"));
+    }
+
+    @Test
+    public void testMissingImports() {
+    	// In the test env. these data seems to be missing?
+    	String cpr = "1011052";
+
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)", 
+    			new Long(1559345303), cpr, "6007", "040", new DateTime(2009, 7, 16, 15, 30, 0).toDate(), new DateTime(2009, 7, 19, 11, 0, 0).toDate(), 0);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)", 
+    			new Long(1567168495), cpr, "6008", "219", new DateTime(2009, 8, 13, 8, 0, 0).toDate(), new DateTime(2009, 8, 13, 0, 0, 0).toDate(), 2);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)", 
+    			new Long(1567926885), cpr, "6007", "047", new DateTime(2009, 7, 19, 12, 00, 0).toDate(), new DateTime(2010, 4, 26, 0, 0, 0).toDate(), 2);
+    	    	
+    	List<Administration> contactsByCPR = lprDao.getContactsByCPR(cpr);
+
+		lprPrepareDataRule.setContacts(contactsByCPR);
+		Statistics statistics = Statistics.getInstance();
+		
+		//Process rules
+		LPRRule next = lprPrepareDataRule.doProcessing(statistics);
+		
+		// Process rest of the rules and save admission
+		while(next != null) {
+			next = next.doProcessing(statistics);
+		}
+		
+		assertEquals("expected import_dto is set in t_adm table", 3, jdbcTemplate.queryForInt("select count(*) from T_ADM where d_importdto is not null"));
+		
+		assertEquals("expected 1 admission", 1, jdbc.queryForInt("select count(*) from Indlaeggelser"));
+		assertEquals("expected 2 ambulant contacts", 2, jdbc.queryForInt("select count(*) from ambulantkontakt"));
+    }
+
+    @Test
+    public void testSummertimeProblemWhenProcedureTimeIs0() {
+    	String cpr = "1016214";
+
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)", 
+    			new Long(1854549558), cpr, "4202", "560", new DateTime(2009, 03, 18, 13, 0, 0).toDate(), new DateTime(2009, 3, 29, 7, 0, 0).toDate(), 0);
+    	jdbcTemplate.update("insert into T_KODER (v_recnum, c_kode, c_tilkode, c_kodeart, d_pdto, c_psgh, c_pafd, v_type) values (?, ?, ?, ?, ?, ?, ?,?)", 
+    			new Long(1854549558), "BWDB01", null, null, new DateTime(2009, 03, 29, 0, 0, 0).toDate(), "4202", "560", "opr");
+    	    	
+    	List<Administration> contactsByCPR = lprDao.getContactsByCPR(cpr);
+
+		lprPrepareDataRule.setContacts(contactsByCPR);
+		Statistics statistics = Statistics.getInstance();
+		
+		//Process rules
+		LPRRule next = lprPrepareDataRule.doProcessing(statistics);
+		
+		// Process rest of the rules and save admission
+		while(next != null) {
+			next = next.doProcessing(statistics);
+		}
+		
+		// expected admission enddate must be 2009-03-29 12:00:00
+		assertEquals("2009-03-29 12:00:00.0",jdbc.queryForObject("select Udskrivningsdatotid from Indlaeggelser where cpr ="+cpr, String.class));
+    }
+
+    @Test
+    public void testErrorWithOverlappingContacts() {
+    	String cpr = "100";
+
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)", 
+    			new Long(1754549558), cpr, "2000", "221", new DateTime(2009, 1, 8, 3, 45, 0).toDate(), new DateTime(2009, 1, 10, 12, 0, 0).toDate(), 0);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)", 
+    			new Long(1754549559), cpr, "2000", "221", new DateTime(2009, 1, 9, 13, 38, 0).toDate(), new DateTime(2009, 1, 10, 12, 0, 0).toDate(), 0);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)", 
+    			new Long(1754549560), cpr, "2000", "272", new DateTime(2009, 1, 10, 0, 1, 0).toDate(), new DateTime(2009, 1, 13, 16, 0, 0).toDate(), 0);
+    	
+    	List<Administration> contactsByCPR = lprDao.getContactsByCPR(cpr);
+
+		lprPrepareDataRule.setContacts(contactsByCPR);
+		Statistics statistics = Statistics.getInstance();
+		
+		//Process rules
+		LPRRule next = lprPrepareDataRule.doProcessing(statistics);
+		
+		// Process rest of the rules and save admission
+		while(next != null) {
+			next = next.doProcessing(statistics);
+		}
+
+		// 2 admissions are expected, due to connecting contacts from same hospital and department.
+		assertEquals("expected 2 admissions", 2, jdbc.queryForInt("select count(*) from Indlaeggelser"));
+		
+		assertEquals("2009-01-08 03:00:00.0",jdbc.queryForObject("select Indlaeggelsesdatotid from Indlaeggelser where afdelingskode ='221'", String.class));
+		assertEquals("2009-01-10 12:00:00.0",jdbc.queryForObject("select Indlaeggelsesdatotid from Indlaeggelser where afdelingskode ='272'", String.class));
+		
+    }
+
+    @Test
+    public void testErrorWithOverlappingContacts2() {
+    	String cpr = "100";
+
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)", 
+    			new Long(1654549558), cpr, "4200", "390", new DateTime(2009, 1, 30, 2, 5, 0).toDate(), new DateTime(2009, 1, 30, 12, 0, 0).toDate(), 0);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)", 
+    			new Long(1654549559), cpr, "4200", "020", new DateTime(2009, 1, 30, 4, 30, 0).toDate(), new DateTime(2009, 1, 30, 12, 0, 0).toDate(), 0);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)", 
+    			new Long(1654549560), cpr, "4200", "360", new DateTime(2009, 1, 30, 10, 20, 0).toDate(), new DateTime(2009, 1, 30, 14, 0, 0).toDate(), 0);
+    	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr, c_sgh, c_afd, d_inddto, d_uddto, c_pattype) values (?, ?, ?, ?, ?, ?, ?)", 
+    			new Long(1654549561), cpr, "4200", "270", new DateTime(2009, 1, 30, 12, 40, 0).toDate(), new DateTime(2009, 2, 3, 14, 0, 0).toDate(), 0);
+    	
+    	List<Administration> contactsByCPR = lprDao.getContactsByCPR(cpr);
+
+		lprPrepareDataRule.setContacts(contactsByCPR);
+		Statistics statistics = Statistics.getInstance();
+		
+		//Process rules
+		LPRRule next = lprPrepareDataRule.doProcessing(statistics);
+		
+		// Process rest of the rules and save admission
+		while(next != null) {
+			next = next.doProcessing(statistics);
+		}
+
+		// 2 admissions are expected, due to connecting contacts from same hospital and department.
+		assertEquals("expected 4 admissions", 4, jdbc.queryForInt("select count(*) from Indlaeggelser"));
+		
+		assertEquals("2009-01-30 02:00:00.0",jdbc.queryForObject("select Indlaeggelsesdatotid from Indlaeggelser where afdelingskode ='390'", String.class));
+		assertEquals("2009-01-30 12:00:00.0",jdbc.queryForObject("select Indlaeggelsesdatotid from Indlaeggelser where afdelingskode ='360'", String.class));
+		assertEquals("2009-01-30 12:00:00.0",jdbc.queryForObject("select Indlaeggelsesdatotid from Indlaeggelser where afdelingskode ='020'", String.class));
+		assertEquals("2009-01-30 14:00:00.0",jdbc.queryForObject("select Indlaeggelsesdatotid from Indlaeggelser where afdelingskode ='270'", String.class));
+		
+    }
 }

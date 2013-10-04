@@ -46,7 +46,8 @@ import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
  * This is the 15? rule to be applied to LPR data (Rule 15 doesn't have a number in the demands)
  * It takes a list of admissions from a single CPR number, and processes the data with the connect admissions rule
  * See the solution document for details about this rule.
- */public class ConnectAdmissionsRule implements LPRRule {
+ */
+public class ConnectAdmissionsRule implements LPRRule {
 	
 	private List<Indlaeggelse> admissions;
 	
@@ -55,6 +56,10 @@ import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 	
 	@Autowired
 	LPRDAO lprDao;
+	
+	public ConnectAdmissionsRule() {
+		
+	}
 
 	@Override
 	public LPRRule doProcessing(Statistics statistics) {

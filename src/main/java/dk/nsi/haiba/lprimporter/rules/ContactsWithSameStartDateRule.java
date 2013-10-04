@@ -174,7 +174,12 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 		Map<String, Administration> items = new HashMap<String,Administration>();
 		for (Administration item : contacts) {
 			if (items.values().contains(item)) {
-				// ignore duplicate items
+				// ignore duplicate items, but ensure all lpr refs are saved
+				Administration administration = items.get("Item"+item.hashCode());
+				if(administration.getRecordNumber() != item.getRecordNumber()) {
+					administration.addLPRReference(item.getRecordNumber());
+					administration.getLprReferencer().addAll(item.getLprReferencer());
+				}
 			} else {
 				items.put("Item"+item.hashCode(),item);
 			}
