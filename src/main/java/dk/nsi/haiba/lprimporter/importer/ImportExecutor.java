@@ -84,14 +84,16 @@ public class ImportExecutor {
 	 * Separated into its own method for testing purpose, because testing a scheduled method isn't good
 	 */
 	public void doProcess() {
+		log.info("Started processing, manual="+isManualOverride());
 		// Fetch new records from LPR contact table
 		try {
+			statusRepo.importStartedAt(new DateTime());
+
 			// if syncId > 0, the Carecom job is finished, and the database is ready for import.
 			long syncId = lprdao.isdatabaseReadyForImport();
 			if(syncId == 0) {
 				String status = "HAIBA_LPR_REPLIKA is not ready for import, Carecom job is not finished yet.";
 				log.warn(status);
-				statusRepo.importStartedAt(new DateTime());
 				statusRepo.importEndedWithFailure(new DateTime(), status);
 				return;
 			}
@@ -99,8 +101,7 @@ public class ImportExecutor {
 			if(lprdao.hasUnprocessedCPRnumbers()) {
 				Statistics statistics = Statistics.getInstance();
 
-				log.debug("LPR has unprocessed CPR numbers, starting import");
-				statusRepo.importStartedAt(new DateTime());
+				log.info("LPR has unprocessed CPR numbers, starting import");
 				
 				//check if any contacts are deleted, and recalculate the affected CPR numbers
 				List<String> cprNumbersWithDeletedContacts = lprdao.getCPRnumbersFromDeletedContacts(syncId);
@@ -137,6 +138,9 @@ public class ImportExecutor {
 				
 				haibaDao.saveStatistics(statistics);
 				statistics.resetInstance();
+			} else {
+				log.info("No unprocessed CPR numbers found");
+				statusRepo.importEndedWithSuccess(new DateTime());
 			}
 			
 		} catch(Exception e) {
