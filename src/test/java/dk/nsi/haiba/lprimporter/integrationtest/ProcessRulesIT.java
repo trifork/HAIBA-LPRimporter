@@ -532,7 +532,7 @@ public class ProcessRulesIT {
 		assertEquals("expected import_dto is set in t_adm table", 3, jdbcTemplate.queryForInt("select count(*) from T_ADM where d_importdto is not null"));
 		
 		assertEquals("expected 1 admission", 1, jdbc.queryForInt("select count(*) from Indlaeggelser"));
-		assertEquals("expected 2 ambulant contacts", 2, jdbc.queryForInt("select count(*) from ambulantkontakt"));
+		assertEquals("expected 2 ambulant contacts", 2, jdbc.queryForInt("select count(*) from AmbulantKontakt"));
     }
 
     @Test
