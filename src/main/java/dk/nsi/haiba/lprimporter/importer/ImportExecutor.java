@@ -106,18 +106,18 @@ public class ImportExecutor {
 				//check if any contacts are deleted, and recalculate the affected CPR numbers
 				List<String> cprNumbersWithDeletedContacts = lprdao.getCPRnumbersFromDeletedContacts(syncId);
 				log.debug("processing "+cprNumbersWithDeletedContacts.size()+ " cprnumbers with deleted contacts");
+				// count CPR numbers with deleted contacts
+				statistics.cprNumbersWithDeletedContactsCounter += cprNumbersWithDeletedContacts.size();
 				for (String cpr : cprNumbersWithDeletedContacts) {
-					// count CPR numbers with deleted contacts
-					statistics.cprNumbersWithDeletedContactsCounter += cprNumbersWithDeletedContacts.size();
 					processCPRNumber(cpr, statistics, false);
 				}
 				
 				// new data has arrived, check if any of the processed current patients are discharged
 				List<String> currentPatients = haibaDao.getCurrentPatients();
 				log.debug("processing "+currentPatients.size()+ " current patients cprnumbers");
+				// count CPR numbers processed for current patients
+				statistics.currentPatientsCounter += currentPatients.size();
 				for (String cpr : currentPatients) {
-					// count CPR numbers processed for current patients
-					statistics.currentPatientsCounter += currentPatients.size();
 					processCPRNumber(cpr, statistics, true);
 				}
 
