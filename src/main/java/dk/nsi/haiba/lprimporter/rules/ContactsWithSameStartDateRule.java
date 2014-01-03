@@ -37,6 +37,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.log.BusinessRuleErrorLog;
@@ -67,6 +68,7 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 	BusinessRuleErrorLog businessRuleErrorLog;
 	
 	@Autowired
+    @Qualifier(value="compositeLPRDAO")
 	LPRDAO lprDao;
 
 	@Override
@@ -104,7 +106,8 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 						statistics.rule9Counter += 1;
 						log.debug("in and outdates are equal but department or hospital differs for contacts: "+ previousContact.getRecordNumber() + " and: "+contact.getRecordNumber());
 						// error, ignore the contacts, 
-						BusinessRuleError be = new BusinessRuleError(previousContact.getRecordNumber(), resolver.getMessage("rule.contactswithsamestartdate.different.hospitalordepartment", new Object[] {"["+contact.getRecordNumber()+"]"}), resolver.getMessage("rule.contactswithsamestartdate.name"));
+						LPRReference ref = previousContact.getLprReference();
+                        BusinessRuleError be = new BusinessRuleError(ref.getDbId(), ref.getLprRecordNumber(), resolver.getMessage("rule.contactswithsamestartdate.different.hospitalordepartment", new Object[] {"["+contact.getRecordNumber()+"]"}), resolver.getMessage("rule.contactswithsamestartdate.name"));
 						businessRuleErrorLog.log(be);
 						
 						// mark contacts and their earlier refs. as failed
@@ -129,7 +132,7 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 						}
 						preservedContact.getLprDiagnoses().addAll(deletedContact.getLprDiagnoses());
 						preservedContact.getLprProcedures().addAll(deletedContact.getLprProcedures());
-						preservedContact.addLPRReference(deletedContact.getRecordNumber());
+						preservedContact.addLPRReference(deletedContact.getLprReference());
 						preservedContact.getLprReferencer().addAll(deletedContact.getLprReferencer());
 						processedContacts.add(preservedContact);
 						previousContact = preservedContact;
@@ -155,10 +158,10 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 			for (Administration administration : contactsWithErrors) {
 				// Increment count for contacts with errors
 				statistics.contactErrorCounter += 1;
-				lprDao.updateImportTime(administration.getRecordNumber(), Outcome.FAILURE);
-				for (LPRReference earlierRefs : administration.getLprReferencer()) {
+				lprDao.updateImportTime(administration.getLprReference(), Outcome.FAILURE);
+				for (LPRReference earlierRef : administration.getLprReferencer()) {
 					statistics.contactErrorCounter += 1;
-					lprDao.updateImportTime(earlierRefs.getLprRecordNumber(), Outcome.FAILURE);
+					lprDao.updateImportTime(earlierRef, Outcome.FAILURE);
 				}
 				processedContacts.remove(administration);
 			}
@@ -177,7 +180,7 @@ public class ContactsWithSameStartDateRule implements LPRRule {
 				// ignore duplicate items, but ensure all lpr refs are saved
 				Administration administration = items.get("Item"+item.hashCode());
 				if(administration.getRecordNumber() != item.getRecordNumber()) {
-					administration.addLPRReference(item.getRecordNumber());
+					administration.addLPRReference(item.getLprReference());
 					administration.getLprReferencer().addAll(item.getLprReferencer());
 				}
 			} else {

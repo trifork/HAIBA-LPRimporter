@@ -31,17 +31,23 @@ public class BusinessRuleError {
 	long lprReference;
 	String description;
 	String abortedRuleName;
+    private int dbId;
 
-	public BusinessRuleError() {
+    public BusinessRuleError() {
 		// empty default constructor
 	}
 	
-	public BusinessRuleError(long lprReference, String description, String abortedRuleName) {
+	public BusinessRuleError(int dbId, long lprReference, String description, String abortedRuleName) {
 		this.lprReference = lprReference;
 		this.description = description;
 		this.abortedRuleName = abortedRuleName;
+		this.dbId = dbId;
 	}
 	
+	public int getDbId() {
+	    return dbId;
+	}
+
 	public long getLprReference() {
 		return lprReference;
 	}

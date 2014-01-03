@@ -29,11 +29,11 @@ package dk.nsi.haiba.lprimporter.dao;
 import java.util.List;
 
 import dk.nsi.haiba.lprimporter.exception.DAOException;
+import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 public interface LPRDAO {
-
 	/**
 	 * Fetches a list of CPRnumbers where contacts are deleted, they need to be recalculated
 	 * 
@@ -42,6 +42,14 @@ public interface LPRDAO {
 	 * @throws DAOException if something goes wrong in the process
 	 */
 	public List<String> getCPRnumbersFromDeletedContacts(long syncId) throws DAOException;
+
+	/**
+	 * Fetches a list of CPRnumbers where contacts are deleted, they need to be recalculated, assuming the latest sync id
+	 * 
+	 * @return A list of CPRnumbers as String
+	 * @throws DAOException if something goes wrong in the process
+	 */
+	public List<String> getCPRnumbersFromDeletedContacts() throws DAOException;
 
 	/**
 	 * Fetches a list of CPRnumbers that have not been processed (Where the Import date is empty)
@@ -65,13 +73,13 @@ public interface LPRDAO {
 	public List<Administration> getContactsByCPR(String CPR) throws DAOException;
 
 	/**
-	 * Updates the import timstamp in the T_ADM table for the given recordnummer number
+	 * Updates the import timestamp in the T_ADM table for the given reference
 	 * 
-	 * @param  The recordnummer from the LPR Contact
+	 * @param  The refernce from the LPR Contact
 	 * @param  The Outcome of the Import (Success Or Failure)
 	 * @throws DAOException if something goes wrong in the process
 	 */
-	public void updateImportTime(long recordNumber, Outcome outcome);
+	public void updateImportTime(LPRReference lprReference, Outcome outcome);
 
 	
 	/**

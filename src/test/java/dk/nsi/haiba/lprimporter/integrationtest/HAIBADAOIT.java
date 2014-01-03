@@ -248,17 +248,19 @@ public class HAIBADAOIT {
     
     @Test
     public void insertsBusinessruleError() {
+        int dbId = 1;
     	long refno = 1234;
     	String description = "description";
     	String abortedRuleName = "abortedRuleName";
     	
-    	BusinessRuleError error = new BusinessRuleError(refno, description, abortedRuleName);
+    	BusinessRuleError error = new BusinessRuleError(dbId, refno, description, abortedRuleName);
     	
     	haibaDao.saveBusinessRuleError(error);
 		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from RegelFejlbeskeder"));
 		assertEquals(refno, jdbc.queryForLong("select LPR_recordnummer from RegelFejlbeskeder"));
 		assertEquals(description, jdbc.queryForObject("select Fejlbeskrivelse from RegelFejlbeskeder", String.class));
 		assertEquals(abortedRuleName, jdbc.queryForObject("select AfbrudtForretningsregel from RegelFejlbeskeder", String.class));
+		assertEquals(dbId, jdbc.queryForInt("select LPR_dbid from RegelFejlbeskeder"));
     }
     
     @Test 

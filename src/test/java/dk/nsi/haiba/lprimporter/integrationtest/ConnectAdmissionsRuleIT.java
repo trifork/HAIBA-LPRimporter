@@ -32,6 +32,8 @@ import static org.junit.Assert.assertNull;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -73,13 +75,16 @@ public class ConnectAdmissionsRuleIT {
     @PropertySource("classpath:test.properties")
     @Import(LPRIntegrationTestConfiguration.class)
     static class ContextConfiguration {
+        @Autowired
+        DataSource lprDataSource;
+
         @Bean
         public HAIBADAO haibaDao() {
             return new HAIBADAOImpl();
         }
         @Bean
         public LPRDAO lprDao() {
-            return new LPRDAOImpl();
+            return new LPRDAOImpl(lprDataSource);
         }
     }
 

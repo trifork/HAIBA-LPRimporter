@@ -33,8 +33,13 @@ package dk.nsi.haiba.lprimporter.model.haiba;
 public class LPRReference {
 	
 	private long lprRecordNumber;
+	private int dbId;
 
-	public LPRReference() {
+	public int getDbId() {
+        return dbId;
+    }
+
+    public LPRReference() {
 		// empty default constructor
 	}
 	
@@ -42,29 +47,37 @@ public class LPRReference {
 		this.lprRecordNumber = lprRecordNumber;
 	}
 
-	public long getLprRecordNumber() {
+	public LPRReference(int dbId, long recordNumber) {
+        this.dbId = dbId;
+        lprRecordNumber = recordNumber;
+    }
+
+    public long getLprRecordNumber() {
 		return lprRecordNumber;
 	}
 
-	public void setLprRecordNumber(long lprRecordNumber) {
-		this.lprRecordNumber = lprRecordNumber;
-	}
+	@Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        LPRReference other = (LPRReference) obj;
+        if (dbId != other.dbId)
+            return false;
+        if (lprRecordNumber != other.lprRecordNumber)
+            return false;
+        return true;
+    }
 
 	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-
-		LPRReference that = (LPRReference) o;
-
-		if(lprRecordNumber != that.lprRecordNumber) return false;
-		
-		return true;
-	}
-
-	@Override
-	public int hashCode() {
-		int result = 31 * (int)(lprRecordNumber^(lprRecordNumber>>>32));
-		return result;
-	}
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + dbId;
+        result = prime * result + (int) (lprRecordNumber ^ (lprRecordNumber >>> 32));
+        return result;
+    }
 }

@@ -42,7 +42,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.transaction.annotation.Transactional;
 
 import dk.nsi.haiba.lprimporter.dao.CommonDAO;
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
@@ -209,9 +208,9 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 			throw new DAOException("BusinessRuleError must be set");
 		}
 		
-		String sql = "INSERT INTO RegelFejlbeskeder (LPR_recordnummer, AfbrudtForretningsregel, Fejlbeskrivelse, Fejltidspunkt) VALUES (?, ?, ?, ?)";
+		String sql = "INSERT INTO RegelFejlbeskeder (LPR_dbid, LPR_recordnummer, AfbrudtForretningsregel, Fejlbeskrivelse, Fejltidspunkt) VALUES (?, ?, ?, ?, ?)";
 		try {
-			jdbc.update(sql, error.getLprReference(), error.getAbortedRuleName(), error.getDescription(), new Date()); 
+			jdbc.update(sql, error.getDbId(), error.getLprReference(), error.getAbortedRuleName(), error.getDescription(), new Date()); 
 		} catch(DataAccessException e) {
 			throw new DAOException(e.getMessage(), e);
 		}

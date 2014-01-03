@@ -31,12 +31,14 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.log.BusinessRuleErrorLog;
 import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
+import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
@@ -64,6 +66,7 @@ public class LPRPrepareDataRule implements LPRRule {
 	HAIBADAO haibaDao;
 
 	@Autowired
+    @Qualifier(value="compositeLPRDAO")
 	LPRDAO lprDao;
 
 	@Override
@@ -75,27 +78,27 @@ public class LPRPrepareDataRule implements LPRRule {
 			
 			if(contact.getRecordNumber() == 0) {
 				// log and ignore this contact
-				logErrorContact(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.recordnumber.isempty"), statistics);
+				logErrorContact(contact.getLprReference(), resolver.getMessage("rule.preparedata.recordnumber.isempty"), statistics);
 				continue;
 			}
 			if(contact.getCpr() == null || contact.getCpr().length() == 0) {
 				// log and ignore this contact
-				logErrorContact(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.cprnumber.isempty"), statistics);
+				logErrorContact(contact.getLprReference(), resolver.getMessage("rule.preparedata.cprnumber.isempty"), statistics);
 				continue;
 			}
 			if(contact.getSygehusCode() == null || contact.getSygehusCode().length() == 0) {
 				// log and ignore this contact
-				logErrorContact(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.sygehuscode.isempty"), statistics);
+				logErrorContact(contact.getLprReference(), resolver.getMessage("rule.preparedata.sygehuscode.isempty"), statistics);
 				continue;
 			}
 			if(contact.getAfdelingsCode() == null || contact.getAfdelingsCode().length() == 0) {
 				// log and ignore this contact
-				logErrorContact(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.afdelingscode.isempty"), statistics);
+				logErrorContact(contact.getLprReference(), resolver.getMessage("rule.preparedata.afdelingscode.isempty"), statistics);
 				continue;
 			}
 			if(contact.getIndlaeggelsesDatetime() == null) {
 				// log and ignore this contact
-				logErrorContact(contact.getRecordNumber(), resolver.getMessage("rule.preparedata.indate.isempty"), statistics);
+				logErrorContact(contact.getLprReference(), resolver.getMessage("rule.preparedata.indate.isempty"), statistics);
 				continue;
 			}
 			
@@ -124,15 +127,15 @@ public class LPRPrepareDataRule implements LPRRule {
 	}
 	
 	
-	private void logErrorContact(long recordNumber, String message, Statistics statistics) {
+	private void logErrorContact(LPRReference lprReference, String message, Statistics statistics) {
 		// Increment counter for rule #1
 		statistics.rule1Counter += 1;
 
-		BusinessRuleError be = new BusinessRuleError(recordNumber, message, resolver.getMessage("rule.preparedata.name"));
+		BusinessRuleError be = new BusinessRuleError(lprReference.getDbId(), lprReference.getLprRecordNumber(), message, resolver.getMessage("rule.preparedata.name"));
 		businessRuleErrorLog.log(be);
 		// Increment count for contacts with errors
 		statistics.contactErrorCounter += 1;
-		lprDao.updateImportTime(recordNumber, Outcome.FAILURE);
+		lprDao.updateImportTime(lprReference, Outcome.FAILURE);
 	}
 
 	// package scope for unittesting purpose

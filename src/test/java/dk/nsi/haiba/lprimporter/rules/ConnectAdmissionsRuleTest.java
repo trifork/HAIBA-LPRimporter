@@ -38,6 +38,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -52,8 +53,6 @@ import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
 import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
-import dk.nsi.haiba.lprimporter.model.lpr.Administration;
-import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -68,6 +67,7 @@ public class ConnectAdmissionsRuleTest {
 			return Mockito.mock(HAIBADAO.class);
 		}
 		@Bean
+		@Qualifier(value="compositeLPRDAO")
 		public LPRDAO lprDao() {
 			return Mockito.mock(LPRDAO.class);
 		}
@@ -182,7 +182,7 @@ public class ConnectAdmissionsRuleTest {
 		assertNull("This is the last rule", nextRule);
 		
 		Mockito.verify(haibaDao, Mockito.atLeastOnce()).saveIndlaeggelsesForloeb(Mockito.anyList());
-		Mockito.verify(lprDao, Mockito.atLeastOnce()).updateImportTime(Mockito.anyLong(), (Outcome)Mockito.any());
+		Mockito.verify(lprDao, Mockito.atLeastOnce()).updateImportTime((LPRReference)Mockito.any(), (Outcome)Mockito.any());
 
 	}
 

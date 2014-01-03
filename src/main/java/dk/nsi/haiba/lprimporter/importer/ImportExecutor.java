@@ -32,6 +32,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -58,19 +59,22 @@ public class ImportExecutor {
 
     private boolean manualOverride;
 	
-	@Autowired
-	LPRDAO lprdao;
-
-	@Autowired
-	HAIBADAO haibaDao;
-
+    LPRDAO lprdao;
+    
+    @Autowired
+    HAIBADAO haibaDao;
+    
 	@Autowired
 	RulesEngine rulesEngine;
 	
 	@Autowired
 	ImportStatusRepository statusRepo;
 	
-	@Scheduled(cron = "${cron.import.job}")
+	public ImportExecutor(LPRDAO lprdao) {
+        this.lprdao = lprdao;
+    }
+
+    @Scheduled(cron = "${cron.import.job}")
 	public void run() {
 		if(!isManualOverride()) {
 			log.debug("Running Importer: " + new Date().toString());

@@ -101,5 +101,21 @@ public class Statistics {
 	public long rule12Counter;
 	public long rule13Counter;
 	public long rule14Counter;
+
+    @Override
+    public String toString() {
+        return "Statistics [date=" + date + ", contactCounter=" + contactCounter + ", cprCounter=" + cprCounter
+                + ", contactErrorCounter=" + contactErrorCounter + ", cprExportedCounter=" + cprExportedCounter
+                + ", admissionsExportedCounter=" + admissionsExportedCounter + ", admissionsSeriesExportedCounter="
+                + admissionsSeriesExportedCounter + ", ambulantContactsExportedCounter="
+                + ambulantContactsExportedCounter + ", cprNumbersWithDeletedContactsCounter="
+                + cprNumbersWithDeletedContactsCounter + ", currentPatientsCounter=" + currentPatientsCounter
+                + ", rule1Counter=" + rule1Counter + ", rule2Counter=" + rule2Counter + ", rule3Counter="
+                + rule3Counter + ", rule4Counter=" + rule4Counter + ", rule5Counter=" + rule5Counter
+                + ", rule6Counter=" + rule6Counter + ", rule7Counter=" + rule7Counter + ", rule8Counter="
+                + rule8Counter + ", rule9Counter=" + rule9Counter + ", rule10Counter=" + rule10Counter
+                + ", rule11Counter=" + rule11Counter + ", rule12Counter=" + rule12Counter + ", rule13Counter="
+                + rule13Counter + ", rule14Counter=" + rule14Counter + "]";
+    }
 	
 }

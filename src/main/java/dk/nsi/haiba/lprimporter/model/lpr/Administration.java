@@ -49,7 +49,7 @@ public class Administration {
 	List<LPRReference> lprReferencer = new ArrayList<LPRReference>();
 	boolean currentPatient = false;
 	private int patientType;
-	
+	private LPRReference lprReference;
 	
 	public long getRecordNumber() {
 		return recordNumber;
@@ -138,8 +138,8 @@ public class Administration {
 	public void setLprReferencer(List<LPRReference> lprReferencer) {
 		this.lprReferencer = lprReferencer;
 	}
-	public void addLPRReference(long recordNumber) {
-		lprReferencer.add(new LPRReference(recordNumber));
+	public void addLPRReference(LPRReference lprReference) {
+		lprReferencer.add(lprReference);
 	}
 	
 	/*
@@ -196,5 +196,14 @@ public class Administration {
         		cpr+
         		indlaeggelsesDatetime+
         		udskrivningsDatetime).hashCode();
+    }
+    public LPRReference getLprReference() {
+        if (lprReference == null) {
+            lprReference = new LPRReference(recordNumber);
+        }
+        return lprReference;
+    }
+    public void setLprReference(LPRReference lprReference) {
+        this.lprReference = lprReference;
     }
 }

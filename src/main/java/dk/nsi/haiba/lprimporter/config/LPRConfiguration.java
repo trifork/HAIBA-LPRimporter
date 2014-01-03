@@ -47,6 +47,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.dao.impl.HAIBADAOImpl;
+import dk.nsi.haiba.lprimporter.dao.impl.LPRDAOComposite;
 import dk.nsi.haiba.lprimporter.dao.impl.LPRDAOImpl;
 import dk.nsi.haiba.lprimporter.importer.ImportExecutor;
 import dk.nsi.haiba.lprimporter.log.BusinessRuleErrorLog;
@@ -78,9 +79,12 @@ public class LPRConfiguration {
 	@Value("${jdbc.lprJNDIName}")
 	private String lprJdbcJNDIName;
 
+	@Value("${jdbc.lprJNDIName_minipas}")
+	private String lprJdbcJNDIName_minipas;
+
 	@Value("${jdbc.haibaJNDIName}")
 	private String haibaJdbcJNDIName;
-
+	
 	// this is not automatically registered, see https://jira.springsource.org/browse/SPR-8539
 	@Bean
 	public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
@@ -112,11 +116,26 @@ public class LPRConfiguration {
 		factory.afterPropertiesSet();
 		return (DataSource) factory.getObject();
 	}
+	
+	@Bean
+	public DataSource lprDataSourceMinipas() throws Exception {
+	    JndiObjectFactoryBean factory = new JndiObjectFactoryBean();
+	    factory.setJndiName(lprJdbcJNDIName_minipas);
+	    factory.setExpectedType(DataSource.class);
+	    factory.afterPropertiesSet();
+	    return (DataSource) factory.getObject();
+	}
 
 	@Bean
 	@Qualifier("lprTransactionManager")
 	public PlatformTransactionManager transactionManager(@Qualifier("lprDataSource") DataSource ds) {
 		return new DataSourceTransactionManager(ds);
+	}
+	
+	@Bean
+	@Qualifier("lprTransactionManagerMinipas")
+	public PlatformTransactionManager transactionManagerMinipas(@Qualifier("lprDataSourceMinipas") DataSource ds) {
+	    return new DataSourceTransactionManager(ds);
 	}
 
 	@Bean
@@ -127,6 +146,11 @@ public class LPRConfiguration {
 	@Bean
 	public JdbcTemplate haibaJdbcTemplate(@Qualifier("haibaDataSource") DataSource ds) {
 		return new JdbcTemplate(ds);
+	}
+
+	@Bean
+	public JdbcTemplate minipasJdbcTemplate(@Qualifier("lprDataSourceMinipas") DataSource dataSource) {
+	    return new JdbcTemplate(dataSource);
 	}
 
 	@Bean
@@ -170,8 +194,8 @@ public class LPRConfiguration {
 	}
 	
 	@Bean
-	public ImportExecutor importExecutor() {
-		return new ImportExecutor();
+	public ImportExecutor importExecutor(@Qualifier(value="compositeLPRDAO") LPRDAO lprdao) {
+		return new ImportExecutor(lprdao);
 	}
 
 	@Bean
@@ -179,15 +203,25 @@ public class LPRConfiguration {
 		return new LPRRulesEngine();
 	}
 
-	@Bean
-    public LPRDAO lprdao() {
-        return new LPRDAOImpl();
+	@Bean(name="ssiLPRDAO")
+    public LPRDAO lprdao(@Qualifier("lprDataSource") DataSource ds) {
+	    return new LPRDAOImpl(ds);
     }
 	
 	@Bean
     public HAIBADAO haibaDao() {
         return new HAIBADAOImpl();
     }
+	
+	@Bean(name="minipasLPRDAO")
+	public LPRDAO minipasLPRDAO(@Qualifier("lprDataSourceMinipas") DataSource ds) {
+	    return new LPRDAOImpl(ds);
+	}
+	
+	@Bean(name="compositeLPRDAO")
+	public LPRDAO compositeLPRDAO() {
+	    return new LPRDAOComposite();
+	}
 	
 	@Bean
 	public LPRDateTimeRule lprDateTimeRule() {

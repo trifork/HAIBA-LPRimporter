@@ -78,7 +78,7 @@ public class ExtendContactEndtimeRule implements LPRRule {
 				
 				// if procedureDateTime is more than 24 hours after Contact enddatetime it is a businessrule error
 				if(latestProcedureDateTime.isAfter(contactEndDateTime.plusHours(24))) {
-					BusinessRuleError error = new BusinessRuleError(contact.getRecordNumber(), resolver.getMessage("rule.extend.contact.endddatetime.gap.to.long"), resolver.getMessage("rule.extend.contact.endddatetime.name"));
+					BusinessRuleError error = new BusinessRuleError(contact.getLprReference().getDbId(), contact.getRecordNumber(), resolver.getMessage("rule.extend.contact.endddatetime.gap.to.long"), resolver.getMessage("rule.extend.contact.endddatetime.name"));
 					throw new RuleAbortedException("Rule aborted due to BusinessRuleError", error);
 				}
 				

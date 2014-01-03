@@ -54,6 +54,8 @@ public class LPRIntegrationTestConfiguration extends LPRConfiguration {
 	private int mysqlPort;
 	@Value("${test.mysql.lprdbname}")
 	private String testLPRDbName;
+	@Value("${test.mysql.lprminipasdbname}")
+	private String testLPRMinipasDbName;
 	@Value("${test.mysql.lprdbusername}")
 	private String testLPRDbUsername;
 	@Value("${test.mysql.lprdbpassword}")
@@ -77,16 +79,34 @@ public class LPRIntegrationTestConfiguration extends LPRConfiguration {
 
 		return new SimpleDriverDataSource(new Driver(), jdbcUrlPrefix + testLPRDbName + "?createDatabaseIfNotExist=true", testLPRDbUsername, testLPRDbPassword);
 	}
+	@Bean
+	@Qualifier("lprDataSourceMinipas")
+	public DataSource lprDataSourceMinipas() throws Exception{
+	    String jdbcUrlPrefix = "jdbc:mysql://127.0.0.1:" + mysqlPort + "/";
+	    
+	    return new SimpleDriverDataSource(new Driver(), jdbcUrlPrefix + testLPRMinipasDbName + "?createDatabaseIfNotExist=true", testLPRDbUsername, testLPRDbPassword);
+	}
 
 	@Bean
 	public JdbcTemplate jdbcTemplate(@Qualifier("lprDataSource") DataSource ds) {
 		return new JdbcTemplate(ds);
+	}
+	
+	@Bean
+	public JdbcTemplate minipasJdbcTemplate(@Qualifier("lprDataSourceMinipas") DataSource ds) {
+	    return new JdbcTemplate(ds);
 	}
 
 	@Bean
 	@Qualifier("lprTransactionManager")
 	public PlatformTransactionManager transactionManager(@Qualifier("lprDataSource") DataSource ds) {
 		return new DataSourceTransactionManager(ds);
+	}
+
+	@Bean
+	@Qualifier("minipasLprTransactionManager")
+	public PlatformTransactionManager miniPasTransactionManager(@Qualifier("lprDataSourceMinipas") DataSource ds) {
+	    return new DataSourceTransactionManager(ds);
 	}
 
 	@Bean

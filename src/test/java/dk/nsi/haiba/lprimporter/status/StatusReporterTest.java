@@ -48,6 +48,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
+import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.importer.ImportExecutor;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -64,7 +65,7 @@ public class StatusReporterTest {
         
         @Bean
         public ImportExecutor importExecutor() {
-            return new ImportExecutor();
+            return new ImportExecutor(Mockito.mock(LPRDAO.class));
         }
 
         @Bean

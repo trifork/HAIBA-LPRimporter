@@ -32,6 +32,7 @@ import java.util.List;
 
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
@@ -55,6 +56,7 @@ public class ConnectAdmissionsRule implements LPRRule {
 	HAIBADAO haibaDao;
 	
 	@Autowired
+    @Qualifier(value="compositeLPRDAO")
 	LPRDAO lprDao;
 	
 	public ConnectAdmissionsRule() {
@@ -116,7 +118,7 @@ public class ConnectAdmissionsRule implements LPRRule {
 		for (Indlaeggelse admission : admissions) {
 			// Rules are complete, update LPR with the import timestamp so they are not imported again
 			for (LPRReference lprRef : admission.getLprReferencer()) {
-				lprDao.updateImportTime(lprRef.getLprRecordNumber(), Outcome.SUCCESS);
+				lprDao.updateImportTime(lprRef, Outcome.SUCCESS);
 			}
 		}
 		removeDuplicateProceduresDiagnoses(admissions);

@@ -39,10 +39,9 @@ public class AdministrationInDateComparator implements Comparator<Administration
 	@Override
     public int compare(Administration o1, Administration o2) {
     	// if indates are equal, the two contacts must be sorted on outdates to get the right sequence
-    	
     	if(o1.getIndlaeggelsesDatetime().equals(o2.getIndlaeggelsesDatetime())) {
     		if(o1.getUdskrivningsDatetime() == null || o2.getUdskrivningsDatetime() == null) {
-    			log.warn("UdskrivningsDateTime is null, connot compare it");
+    			log.warn("UdskrivningsDateTime is null, cannot compare it");
     	        return o1.getIndlaeggelsesDatetime().compareTo(o2.getIndlaeggelsesDatetime());
     			
     		} else {

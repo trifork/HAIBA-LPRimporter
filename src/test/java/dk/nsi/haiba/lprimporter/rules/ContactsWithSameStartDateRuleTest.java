@@ -40,6 +40,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -50,6 +51,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
+import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
@@ -67,6 +69,7 @@ public class ContactsWithSameStartDateRuleTest {
 			return Mockito.mock(HAIBADAO.class);
 		}
 		@Bean
+        @Qualifier(value="compositeLPRDAO")
 		public LPRDAO lprDao() {
 			return Mockito.mock(LPRDAO.class);
 		}
@@ -180,7 +183,7 @@ public class ContactsWithSameStartDateRuleTest {
 
 		// Expect 2 error to be logged
 		Mockito.verify(haibaDao, Mockito.atLeastOnce()).saveBusinessRuleError((BusinessRuleError) Mockito.any());
-		Mockito.verify(lprDao, Mockito.atLeastOnce()).updateImportTime(Mockito.anyLong(), (Outcome)Mockito.any());
+		Mockito.verify(lprDao, Mockito.atLeastOnce()).updateImportTime((LPRReference)Mockito.any(), (Outcome)Mockito.any());
 
 		Collections.sort(processedContacts, new AdministrationInDateComparator());
 	}

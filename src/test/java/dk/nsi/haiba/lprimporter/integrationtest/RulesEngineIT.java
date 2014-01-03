@@ -55,6 +55,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.Transactional;
 
+import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
@@ -90,6 +91,7 @@ public class RulesEngineIT {
 	
 	String cpr;
 	long recordNummer;
+    private int dbId;
 	String sygehusCode;
 	String afdelingsCode;
 	DateTime in;
@@ -105,6 +107,7 @@ public class RulesEngineIT {
     	// Init Administration data
 		cpr = "1111111111";
     	recordNummer = 1234;
+    	dbId = 1;
     	sygehusCode = "csgh";
     	afdelingsCode = "afd";
     	in = new DateTime(2010, 5, 3, 0, 0, 0);
@@ -143,6 +146,7 @@ public class RulesEngineIT {
 		
 		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from RegelFejlbeskeder"));
 		assertEquals(recordNummer, jdbc.queryForLong("select LPR_recordnummer from RegelFejlbeskeder"));
+		assertEquals(dbId, jdbc.queryForInt("select LPR_dbId from RegelFejlbeskeder"));
 		
 		File file = FileUtils.getFile("forretningsregel-fejl.log");
 		assertNotNull(file);
@@ -161,6 +165,7 @@ public class RulesEngineIT {
 		List<Administration> contacts = new ArrayList<Administration>();
 		Administration contact = new Administration();
 		contact.setRecordNumber(recordNummer);
+		contact.setLprReference(new LPRReference(dbId, recordNummer));
 		contact.setSygehusCode(sygehusCode);
 		contact.setAfdelingsCode(afdelingsCode);
 		contact.setCpr(cpr);

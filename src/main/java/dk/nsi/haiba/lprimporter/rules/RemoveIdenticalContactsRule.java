@@ -33,6 +33,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
@@ -57,6 +58,7 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 	HAIBADAO haibaDao;
 	
 	@Autowired
+	@Qualifier(value="compositeLPRDAO")
 	LPRDAO lprDao;
 
 	@Autowired
@@ -82,7 +84,7 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 				preserve.getLprDiagnoses().addAll(item.getLprDiagnoses());
 				preserve.getLprProcedures().addAll(item.getLprProcedures());
 				// save references to the removed contact
-				preserve.getLprReferencer().add(new LPRReference(item.getRecordNumber()));
+				preserve.getLprReferencer().add(item.getLprReference());
 				preserve.getLprReferencer().addAll(item.getLprReferencer());
 			} else {
 				items.put(item,item);
@@ -135,9 +137,9 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 		for (Administration contact : contacts) {
 			// Rules are complete, update LPR with the import timestamp so they are not imported again
 			for (LPRReference lprRef : contact.getLprReferencer()) {
-				lprDao.updateImportTime(lprRef.getLprRecordNumber(), Outcome.SUCCESS);
+				lprDao.updateImportTime(lprRef, Outcome.SUCCESS);
 			}
-			lprDao.updateImportTime(contact.getRecordNumber(), Outcome.SUCCESS);
+			lprDao.updateImportTime(contact.getLprReference(), Outcome.SUCCESS);
 		}
 	}
 

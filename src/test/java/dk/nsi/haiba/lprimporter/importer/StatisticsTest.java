@@ -80,7 +80,7 @@ public class StatisticsTest {
 
         @Bean
         public ImportExecutor importExecutor() {
-            return new ImportExecutor();
+            return new ImportExecutor(lprdao());
         }
     }
 

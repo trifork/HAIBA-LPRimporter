@@ -117,7 +117,7 @@ import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
 		
 		// save current contact reference
 		log.trace("Contact recordnumber: "+contact.getRecordNumber());
-		indlaeggelse.addLPRReference(new LPRReference(contact.getRecordNumber()));
+		indlaeggelse.addLPRReference(contact.getLprReference());
 		// and merge all former contact references to the admission
 		for (LPRReference ref : contact.getLprReferencer()) {
 			log.trace("Contact former recordnumbers: " + ref.getLprRecordNumber());

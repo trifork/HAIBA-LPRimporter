@@ -34,6 +34,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
@@ -66,6 +67,7 @@ public class LPRDateTimeRule implements LPRRule {
 	BusinessRuleErrorLog businessRuleErrorLog;
 	
 	@Autowired
+    @Qualifier(value="compositeLPRDAO")
 	LPRDAO lprDao;
 
 	@Value("${default.contact.in.hour}")
@@ -154,7 +156,7 @@ public class LPRDateTimeRule implements LPRRule {
 						DateTime procedureDate = new DateTime(procedureDatetime.getTime());
 						// if procedureDate is more than 24 hours after admissionEndDate it is an error
 						if(procedureDate.isAfter(admissionEnd.plusHours(24))) {
-							BusinessRuleError be = new BusinessRuleError(contact.getRecordNumber(),resolver.getMessage("rule.datetime.proceduredate.is.more.than.24hous.after.enddate"), resolver.getMessage("rule.datetime.name"));
+							BusinessRuleError be = new BusinessRuleError(contact.getLprReference().getDbId(), contact.getRecordNumber(),resolver.getMessage("rule.datetime.proceduredate.is.more.than.24hous.after.enddate"), resolver.getMessage("rule.datetime.name"));
 							businessRuleErrorLog.log(be);
 							// error, procedure is deleted from the contact.
 							continue;
@@ -166,7 +168,7 @@ public class LPRDateTimeRule implements LPRRule {
 						}
 						processedProcedures.add(procedure);
 					} else {
-						BusinessRuleError error = new BusinessRuleError(contact.getRecordNumber(), resolver.getMessage("rule.datetime.proceduredate.isempty"), resolver.getMessage("rule.datetime.name"));
+						BusinessRuleError error = new BusinessRuleError(contact.getLprReference().getDbId(), contact.getRecordNumber(), resolver.getMessage("rule.datetime.proceduredate.isempty"), resolver.getMessage("rule.datetime.name"));
 						throw new RuleAbortedException("Rule aborted due to BusinessRuleError", error);
 					}
 				}
@@ -198,11 +200,11 @@ public class LPRDateTimeRule implements LPRRule {
 				// Increment counter for rule #6
 				statistics.rule6Counter += 1;
 				// log the error and ignore the contact.
-				BusinessRuleError be = new BusinessRuleError(contact.getRecordNumber(), resolver.getMessage("rule.datetime.indate.isafter.outdate"), resolver.getMessage("rule.datetime.name"));
+				BusinessRuleError be = new BusinessRuleError(contact.getLprReference().getDbId(), contact.getRecordNumber(), resolver.getMessage("rule.datetime.indate.isafter.outdate"), resolver.getMessage("rule.datetime.name"));
 				businessRuleErrorLog.log(be);
 				// Increment count for contacts with errors
 				statistics.contactErrorCounter += 1;
-				lprDao.updateImportTime(contact.getRecordNumber(), Outcome.FAILURE);
+				lprDao.updateImportTime(contact.getLprReference(), Outcome.FAILURE);
 				continue;
 			}
 			

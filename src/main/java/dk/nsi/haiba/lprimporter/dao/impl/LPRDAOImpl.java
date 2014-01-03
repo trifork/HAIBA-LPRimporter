@@ -32,8 +32,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -41,6 +42,7 @@ import dk.nsi.haiba.lprimporter.dao.CommonDAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.exception.DAOException;
 import dk.nsi.haiba.lprimporter.log.Log;
+import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
@@ -48,8 +50,11 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 
 	private static Log log = new Log(Logger.getLogger(LPRDAOImpl.class));
 
-	@Autowired
 	JdbcTemplate jdbcTemplate;
+	
+	public LPRDAOImpl(DataSource ds) {
+	    jdbcTemplate = new JdbcTemplate(ds);
+	}
 
 	@Override
 	public boolean hasUnprocessedCPRnumbers() throws DAOException {
@@ -146,7 +151,7 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 	}
 
 	@Override
-	public void updateImportTime(long recordNumber, Outcome status) {
+	public void updateImportTime(LPRReference lprReference, Outcome status) {
 		log.trace("BEGIN updateImportTime");
 		
 		String sql = null;
@@ -158,7 +163,7 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 		}
 
 	    try {
-	    	jdbcTemplate.update(sql, new Object[] {new Date(), status.toString(), new Long(recordNumber)});
+	    	jdbcTemplate.update(sql, new Object[] {new Date(), status.toString(), new Long(lprReference.getLprRecordNumber())});
         } catch (RuntimeException e) {
             throw new DAOException("Error updating import timestamp in LPR", e);
         }
@@ -215,5 +220,15 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
 		log.trace("END getCPRnumbersFromDeletedContacts");
 	    return cprNumbersWithDeletedContacts;
 	}
+
+    @Override
+    public List<String> getCPRnumbersFromDeletedContacts() throws DAOException {
+        List<String> returnValue = new ArrayList<String>();
+        long syncId = isdatabaseReadyForImport();
+        if (syncId != 0) {
+            returnValue = getCPRnumbersFromDeletedContacts(syncId);
+        }
+        return returnValue;
+    }
 
 }

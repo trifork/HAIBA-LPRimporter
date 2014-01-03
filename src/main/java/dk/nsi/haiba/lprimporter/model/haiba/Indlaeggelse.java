@@ -102,7 +102,6 @@ public class Indlaeggelse {
 		this.udskrivningsDatetime = udskrivningsDatetime;
 	}
 	
-	
 	public List<LPRReference> getLprReferencer() {
 		return lprReferencer;
 	}

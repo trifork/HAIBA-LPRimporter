@@ -41,7 +41,6 @@ import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
 import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
-import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 /*
  * This is the 11. and 12. rule to be applied to LPR data
@@ -87,13 +86,15 @@ public class OverlappingContactsRule implements LPRRule {
 					DateTime in = new DateTime(contact.getIndlaeggelsesDatetime());
 					
 					if(previousOut == null) {
-						BusinessRuleError be = new BusinessRuleError(previousContact.getRecordNumber(), resolver.getMessage("rule.overlapping.contact.no.endddatetime"), resolver.getMessage("rule.overlapping.contact.name"));
+						BusinessRuleError be = new BusinessRuleError(previousContact.getLprReference().getDbId(), previousContact.getRecordNumber(), resolver.getMessage("rule.overlapping.contact.no.endddatetime"), resolver.getMessage("rule.overlapping.contact.name"));
 						throw new RuleAbortedException("Business rule aborted", be);
 					}
 					
 					// if contact is overlapping - or previous might be modified so in isbefore previous in
-					if(((in.isAfter(previousIn)||in.isEqual(previousIn)) && (in.isBefore(previousOut))) ||
-							(in.isBefore(previousIn))) {
+					// AKS 3 jan: only in.isBefore(previousOut) is necessary, already sorted by in dates
+					if(in.isBefore(previousOut)) {
+//					    if(((in.isAfter(previousIn)||in.isEqual(previousIn)) && (in.isBefore(previousOut))) ||
+//					            (in.isBefore(previousIn))) {
 
 						// Increment counter for rule #11
 						statistics.rule11Counter += 1;
@@ -109,8 +110,10 @@ public class OverlappingContactsRule implements LPRRule {
 							DateTime nextOut = new DateTime(nextContact.getUdskrivningsDatetime());
 							DateTime out = new DateTime(contact.getUdskrivningsDatetime());
 							if((nextIn.isAfter(out)||nextIn.isEqual(out))) {
-								// next is not overlapping contact
-								if((nextIn.isAfter(previousIn)||nextIn.isEqual(previousIn)) && (nextIn.isBefore(previousOut) || nextIn.isEqual(previousOut))) {
+							    // next is not overlapping contact
+							    // AKS 3 jan: only nextIn.isBefore/isEqual(previousOut) is necessary, already sorted by in dates
+								if((nextIn.isBefore(previousOut) || nextIn.isEqual(previousOut))) {
+//								if((nextIn.isAfter(previousIn)||nextIn.isEqual(previousIn)) && (nextIn.isBefore(previousOut) || nextIn.isEqual(previousOut))) {
 									// but it is overlapping the previousContact, so sort out the sequence
 									Collections.sort(processedContacts, new AdministrationInDateComparator());
 									// set previous contact to the correct contact from the sequence
@@ -140,7 +143,7 @@ public class OverlappingContactsRule implements LPRRule {
 					// ignore duplicate items, but ensure all lpr refs are saved
 					Administration administration = items.get(item);
 					if(administration.getRecordNumber() != item.getRecordNumber()) {
-						administration.addLPRReference(item.getRecordNumber());
+						administration.addLPRReference(item.getLprReference());
 						administration.getLprReferencer().addAll(item.getLprReferencer());
 					}
 				} else {
@@ -164,11 +167,13 @@ public class OverlappingContactsRule implements LPRRule {
 		DateTime in = new DateTime(current.getIndlaeggelsesDatetime());
 		DateTime out = new DateTime(current.getUdskrivningsDatetime());
 
+		// AKS 3. jan: never happens; out is before previousOut to get into this method
 		if(in.isEqual(previousIn) && out.isEqual(previousOut)) {
 			// in and out datetimes are equal, choose the first - merge diagnoses and procedures
 			previous.getLprDiagnoses().addAll(current.getLprDiagnoses());
 			previous.getLprProcedures().addAll(current.getLprProcedures());
-			previous.addLPRReference(current.getRecordNumber());
+			previous.addLPRReference(current.getLprReference());
+			previous.getLprReferencer().addAll(current.getLprReferencer());
 			splittedContacts.add(previous);
 			return splittedContacts;
 		} else if(previousIn.isEqual(in)) {
@@ -176,6 +181,7 @@ public class OverlappingContactsRule implements LPRRule {
 			if(previousOut.isBefore(out)) {
 				current.setIndlaeggelsesDatetime(previous.getUdskrivningsDatetime());
 			} else {
+			    // AKS 3. jan: never happens, already sorted by in, then out
 				previous.setIndlaeggelsesDatetime(current.getUdskrivningsDatetime());
 			}
 			
@@ -191,6 +197,8 @@ public class OverlappingContactsRule implements LPRRule {
 			newContact.setRecordNumber(previous.getRecordNumber());
 			newContact.setLprDiagnoses(previous.getLprDiagnoses());
 			newContact.setLprProcedures(previous.getLprProcedures());
+			// AKS 3. jan: not necessary, the references are already persisted in previous
+			newContact.setLprReference(previous.getLprReference());
 			newContact.setLprReferencer(previous.getLprReferencer());
 			// set in to current out and out to previous out
 			newContact.setIndlaeggelsesDatetime(current.getUdskrivningsDatetime());

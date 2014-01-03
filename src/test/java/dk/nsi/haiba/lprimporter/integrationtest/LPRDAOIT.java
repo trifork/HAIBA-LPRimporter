@@ -34,6 +34,8 @@ import static org.junit.Assert.fail;
 import java.util.Date;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.joda.time.DateTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,6 +52,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.dao.impl.LPRDAOImpl;
+import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
@@ -68,11 +71,13 @@ public class LPRDAOIT {
     @PropertySource("classpath:test.properties")
     @Import(LPRIntegrationTestConfiguration.class)
     static class ContextConfiguration {
+        @Autowired
+        DataSource lprDataSource;
+        
         @Bean
         public LPRDAO lprdao() {
-            return new LPRDAOImpl();
+            return new LPRDAOImpl(lprDataSource);
         }
-
     }
 
     @Autowired
@@ -249,7 +254,7 @@ public class LPRDAOIT {
     	
     	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr) values (?, ?)", new Long(recordNumber), cpr);
     	
-    	lprdao.updateImportTime(recordNumber, Outcome.SUCCESS);
+    	lprdao.updateImportTime(new LPRReference(recordNumber), Outcome.SUCCESS);
     	
     	assertNotNull(jdbcTemplate.queryForObject("select D_IMPORTDTO from T_ADM", Date.class));
     	assertEquals(Outcome.SUCCESS.toString(), jdbcTemplate.queryForObject("select V_STATUS from T_ADM", String.class));

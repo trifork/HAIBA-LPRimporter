@@ -29,6 +29,7 @@ package dk.nsi.haiba.lprimporter.rules;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.exception.RuleAbortedException;
@@ -51,6 +52,7 @@ public class LPRRulesEngine implements RulesEngine {
 	BusinessRuleErrorLog businessRuleErrorLog;
 	
 	@Autowired
+    @Qualifier(value="compositeLPRDAO")
 	LPRDAO lprDao;
 	
 	@Override
@@ -71,7 +73,7 @@ public class LPRRulesEngine implements RulesEngine {
 			for (Administration contact : contacts) {
 				// Increment counter for rule #1
 				statistics.rule1Counter += 1;
-				lprDao.updateImportTime(contact.getRecordNumber(), Outcome.FAILURE);
+				lprDao.updateImportTime(contact.getLprReference(), Outcome.FAILURE);
 			}
 		}
 	}

@@ -60,7 +60,6 @@ public class ImportExecutorTest {
 		public HAIBADAO haibaDao() {
 			return Mockito.mock(HAIBADAO.class);
 		}
-
 		@Bean
 		public LPRDAO lprdao() {
 			return Mockito.mock(LPRDAO.class);
@@ -75,7 +74,7 @@ public class ImportExecutorTest {
 		}
 		@Bean
 		public ImportExecutor importExecutor() {
-			return new ImportExecutor();
+			return new ImportExecutor(lprdao());
 		}
 	}
 	
@@ -117,7 +116,6 @@ public class ImportExecutorTest {
 		Mockito.when(lprdao.isdatabaseReadyForImport()).thenReturn(1l);
 		
 		executor.doProcess();
-		
 		Mockito.verify(lprdao, Mockito.atLeastOnce()).getCPRnumberBatch(20);
 		Mockito.verify(lprdao, Mockito.atLeastOnce()).getContactsByCPR(cprList.get(0));
 		Mockito.verify(rulesEngine, Mockito.atLeastOnce()).processRuleChain(Mockito.anyListOf(Administration.class), Mockito.any(Statistics.class));

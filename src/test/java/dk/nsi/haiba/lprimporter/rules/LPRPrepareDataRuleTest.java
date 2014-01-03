@@ -38,6 +38,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -63,6 +64,7 @@ public class LPRPrepareDataRuleTest {
 			return Mockito.mock(HAIBADAO.class);
 		}
 		@Bean
+        @Qualifier(value="compositeLPRDAO")
 		public LPRDAO lprDao() {
 			return Mockito.mock(LPRDAO.class);
 		}

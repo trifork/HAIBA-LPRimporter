@@ -31,6 +31,8 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
@@ -66,13 +68,15 @@ public class ProcessRulesIT {
     @PropertySource("classpath:test.properties")
     @Import(LPRIntegrationTestConfiguration.class)
     static class ContextConfiguration {
+        @Autowired
+        DataSource lprDataSource;
+        
         @Bean
         public HAIBADAO haibaDao() {
             return new HAIBADAOImpl();
         }
-        @Bean
         public LPRDAO lprDao() {
-            return new LPRDAOImpl();
+            return new LPRDAOImpl(lprDataSource);
         }
     }
 
@@ -87,6 +91,7 @@ public class ProcessRulesIT {
 	HAIBADAO haibaDao;
 	
 	@Autowired
+    @Qualifier(value="compositeLPRDAO")
 	LPRDAO lprDao;
 
 	@Autowired
