@@ -46,6 +46,7 @@ CREATE TABLE LPR_Reference (
 
 CREATE TABLE RegelFejlbeskeder (
     ID BIGINT NOT NULL IDENTITY  PRIMARY KEY,
+    LPR_dbid BIGINT NOT NULL,
     LPR_recordnummer BIGINT NOT NULL,
     AfbrudtForretningsregel VARCHAR(50),
     Fejlbeskrivelse VARCHAR(500),

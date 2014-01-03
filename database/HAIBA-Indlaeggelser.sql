@@ -55,6 +55,7 @@ CREATE TABLE LPR_Reference (
 
 CREATE TABLE IF NOT EXISTS RegelFejlbeskeder (
     ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    LPR_dbid BIGINT(15) NOT NULL,
     LPR_recordnummer BIGINT(15) NOT NULL,
     AfbrudtForretningsregel VARCHAR(50),
     Fejlbeskrivelse VARCHAR(500),
