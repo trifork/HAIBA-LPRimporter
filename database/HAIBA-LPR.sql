@@ -38,3 +38,9 @@ CREATE TABLE IF NOT EXISTS T_LOG_SYNC_HISTORY (
        AFFECTED_V_RECNUM bigint(15) NULL,
        C_ACTION_TYPE varchar(128) NULL
 ) ENGINE=InnoDB COLLATE=utf8_bin;
+
+-- now clone the LPR database into a minipas instance 
+CREATE DATABASE IF NOT EXISTS LPR_MINIPAS;
+GRANT ALL PRIVILEGES ON LPR_MINIPAS.* TO LPR@LOCALHOST;
+-- exit, note the empty password and/or inappropriate user
+-- mysqldump -u root --password= -d LPR | mysql -u root --password= -DLPR_MINIPAS
