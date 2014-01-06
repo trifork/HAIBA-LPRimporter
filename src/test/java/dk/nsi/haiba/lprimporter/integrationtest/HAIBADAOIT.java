@@ -128,6 +128,8 @@ public class HAIBADAOIT {
 		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from Diagnoser"));
 		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from Procedurer"));
 
+        assertEquals("Expected db id", 545, jdbc.queryForInt("select LPR_dbid from LPR_Reference where LPR_recordnummer = " + recordNumber));
+        
 		assertEquals(sygehusCode, jdbc.queryForObject("select sygehuskode from Indlaeggelser", String.class));
 		
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.0");
@@ -175,7 +177,7 @@ public class HAIBADAOIT {
 		contact.setLprDiagnoses(diagnoses);
 		
 		List<LPRReference> lprRefs = new ArrayList<LPRReference>();
-		lprRefs.add(new LPRReference(2345));
+		lprRefs.add(new LPRReference(789, 2345));
 		contact.setLprReferencer(lprRefs);
 		
 		contacts.add(contact);
@@ -188,6 +190,8 @@ public class HAIBADAOIT {
 		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from AmbulantLPR_Reference"));
 		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from AmbulantDiagnoser"));
 		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from AmbulantProcedurer"));
+
+		assertEquals("Expected db id", 789, jdbc.queryForInt("select LPR_dbid from AmbulantLPR_Reference where LPR_recordnummer = 2345"));
 
 		assertEquals(sygehusCode, jdbc.queryForObject("select sygehuskode from AmbulantKontakt", String.class));
 		
@@ -286,7 +290,7 @@ public class HAIBADAOIT {
      */
     private List<Indlaeggelse> createIndlaeggelser(boolean current) {
 		List<Indlaeggelse> indlaeggelser = new ArrayList<Indlaeggelse>();
-		LPRReference lprRef = new LPRReference(recordNumber);
+		LPRReference lprRef = new LPRReference(545, recordNumber);
 		Diagnose d = new Diagnose("d1", "A", "d2");
 		Procedure p = new Procedure("p1", "p", "p2", sygehusCode, afdelingsCode, in);
 		Indlaeggelse indlaeggelse = new Indlaeggelse(cpr,sygehusCode,afdelingsCode, in, out, current);

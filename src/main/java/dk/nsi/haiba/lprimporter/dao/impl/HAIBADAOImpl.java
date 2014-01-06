@@ -161,10 +161,10 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 
 	private void saveLPRReferences(List<LPRReference> lprReferencer, long indlaeggelsesId) {
 		
-		String sql = "INSERT INTO LPR_Reference (IndlaeggelsesID, LPR_recordnummer) VALUES (?, ?)";
+		String sql = "INSERT INTO LPR_Reference (IndlaeggelsesID, LPR_recordnummer, LPR_dbid) VALUES (?, ?, ?)";
 		
 		for (LPRReference ref : lprReferencer) {
-			jdbc.update(sql, indlaeggelsesId, ref.getLprRecordNumber());
+			jdbc.update(sql, indlaeggelsesId, ref.getLprRecordNumber(), ref.getDbId());
 		}
 	}
 
@@ -351,10 +351,10 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 
 	private void saveAmbulantLPRReferences(List<LPRReference> lprReferencer, long ambulantContactId) {
 		
-		String sql = "INSERT INTO AmbulantLPR_Reference (AmbulantKontaktID, LPR_recordnummer) VALUES (?, ?)";
+		String sql = "INSERT INTO AmbulantLPR_Reference (AmbulantKontaktID, LPR_recordnummer, LPR_dbid) VALUES (?, ?, ?)";
 		
 		for (LPRReference ref : lprReferencer) {
-			jdbc.update(sql, ambulantContactId, ref.getLprRecordNumber());
+			jdbc.update(sql, ambulantContactId, ref.getLprRecordNumber(), ref.getDbId());
 		}
 	}
 

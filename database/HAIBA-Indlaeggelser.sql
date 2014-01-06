@@ -50,6 +50,7 @@ CREATE TABLE LPR_Reference (
     ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     IndlaeggelsesID BIGINT(15) NOT NULL,
     LPR_recordnummer BIGINT(15) NOT NULL,
+    LPR_dbid BIGINT(15) NOT NULL,
     FOREIGN KEY (IndlaeggelsesID) REFERENCES Indlaeggelser(IndlaeggelsesID)
 ) ENGINE=InnoDB COLLATE=utf8_bin;
 
@@ -116,6 +117,7 @@ CREATE TABLE AmbulantLPR_Reference (
     ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     AmbulantKontaktID BIGINT(15) NOT NULL,
     LPR_recordnummer BIGINT(15) NOT NULL,
+    LPR_dbid BIGINT(15) NOT NULL,
     FOREIGN KEY (AmbulantKontaktID) REFERENCES AmbulantKontakt(AmbulantKontaktID)
 ) ENGINE=InnoDB COLLATE=utf8_bin;
 
