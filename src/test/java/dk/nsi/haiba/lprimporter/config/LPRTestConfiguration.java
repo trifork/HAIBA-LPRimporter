@@ -55,6 +55,11 @@ public class LPRTestConfiguration extends LPRConfiguration {
     }
 
     @Bean
+    public DataSource classificationDataSource() {
+        return mock(DataSource.class);
+    }
+
+    @Bean
     public DataSource lprDataSourceMinipas() {
         return mock(DataSource.class);
     }

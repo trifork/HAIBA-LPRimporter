@@ -96,7 +96,7 @@ public class LPRDAOCompositeIT {
         assertNotNull(lprdao);
 
         String cpr = "1111111111";
-        long recordNummer = 1234;
+        String recordNummer = "1234";
         String sygehusCode = "csgh";
         String afdelingCode = "afd";
         DateTime in = new DateTime(2010, 5, 3, 8, 0, 0);
@@ -269,8 +269,8 @@ public class LPRDAOCompositeIT {
         ssiJdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr) values (?, ?)", 1234, "1111111111");
         minipasJdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr) values (?, ?)", 5678, "2222222222");
 
-        lprdao.updateImportTime(new LPRReference(LPRDAOComposite.SSI_DB, 1234), Outcome.SUCCESS);
-        lprdao.updateImportTime(new LPRReference(LPRDAOComposite.MINIPAS_DB, 5678), Outcome.SUCCESS);
+        lprdao.updateImportTime(new LPRReference(LPRDAOComposite.SSI_DB, "1234"), Outcome.SUCCESS);
+        lprdao.updateImportTime(new LPRReference(LPRDAOComposite.MINIPAS_DB, "5678"), Outcome.SUCCESS);
 
         assertNotNull(ssiJdbcTemplate.queryForObject("select D_IMPORTDTO from T_ADM", Date.class));
         assertEquals(Outcome.SUCCESS.toString(),

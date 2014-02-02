@@ -32,7 +32,7 @@ package dk.nsi.haiba.lprimporter.model.haiba;
  */
 public class LPRReference {
 	
-	private long lprRecordNumber;
+	private String lprRecordNumber;
 	private int dbId;
 
 	public int getDbId() {
@@ -43,16 +43,16 @@ public class LPRReference {
 		// empty default constructor
 	}
 	
-	public LPRReference(long lprRecordNumber) {
+	public LPRReference(String lprRecordNumber) {
 		this.lprRecordNumber = lprRecordNumber;
 	}
 
-	public LPRReference(int dbId, long recordNumber) {
+	public LPRReference(int dbId, String recordNumber) {
         this.dbId = dbId;
         lprRecordNumber = recordNumber;
     }
 
-    public long getLprRecordNumber() {
+    public String getLprRecordNumber() {
 		return lprRecordNumber;
 	}
 
@@ -67,7 +67,10 @@ public class LPRReference {
         LPRReference other = (LPRReference) obj;
         if (dbId != other.dbId)
             return false;
-        if (lprRecordNumber != other.lprRecordNumber)
+        if (lprRecordNumber == null) {
+            if (other.lprRecordNumber != null)
+                return false;
+        } else if (!lprRecordNumber.equals(other.lprRecordNumber))
             return false;
         return true;
     }
@@ -77,7 +80,7 @@ public class LPRReference {
         final int prime = 31;
         int result = 1;
         result = prime * result + dbId;
-        result = prime * result + (int) (lprRecordNumber ^ (lprRecordNumber >>> 32));
+        result = prime * result + ((lprRecordNumber == null) ? 0 : lprRecordNumber.hashCode());
         return result;
     }
 }

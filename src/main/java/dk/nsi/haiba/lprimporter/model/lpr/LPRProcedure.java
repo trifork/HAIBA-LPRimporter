@@ -33,7 +33,7 @@ import java.util.Date;
  */
 public class LPRProcedure {
 	
-	long recordNumber;
+	String recordNumber;
 	String procedureCode;
 	String procedureType;
 	String tillaegsProcedureCode;
@@ -41,11 +41,11 @@ public class LPRProcedure {
 	String afdelingsCode;
 	Date procedureDatetime;
 	
-	public long getRecordNumber() {
+	public String getRecordNumber() {
 		return recordNumber;
 	}
-	public void setRecordNumber(long recordNumber) {
-		this.recordNumber = recordNumber;
+	public void setRecordNumber(String string) {
+		this.recordNumber = string;
 	}
 	public String getProcedureCode() {
 		return procedureCode;

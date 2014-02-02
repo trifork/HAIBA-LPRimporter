@@ -26,6 +26,8 @@
  */
 package dk.nsi.haiba.lprimporter.config;
 
+import java.util.Properties;
+
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -40,15 +42,21 @@ import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jndi.JndiObjectFactoryBean;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import dk.nsi.haiba.lprimporter.dao.ClassificationCheckDAO;
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
+import dk.nsi.haiba.lprimporter.dao.impl.ClassificationCheckDAOImpl;
 import dk.nsi.haiba.lprimporter.dao.impl.HAIBADAOImpl;
 import dk.nsi.haiba.lprimporter.dao.impl.LPRDAOComposite;
 import dk.nsi.haiba.lprimporter.dao.impl.LPRDAOImpl;
+import dk.nsi.haiba.lprimporter.email.EmailSender;
+import dk.nsi.haiba.lprimporter.importer.ClassificationCheckHelper;
 import dk.nsi.haiba.lprimporter.importer.ImportExecutor;
 import dk.nsi.haiba.lprimporter.log.BusinessRuleErrorLog;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
@@ -69,203 +77,262 @@ import dk.nsi.haiba.lprimporter.status.TimeSource;
 import dk.nsi.haiba.lprimporter.status.TimeSourceRealTimeImpl;
 
 /**
- * Configuration class 
- * providing the common infrastructure.
+ * Configuration class providing the common infrastructure.
  */
 @Configuration
 @EnableScheduling
 @EnableTransactionManagement
 public class LPRConfiguration {
-	@Value("${jdbc.lprJNDIName}")
-	private String lprJdbcJNDIName;
+    @Value("${jdbc.lprJNDIName}")
+    private String lprJdbcJNDIName;
 
-	@Value("${jdbc.lprJNDIName_minipas}")
-	private String lprJdbcJNDIName_minipas;
+    @Value("${jdbc.lprJNDIName_minipas}")
+    private String lprJdbcJNDIName_minipas;
 
-	@Value("${jdbc.haibaJNDIName}")
-	private String haibaJdbcJNDIName;
-	
-	// this is not automatically registered, see https://jira.springsource.org/browse/SPR-8539
-	@Bean
-	public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
-		PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer = new PropertySourcesPlaceholderConfigurer();
-		propertySourcesPlaceholderConfigurer.setIgnoreResourceNotFound(true);
-		propertySourcesPlaceholderConfigurer.setIgnoreUnresolvablePlaceholders(false);
+    @Value("${jdbc.haibaJNDIName}")
+    private String haibaJdbcJNDIName;
 
-		propertySourcesPlaceholderConfigurer.setLocations(new Resource[]{new ClassPathResource("default-config.properties"), new ClassPathResource("config.properties")});
+    @Value("${jdbc.classificationJNDIName}")
+    private String classificationJdbcJNDIName;
 
-		return propertySourcesPlaceholderConfigurer;
-	}
+    @Value("${smtp.host}")
+    private String smtpHost;
+    @Value("${smtp.port}")
+    private int smtpPort;
+    @Value("${smtp.user}")
+    private String smtpUser;
+    @Value("${smtp.password}")
+    private String smtpPassword;
+    @Value("${smtp.auth}")
+    private String smtpAuth;
 
-	@Bean
-	@Qualifier("lprDataSource")
-	public DataSource lprDataSource() throws Exception {
-		JndiObjectFactoryBean factory = new JndiObjectFactoryBean();
-		factory.setJndiName(lprJdbcJNDIName);
-		factory.setExpectedType(DataSource.class);
-		factory.afterPropertiesSet();
-		return (DataSource) factory.getObject();
-	}
+    // this is not automatically registered, see https://jira.springsource.org/browse/SPR-8539
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+        PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer = new PropertySourcesPlaceholderConfigurer();
+        propertySourcesPlaceholderConfigurer.setIgnoreResourceNotFound(true);
+        propertySourcesPlaceholderConfigurer.setIgnoreUnresolvablePlaceholders(false);
 
-	@Bean
-	@Qualifier("haibaDataSource")
-	public DataSource haibaDataSource() throws Exception {
-		JndiObjectFactoryBean factory = new JndiObjectFactoryBean();
-		factory.setJndiName(haibaJdbcJNDIName);
-		factory.setExpectedType(DataSource.class);
-		factory.afterPropertiesSet();
-		return (DataSource) factory.getObject();
-	}
-	
-	@Bean
-	public DataSource lprDataSourceMinipas() throws Exception {
-	    JndiObjectFactoryBean factory = new JndiObjectFactoryBean();
-	    factory.setJndiName(lprJdbcJNDIName_minipas);
-	    factory.setExpectedType(DataSource.class);
-	    factory.afterPropertiesSet();
-	    return (DataSource) factory.getObject();
-	}
+        propertySourcesPlaceholderConfigurer.setLocations(new Resource[] {
+                new ClassPathResource("default-config.properties"), new ClassPathResource("config.properties") });
 
-	@Bean
-	@Qualifier("lprTransactionManager")
-	public PlatformTransactionManager transactionManager(@Qualifier("lprDataSource") DataSource ds) {
-		return new DataSourceTransactionManager(ds);
-	}
-	
-	@Bean
-	@Qualifier("lprTransactionManagerMinipas")
-	public PlatformTransactionManager transactionManagerMinipas(@Qualifier("lprDataSourceMinipas") DataSource ds) {
-	    return new DataSourceTransactionManager(ds);
-	}
+        return propertySourcesPlaceholderConfigurer;
+    }
 
-	@Bean
-	public JdbcTemplate jdbcTemplate(@Qualifier("lprDataSource") DataSource dataSource) {
-		return new JdbcTemplate(dataSource);
-	}
+    @Bean
+    @Qualifier("lprDataSource")
+    public DataSource lprDataSource() throws Exception {
+        JndiObjectFactoryBean factory = new JndiObjectFactoryBean();
+        factory.setJndiName(lprJdbcJNDIName);
+        factory.setExpectedType(DataSource.class);
+        factory.afterPropertiesSet();
+        return (DataSource) factory.getObject();
+    }
 
-	@Bean
-	public JdbcTemplate haibaJdbcTemplate(@Qualifier("haibaDataSource") DataSource ds) {
-		return new JdbcTemplate(ds);
-	}
+    @Bean
+    public DataSource haibaDataSource() throws Exception {
+        JndiObjectFactoryBean factory = new JndiObjectFactoryBean();
+        factory.setJndiName(haibaJdbcJNDIName);
+        factory.setExpectedType(DataSource.class);
+        factory.afterPropertiesSet();
+        return (DataSource) factory.getObject();
+    }
 
-	@Bean
-	public JdbcTemplate minipasJdbcTemplate(@Qualifier("lprDataSourceMinipas") DataSource dataSource) {
-	    return new JdbcTemplate(dataSource);
-	}
+    @Bean
+    public DataSource lprDataSourceMinipas() throws Exception {
+        JndiObjectFactoryBean factory = new JndiObjectFactoryBean();
+        factory.setJndiName(lprJdbcJNDIName_minipas);
+        factory.setExpectedType(DataSource.class);
+        factory.afterPropertiesSet();
+        return (DataSource) factory.getObject();
+    }
 
-	@Bean
-	@Qualifier("haibaTransactionManager")
-	public PlatformTransactionManager haibaTransactionManager(@Qualifier("haibaDataSource") DataSource ds) {
-		return new DataSourceTransactionManager(ds);
-	}
+    @Bean
+    public PlatformTransactionManager lprTransactionManager(@Qualifier("lprDataSource") DataSource ds) {
+        return new DataSourceTransactionManager(ds);
+    }
 
-	// This needs the static modifier due to https://jira.springsource.org/browse/SPR-8269. If not static, field jdbcJndiName
-	// will not be set when trying to instantiate the DataSource
-	@Bean
-	public static CustomScopeConfigurer scopeConfigurer() {
-		return new SimpleThreadScopeConfigurer();
-	}
-	
-	@Bean
-	public ImportStatusRepository statusRepo() {
-		return new ImportStatusRepositoryJdbcImpl(); 
-	}
+    @Bean
+    public PlatformTransactionManager minipasTransactionManagerMinipas(@Qualifier("lprDataSourceMinipas") DataSource ds) {
+        return new DataSourceTransactionManager(ds);
+    }
 
-	@Bean
-	public TimeSource timeSource() {
-		return new TimeSourceRealTimeImpl();
-	}
+    @Bean
+    public JdbcTemplate jdbcTemplate(@Qualifier("lprDataSource") DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
 
-	@Bean
-    public ReloadableResourceBundleMessageSource messageSource(){
-        ReloadableResourceBundleMessageSource messageSource=new ReloadableResourceBundleMessageSource();
-        String[] resources= {"classpath:messages"};
+    @Bean
+    public JdbcTemplate haibaJdbcTemplate(@Qualifier("haibaDataSource") DataSource ds) {
+        return new JdbcTemplate(ds);
+    }
+
+    @Bean
+    public JdbcTemplate minipasJdbcTemplate(@Qualifier("lprDataSourceMinipas") DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
+
+    @Bean
+    @Qualifier("haibaTransactionManager")
+    public PlatformTransactionManager haibaTransactionManager(@Qualifier("haibaDataSource") DataSource ds) {
+        return new DataSourceTransactionManager(ds);
+    }
+
+    // This needs the static modifier due to https://jira.springsource.org/browse/SPR-8269. If not static, field
+    // jdbcJndiName
+    // will not be set when trying to instantiate the DataSource
+    @Bean
+    public static CustomScopeConfigurer scopeConfigurer() {
+        return new SimpleThreadScopeConfigurer();
+    }
+
+    @Bean
+    public ImportStatusRepository statusRepo() {
+        return new ImportStatusRepositoryJdbcImpl();
+    }
+
+    @Bean
+    public TimeSource timeSource() {
+        return new TimeSourceRealTimeImpl();
+    }
+
+    @Bean
+    public ReloadableResourceBundleMessageSource messageSource() {
+        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+        String[] resources = { "classpath:messages" };
         messageSource.setBasenames(resources);
         return messageSource;
     }
-	
-	@Bean
-	public MessageResolver resolver() {
-		return new MessageResolver();
-	}
-	
-	@Bean BusinessRuleErrorLog businessRuleErrorLog() {
-		return new BusinessRuleErrorLog();
-	}
-	
-	@Bean
-	public ImportExecutor importExecutor(@Qualifier(value="compositeLPRDAO") LPRDAO lprdao) {
-		return new ImportExecutor(lprdao);
-	}
 
-	@Bean
-	public RulesEngine rulesEngine() {
-		return new LPRRulesEngine();
-	}
-
-	@Bean(name="ssiLPRDAO")
-    public LPRDAO lprdao(@Qualifier("lprDataSource") DataSource ds) {
-	    return new LPRDAOImpl(ds);
+    @Bean
+    public MessageResolver resolver() {
+        return new MessageResolver();
     }
-	
-	@Bean
+
+    @Bean
+    BusinessRuleErrorLog businessRuleErrorLog() {
+        return new BusinessRuleErrorLog();
+    }
+
+    @Bean
+    public ImportExecutor importExecutor(@Qualifier(value = "compositeLPRDAO") LPRDAO lprdao) {
+        return new ImportExecutor(lprdao);
+    }
+
+    @Bean
+    public RulesEngine rulesEngine() {
+        return new LPRRulesEngine();
+    }
+
+    @Bean(name = "ssiLPRDAO")
+    public LPRDAO lprdao(@Qualifier("lprDataSource") DataSource ds) {
+        return new LPRDAOImpl(ds);
+    }
+
+    @Bean
     public HAIBADAO haibaDao() {
         return new HAIBADAOImpl();
     }
-	
-	@Bean(name="minipasLPRDAO")
-	public LPRDAO minipasLPRDAO(@Qualifier("lprDataSourceMinipas") DataSource ds) {
-	    return new LPRDAOImpl(ds);
-	}
-	
-	@Bean(name="compositeLPRDAO")
-	public LPRDAO compositeLPRDAO() {
-	    return new LPRDAOComposite();
-	}
-	
-	@Bean
-	public LPRDateTimeRule lprDateTimeRule() {
-		return new LPRDateTimeRule();
-	}
-	
-	@Bean
-	public ExtendContactEndtimeRule extendContactEndtimeRule() {
-		return new ExtendContactEndtimeRule();
-	}
 
-	@Bean
-	public ContactToAdmissionRule contactToAdmissionRule() {
-		return new ContactToAdmissionRule();
-	}
+    @Bean(name = "minipasLPRDAO")
+    public LPRDAO minipasLPRDAO(@Qualifier("lprDataSourceMinipas") DataSource ds) {
+        return new LPRDAOImpl(ds);
+    }
 
-	@Bean
-	public RemoveIdenticalContactsRule removeIdenticalContactsRule() {
-		return new RemoveIdenticalContactsRule();
-	}
-	
-	@Bean
-	public OverlappingContactsRule overlappingContactsRule() {
-		return new OverlappingContactsRule();
-	}
-	
-	@Bean
-	public ConnectContactsRule connectContactsRule() {
-		return new ConnectContactsRule();
-	}
+    @Bean(name = "compositeLPRDAO")
+    public LPRDAO compositeLPRDAO() {
+        return new LPRDAOComposite();
+    }
 
-	@Bean
-	public ConnectAdmissionsRule connectAdmissionsRule() {
-		return new ConnectAdmissionsRule();
-	}
-	
-	@Bean
-	public LPRPrepareDataRule lprPrepareDataRule() {
-		return new LPRPrepareDataRule();
-	}
-	
-	@Bean
-	public ContactsWithSameStartDateRule contactsWithSameStartDateRule() {
-		return new ContactsWithSameStartDateRule();
-	}
-	
+    @Bean
+    public LPRDateTimeRule lprDateTimeRule() {
+        return new LPRDateTimeRule();
+    }
+
+    @Bean
+    public ExtendContactEndtimeRule extendContactEndtimeRule() {
+        return new ExtendContactEndtimeRule();
+    }
+
+    @Bean
+    public ContactToAdmissionRule contactToAdmissionRule() {
+        return new ContactToAdmissionRule();
+    }
+
+    @Bean
+    public RemoveIdenticalContactsRule removeIdenticalContactsRule() {
+        return new RemoveIdenticalContactsRule();
+    }
+
+    @Bean
+    public OverlappingContactsRule overlappingContactsRule() {
+        return new OverlappingContactsRule();
+    }
+
+    @Bean
+    public ConnectContactsRule connectContactsRule() {
+        return new ConnectContactsRule();
+    }
+
+    @Bean
+    public ConnectAdmissionsRule connectAdmissionsRule() {
+        return new ConnectAdmissionsRule();
+    }
+
+    @Bean
+    public LPRPrepareDataRule lprPrepareDataRule() {
+        return new LPRPrepareDataRule();
+    }
+
+    @Bean
+    public ContactsWithSameStartDateRule contactsWithSameStartDateRule() {
+        return new ContactsWithSameStartDateRule();
+    }
+
+    @Bean
+    @Qualifier("classificationDataSource")
+    public DataSource classificationDataSource() throws Exception {
+        JndiObjectFactoryBean factory = new JndiObjectFactoryBean();
+        factory.setJndiName(classificationJdbcJNDIName);
+        factory.setExpectedType(DataSource.class);
+        factory.afterPropertiesSet();
+        return (DataSource) factory.getObject();
+    }
+
+    @Bean
+    public JdbcTemplate classificationJdbcTemplate(@Qualifier("classificationDataSource") DataSource ds) {
+        return new JdbcTemplate(ds);
+    }
+
+    @Bean
+    public ClassificationCheckDAO classificationCheckDAO(
+            @Qualifier("classificationJdbcTemplate") JdbcTemplate classificationJdbcTemplate) {
+        return new ClassificationCheckDAOImpl(classificationJdbcTemplate);
+    }
+
+    @Bean
+    public EmailSender mailSender() {
+        return new EmailSender();
+    }
+
+    @Bean
+    public JavaMailSender javaMailSender() {
+        Properties javaMailProperties = new Properties();
+        javaMailProperties.put("mail.smtp.auth", smtpAuth);
+        javaMailProperties.put("mail.smtp.starttls.enable", true);
+        javaMailProperties.put("mail.smtp.host", smtpHost);
+        javaMailProperties.put("mail.smtp.port", smtpPort);
+
+        JavaMailSenderImpl sender = new JavaMailSenderImpl();
+        sender.setJavaMailProperties(javaMailProperties);
+        sender.setUsername(smtpUser);
+        sender.setPassword(smtpPassword);
+
+        return sender;
+    }
+
+    @Bean
+    public ClassificationCheckHelper classificationCheckHelper() {
+        return new ClassificationCheckHelper();
+    }
 }

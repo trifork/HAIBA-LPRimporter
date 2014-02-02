@@ -95,7 +95,7 @@ public class LPRDAOIT {
     	assertNotNull(lprdao);
     	
     	String cpr = "1111111111";
-    	long recordNummer = 1234;
+    	String recordNummer = "1234";
     	String sygehusCode = "csgh";
     	String afdelingCode = "afd";
     	DateTime in = new DateTime(2010, 5, 3, 8, 0, 0);
@@ -249,7 +249,7 @@ public class LPRDAOIT {
     @Test
     public void updateImportTimestamp() {
 
-        long recordNumber = 1234;
+        String recordNumber = "1234";
     	String cpr = "1111111111";
     	
     	jdbcTemplate.update("insert into T_ADM (v_recnum, v_cpr) values (?, ?)", new Long(recordNumber), cpr);

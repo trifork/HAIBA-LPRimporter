@@ -24,47 +24,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package dk.nsi.haiba.lprimporter.rules;
+package dk.nsi.haiba.lprimporter.dao;
 
-public class BusinessRuleError {
-	
-	String lprReference;
-	String description;
-	String abortedRuleName;
-    private int dbId;
+import java.util.Collection;
 
-    public BusinessRuleError() {
-		// empty default constructor
-	}
-	
-	public BusinessRuleError(int dbId, String lprReference, String description, String abortedRuleName) {
-		this.lprReference = lprReference;
-		this.description = description;
-		this.abortedRuleName = abortedRuleName;
-		this.dbId = dbId;
-	}
-	
-	public int getDbId() {
-	    return dbId;
-	}
+public interface ClassificationCheckDAO {
+    /**
+     * Returns a list of classification ids not found but copied into the classification db
+     * 
+     * @param checkStructures
+     *            - the id's (combined values) and corresponding column names to test in the classification table
+     * @return a filtered list of classificationIds not present at the time of the invokation (but copied now)
+     */
+    public Collection<CheckStructure> checkClassifications(Collection<CheckStructure> checkStructures);
 
-	public String getLprReference() {
-		return lprReference;
-	}
-	public void setLprReference(String lprReference) {
-		this.lprReference = lprReference;
-	}
-	public String getDescription() {
-		return description;
-	}
-	public void setDescription(String description) {
-		this.description = description;
-	}
-	public String getAbortedRuleName() {
-		return abortedRuleName;
-	}
-	public void setAbortedRuleName(String abortedRuleName) {
-		this.abortedRuleName = abortedRuleName;
-	}
+    public interface CheckStructure {
+        public String getCodeClasificationColumnName();
 
+        public String getSecondaryCodeClasificationColumnName();
+
+        public String getSecondaryCode();
+
+        public String getCode();
+
+        public String getClassificationTableName();
+    }
 }

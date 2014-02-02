@@ -77,7 +77,7 @@ public class LPRPrepareDataRuleTest {
 	LPRPrepareDataRule lprPrepareDataRule;
 
 	String cpr;
-	long recordNummer;
+	String recordNummer;
 	String sygehusCode;
 	String afdelingsCode;
 	DateTime in;
@@ -87,7 +87,7 @@ public class LPRPrepareDataRuleTest {
 	public void init() {
     	// Init Administration data
 		cpr = "1111111111";
-    	recordNummer = 1234;
+    	recordNummer = "1234";
     	sygehusCode = "csgh";
     	afdelingsCode = "afd";
     	in = new DateTime(2010, 5, 3, 0, 0, 0);
@@ -112,7 +112,7 @@ public class LPRPrepareDataRuleTest {
 
 	@Test
 	public void contactWithoutRecordNumber() {
-		recordNummer = 0;
+		recordNummer = null;
 		List<Administration> contacts = setupContacts();
 
 		lprPrepareDataRule.setContacts(contacts);

@@ -35,8 +35,8 @@ public class LPRReferenceTest {
 	@Test
 	public void testLPRReferencesCanBeAddedToAnIndlaeggelse() {
 		
-		long lprReference = 7890;
-		LPRReference lpr = new LPRReference(7890);
+		String lprReference = "7890";
+		LPRReference lpr = new LPRReference("7890");
 
 		Indlaeggelse indlaeggelse = new Indlaeggelse();
 		indlaeggelse.addLPRReference(lpr);

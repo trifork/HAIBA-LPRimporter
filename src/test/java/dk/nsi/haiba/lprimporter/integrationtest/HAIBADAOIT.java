@@ -97,7 +97,7 @@ public class HAIBADAOIT {
 	String afdelingsCode;
 	Date in;
 	Date out;
-	long recordNumber;
+	String recordNumber;
 
 	@Before
     public void init() {
@@ -108,7 +108,7 @@ public class HAIBADAOIT {
 		in = calendar.getTime();
 		calendar.add(Calendar.DAY_OF_MONTH, 1);
 		out = calendar.getTime();
-		recordNumber = 99999;
+		recordNumber = "99999";
     }
     
     /*
@@ -147,7 +147,7 @@ public class HAIBADAOIT {
 	public void insertsSingleAmbulantContact() {
 		List<Administration> contacts = new ArrayList<Administration>();
 		Administration contact = new Administration();
-		contact.setRecordNumber(1234);
+		contact.setRecordNumber("1234");
 		contact.setSygehusCode(sygehusCode);
 		contact.setAfdelingsCode(afdelingsCode);
 		contact.setCpr(cpr);
@@ -159,7 +159,7 @@ public class HAIBADAOIT {
 		LPRProcedure procedure = new LPRProcedure();
 		procedure.setAfdelingsCode(afdelingsCode);
 		procedure.setSygehusCode(sygehusCode);
-		procedure.setRecordNumber(1234);
+		procedure.setRecordNumber("1234");
 		procedure.setProcedureCode("A");
 		procedure.setProcedureType("B");
 		procedure.setProcedureDatetime(out);
@@ -169,7 +169,7 @@ public class HAIBADAOIT {
 		
 		List<LPRDiagnose> diagnoses = new ArrayList<LPRDiagnose>();
 		LPRDiagnose diagnosis = new LPRDiagnose();
-		diagnosis.setRecordNumber(1234);
+		diagnosis.setRecordNumber("1234");
 		diagnosis.setDiagnoseCode("B");
 		diagnosis.setDiagnoseType("A");
 		diagnosis.setTillaegsDiagnose("C");
@@ -177,7 +177,7 @@ public class HAIBADAOIT {
 		contact.setLprDiagnoses(diagnoses);
 		
 		List<LPRReference> lprRefs = new ArrayList<LPRReference>();
-		lprRefs.add(new LPRReference(789, 2345));
+		lprRefs.add(new LPRReference(789, "2345"));
 		contact.setLprReferencer(lprRefs);
 		
 		contacts.add(contact);
@@ -253,7 +253,7 @@ public class HAIBADAOIT {
     @Test
     public void insertsBusinessruleError() {
         int dbId = 1;
-    	long refno = 1234;
+    	String refno = "1234";
     	String description = "description";
     	String abortedRuleName = "abortedRuleName";
     	
@@ -261,7 +261,7 @@ public class HAIBADAOIT {
     	
     	haibaDao.saveBusinessRuleError(error);
 		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from RegelFejlbeskeder"));
-		assertEquals(refno, jdbc.queryForLong("select LPR_recordnummer from RegelFejlbeskeder"));
+		assertEquals(refno, jdbc.queryForObject("select LPR_recordnummer from RegelFejlbeskeder", String.class));
 		assertEquals(description, jdbc.queryForObject("select Fejlbeskrivelse from RegelFejlbeskeder", String.class));
 		assertEquals(abortedRuleName, jdbc.queryForObject("select AfbrudtForretningsregel from RegelFejlbeskeder", String.class));
 		assertEquals(dbId, jdbc.queryForInt("select LPR_dbid from RegelFejlbeskeder"));

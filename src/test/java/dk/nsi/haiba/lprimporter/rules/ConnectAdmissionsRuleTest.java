@@ -83,10 +83,10 @@ public class ConnectAdmissionsRuleTest {
 	ConnectAdmissionsRule connectAdmissionsRule;
 
 	String cpr;
-	long recordNummer;
-	long recordNummer2;
-	long recordNummer3;
-	long recordNummer4;
+	String recordNummer;
+	String recordNummer2;
+	String recordNummer3;
+	String recordNummer4;
 	String sygehusCode;
 	String afdelingsCode;
 	String sygehusCode2;
@@ -114,25 +114,25 @@ public class ConnectAdmissionsRuleTest {
 	public void init() {
     	// Init Indlaeggelse data
 		cpr = "1111111111";
-    	recordNummer = 1234;
+    	recordNummer = "1234";
     	sygehusCode = "csgh";
     	afdelingsCode = "afd";
     	in = new DateTime(2010, 5, 3, 0, 0, 0);
     	out = new DateTime(2010, 6, 4, 12, 0, 0);
 
-    	recordNummer2 = 1235;
+    	recordNummer2 = "1235";
     	sygehusCode2 = "csgh";
     	afdelingsCode2 = "afd";
     	in2 = new DateTime(2010, 6, 4, 12, 0, 0);
     	out2 = new DateTime(2010, 6, 10, 12, 0, 0);
 
-    	recordNummer3 = 1236;
+    	recordNummer3 = "1236";
     	sygehusCode3 = "abcd";
     	afdelingsCode3 = "afd";
     	in3 = new DateTime(2010, 8, 4, 0, 0, 0);
     	out3 = new DateTime(2010, 8, 10, 12, 0, 0);
 
-    	recordNummer4 = 1237;
+    	recordNummer4 = "1237";
     	sygehusCode4 = "abcd";
     	afdelingsCode4 = "afd";
     	in4 = new DateTime(2010, 8, 10, 12, 0, 0);

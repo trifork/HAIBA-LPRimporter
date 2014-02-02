@@ -38,7 +38,7 @@ import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
  */
 public class Administration {
 	
-	long recordNumber;
+	String recordNumber;
 	String cpr;
 	String sygehusCode;
 	String afdelingsCode;
@@ -51,11 +51,11 @@ public class Administration {
 	private int patientType;
 	private LPRReference lprReference;
 	
-	public long getRecordNumber() {
+	public String getRecordNumber() {
 		return recordNumber;
 	}
-	public void setRecordNumber(long recordNumber) {
-		this.recordNumber = recordNumber;
+	public void setRecordNumber(String string) {
+		this.recordNumber = string;
 	}
 	public String getCpr() {
 		return cpr;

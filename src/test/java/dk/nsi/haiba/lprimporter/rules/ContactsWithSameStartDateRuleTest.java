@@ -85,9 +85,9 @@ public class ContactsWithSameStartDateRuleTest {
 	ContactsWithSameStartDateRule contactsWithSameStartDateRule;
 
 	String cpr;
-	long recordNummer;
-	long recordNummer2;
-	long recordNummer3;
+	String recordNummer;
+	String recordNummer2;
+	String recordNummer3;
 	String sygehusCode;
 	String afdelingsCode;
 	String sygehusCode2;
@@ -110,19 +110,19 @@ public class ContactsWithSameStartDateRuleTest {
 	public void init() {
     	// Init Administration data
 		cpr = "1111111111";
-    	recordNummer = 1234;
+    	recordNummer = "1234";
     	sygehusCode = "csgh";
     	afdelingsCode = "afd";
     	in = new DateTime(2010, 5, 3, 0, 0, 0);
     	out = new DateTime(2010, 6, 4, 12, 0, 0);
 
-    	recordNummer2 = 1235;
+    	recordNummer2 = "1235";
     	sygehusCode2 = "csgh";
     	afdelingsCode2 = "afd";
     	in2 = new DateTime(2010, 5, 3, 0, 0, 0);
     	out2 = new DateTime(2010, 6, 4, 12, 0, 0);
 
-    	recordNummer3 = 1236;
+    	recordNummer3 = "1236";
     	sygehusCode3 = "abcd";
     	afdelingsCode3 = "afd";
     	in3 = new DateTime(2010, 8, 3, 0, 0, 0);

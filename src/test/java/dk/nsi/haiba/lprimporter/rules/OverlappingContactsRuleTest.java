@@ -64,9 +64,9 @@ public class OverlappingContactsRuleTest {
 	OverlappingContactsRule overlappingContactsRule;
 
 	String cpr;
-	long recordNummer;
-	long recordNummer2;
-	long recordNummer3;
+	String recordNummer;
+	String recordNummer2;
+	String recordNummer3;
 	String sygehusCode;
 	String afdelingsCode;
 	String sygehusCode2;
@@ -84,19 +84,19 @@ public class OverlappingContactsRuleTest {
 	public void init() {
     	// Init Administration data
 		cpr = "1111111111";
-    	recordNummer = 1234;
+    	recordNummer = "1234";
     	sygehusCode = "csgh";
     	afdelingsCode = "afd";
     	in = new DateTime(2010, 5, 3, 0, 0, 0);
     	out = new DateTime(2010, 6, 4, 12, 0, 0);
 
-    	recordNummer2 = 1235;
+    	recordNummer2 = "1235";
     	sygehusCode2 = "csgh";
     	afdelingsCode2 = "afd";
     	in2 = new DateTime(2010, 5, 4, 0, 0, 0);
     	out2 = new DateTime(2010, 5, 10, 12, 0, 0);
 
-    	recordNummer3 = 1236;
+    	recordNummer3 = "1236";
     	sygehusCode3 = "abcd";
     	afdelingsCode3 = "afd";
     	in3 = new DateTime(2010, 8, 4, 0, 0, 0);
@@ -188,7 +188,7 @@ public class OverlappingContactsRuleTest {
 			overlappingContactsRule.doProcessing(Statistics.getInstance());
 		} catch(RuleAbortedException e) {
 			BusinessRuleError error = e.getBusinessRuleError();
-			assertEquals(1234, error.getLprReference());
+			assertEquals("1234", error.getLprReference());
 			assertEquals("Overlappende kontakter", error.getAbortedRuleName());
 			assertTrue(error.getDescription().contains("da udskrivningstidspunktet ikke er udfyldt"));
 			ruleWasAborted = true;

@@ -38,7 +38,7 @@ import org.junit.Test;
 public class AdministrationTest {
 
 	String cpr;
-	long recordNummer;
+	String recordNummer;
 	String sygehusCode;
 	String afdelingsCode;
 	DateTime in;
@@ -48,7 +48,7 @@ public class AdministrationTest {
 	public void init() {
     	// Init Administration data
 		cpr = "1111111111";
-    	recordNummer = 1234;
+    	recordNummer = "1234";
     	sygehusCode = "csgh";
     	afdelingsCode = "afd";
     	in = new DateTime(2010, 5, 3, 0, 0, 0);
@@ -143,7 +143,7 @@ public class AdministrationTest {
 		Administration adm1 = getAdm1();
 		Administration adm2 = getAdm2();
 
-		adm1.setRecordNumber(999);
+		adm1.setRecordNumber("999");
 		
 		assertTrue(adm1.equals(adm2));
 	}

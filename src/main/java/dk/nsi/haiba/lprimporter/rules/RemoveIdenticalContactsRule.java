@@ -37,6 +37,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
+import dk.nsi.haiba.lprimporter.importer.ClassificationCheckHelper;
 import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
@@ -66,6 +67,9 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 
 	@Autowired
 	MessageResolver resolver;
+	
+	@Autowired
+	ClassificationCheckHelper classificationCheckHelper;
 
 	@Override
 	public LPRRule doProcessing(Statistics statistics) {
@@ -134,6 +138,7 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 
 	private void saveAmbulantContacts(List<Administration> contacts) {
 		haibaDao.saveAmbulantIndlaeggelser(contacts);
+		classificationCheckHelper.checkClassifications(contacts);
 		for (Administration contact : contacts) {
 			// Rules are complete, update LPR with the import timestamp so they are not imported again
 			for (LPRReference lprRef : contact.getLprReferencer()) {
@@ -142,5 +147,4 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 			lprDao.updateImportTime(contact.getLprReference(), Outcome.SUCCESS);
 		}
 	}
-
 }

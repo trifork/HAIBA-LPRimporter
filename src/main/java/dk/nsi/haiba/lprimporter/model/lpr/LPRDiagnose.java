@@ -31,16 +31,16 @@ package dk.nsi.haiba.lprimporter.model.lpr;
  */
 public class LPRDiagnose {
 	
-	long recordNumber;
+    String recordNumber;
 	String diagnoseCode;
 	String diagnoseType;
 	String tillaegsDiagnose;
 	
-	public long getRecordNumber() {
+	public String getRecordNumber() {
 		return recordNumber;
 	}
-	public void setRecordNumber(long recordNumber) {
-		this.recordNumber = recordNumber;
+	public void setRecordNumber(String string) {
+		this.recordNumber = string;
 	}
 	public String getDiagnoseCode() {
 		return diagnoseCode;

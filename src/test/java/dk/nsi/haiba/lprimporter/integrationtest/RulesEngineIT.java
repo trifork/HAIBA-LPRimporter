@@ -90,7 +90,7 @@ public class RulesEngineIT {
 	RulesEngine rulesEngine;
 	
 	String cpr;
-	long recordNummer;
+	String recordNummer;
     private int dbId;
 	String sygehusCode;
 	String afdelingsCode;
@@ -106,7 +106,7 @@ public class RulesEngineIT {
 	public void init() {
     	// Init Administration data
 		cpr = "1111111111";
-    	recordNummer = 1234;
+    	recordNummer = "1234";
     	dbId = 1;
     	sygehusCode = "csgh";
     	afdelingsCode = "afd";
@@ -145,7 +145,7 @@ public class RulesEngineIT {
 		rulesEngine.processRuleChain(contacts, Statistics.getInstance());
 		
 		assertEquals("Expected 1 row", 1, jdbc.queryForInt("select count(*) from RegelFejlbeskeder"));
-		assertEquals(recordNummer, jdbc.queryForLong("select LPR_recordnummer from RegelFejlbeskeder"));
+		assertEquals(recordNummer, jdbc.queryForObject("select LPR_recordnummer from RegelFejlbeskeder", String.class));
 		assertEquals(dbId, jdbc.queryForInt("select LPR_dbId from RegelFejlbeskeder"));
 		
 		File file = FileUtils.getFile("forretningsregel-fejl.log");

@@ -82,7 +82,11 @@ public class StatusReporterTest {
     	public JdbcTemplate haibaJdbcTemplate(@Qualifier("haibaDataSource") DataSource ds) {
     		return Mockito.mock(JdbcTemplate.class);
     	}
-    	
+
+    	@Bean
+    	public JdbcTemplate classificationJdbcTemplate(@Qualifier("haibaDataSource") DataSource ds) {
+    	    return Mockito.mock(JdbcTemplate.class);
+    	}
     }
 
     @Autowired

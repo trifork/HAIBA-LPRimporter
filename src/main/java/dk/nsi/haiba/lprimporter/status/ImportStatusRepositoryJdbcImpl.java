@@ -58,7 +58,6 @@ public class ImportStatusRepositoryJdbcImpl extends CommonDAO implements ImportS
 	private TimeSource timeSource;
 
 	@Override
-//	@Transactional(value="haibaTransactionManager", propagation = Propagation.REQUIRES_NEW)
 	@Transactional(value="haibaTransactionManager")
 	public void importStartedAt(DateTime startTime) {
 		log.debug("Starting import");
@@ -66,7 +65,6 @@ public class ImportStatusRepositoryJdbcImpl extends CommonDAO implements ImportS
 	}
 
 	@Override
-//	@Transactional(value="haibaTransactionManager", propagation = Propagation.MANDATORY)
 	@Transactional(value="haibaTransactionManager")
 	public void importEndedWithSuccess(DateTime endTime) {
 		log.debug("Import ended with success");
@@ -74,7 +72,6 @@ public class ImportStatusRepositoryJdbcImpl extends CommonDAO implements ImportS
 	}
 
 	@Override
-//	@Transactional(value="haibaTransactionManager", propagation = Propagation.REQUIRES_NEW)
 	@Transactional(value="haibaTransactionManager")
 	public void importEndedWithFailure(DateTime endTime, String errorMessage) {
 		log.debug("Import ended with failure");
@@ -203,6 +200,4 @@ public class ImportStatusRepositoryJdbcImpl extends CommonDAO implements ImportS
 		}
 		return true;
 	}
-	
-	
 }

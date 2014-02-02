@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
+import dk.nsi.haiba.lprimporter.importer.ClassificationCheckHelper;
 import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
@@ -58,6 +59,9 @@ public class ConnectAdmissionsRule implements LPRRule {
 	@Autowired
     @Qualifier(value="compositeLPRDAO")
 	LPRDAO lprDao;
+	
+	@Autowired
+	ClassificationCheckHelper classificationCheckHelper;
 	
 	public ConnectAdmissionsRule() {
 		
@@ -123,6 +127,7 @@ public class ConnectAdmissionsRule implements LPRRule {
 		}
 		removeDuplicateProceduresDiagnoses(admissions);
 		haibaDao.saveIndlaeggelsesForloeb(admissions);
+		classificationCheckHelper.checkClassifications(admissions);
 	}
 
 	private void removeDuplicateProceduresDiagnoses(List<Indlaeggelse> admissions) {

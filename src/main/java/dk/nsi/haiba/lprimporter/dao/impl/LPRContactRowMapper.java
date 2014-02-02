@@ -53,7 +53,7 @@ class LPRContactRowMapper implements RowMapper<Administration> {
 		
 			Administration adm = new Administration();
 			
-			adm.setRecordNumber(rs.getLong("v_recnum"));
+			adm.setRecordNumber(rs.getString("v_recnum"));
 			adm.setSygehusCode(rs.getString("c_sgh"));
 			adm.setAfdelingsCode(rs.getString("c_afd"));
 			adm.setCpr(rs.getString("v_cpr"));
@@ -76,16 +76,16 @@ class LPRContactRowMapper implements RowMapper<Administration> {
 			if(type != null) {
 				if(DIAGNOSIS.equalsIgnoreCase(type)) {
 					LPRDiagnose d = new LPRDiagnose();
-					d.setRecordNumber(rs.getLong("v_recnum"));
+					d.setRecordNumber(rs.getString("v_recnum"));
 					d.setDiagnoseCode(rs.getString("c_kode"));
 					d.setTillaegsDiagnose(rs.getString("c_tilkode"));
 					d.setDiagnoseType(rs.getString("c_kodeart"));
 					adm.addLprDiagnose(d);
 				} else {
-					// everything not a diagnosis is a procedure.
-					LPRProcedure p = new LPRProcedure();
+    					// everything not a diagnosis is a procedure.
+    					LPRProcedure p = new LPRProcedure();
 					
-					p.setRecordNumber(rs.getLong("v_recnum"));
+					p.setRecordNumber(rs.getString("v_recnum"));
 					p.setProcedureCode(rs.getString("c_kode"));
 					p.setTillaegsProcedureCode(rs.getString("c_tilkode"));
 					p.setProcedureType(rs.getString("c_kodeart"));

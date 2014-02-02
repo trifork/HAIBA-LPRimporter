@@ -76,7 +76,7 @@ public class LPRPrepareDataRule implements LPRRule {
 		
 		for (Administration contact : contacts) {
 			
-			if(contact.getRecordNumber() == 0) {
+			if(contact.getRecordNumber() == null) {
 				// log and ignore this contact
 				logErrorContact(contact.getLprReference(), resolver.getMessage("rule.preparedata.recordnumber.isempty"), statistics);
 				continue;

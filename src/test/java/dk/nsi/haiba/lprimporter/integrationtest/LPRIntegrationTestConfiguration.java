@@ -73,14 +73,20 @@ public class LPRIntegrationTestConfiguration extends LPRConfiguration {
 	}
 
 	@Bean
-	@Qualifier("lprDataSource")
-	public DataSource lprDataSource() throws Exception{
+	public DataSource classificationDataSource() throws Exception{
 		String jdbcUrlPrefix = "jdbc:mysql://127.0.0.1:" + mysqlPort + "/";
 
-		return new SimpleDriverDataSource(new Driver(), jdbcUrlPrefix + testLPRDbName + "?createDatabaseIfNotExist=true", testLPRDbUsername, testLPRDbPassword);
+		return new SimpleDriverDataSource(new Driver(), jdbcUrlPrefix + testHAIBADbName + "?createDatabaseIfNotExist=true", testHAIBADbUsername, testHAIBADbPassword);
 	}
+
 	@Bean
-	@Qualifier("lprDataSourceMinipas")
+	public DataSource lprDataSource() throws Exception{
+	    String jdbcUrlPrefix = "jdbc:mysql://127.0.0.1:" + mysqlPort + "/";
+	    
+	    return new SimpleDriverDataSource(new Driver(), jdbcUrlPrefix + testLPRDbName + "?createDatabaseIfNotExist=true", testLPRDbUsername, testLPRDbPassword);
+	}
+	
+	@Bean
 	public DataSource lprDataSourceMinipas() throws Exception{
 	    String jdbcUrlPrefix = "jdbc:mysql://127.0.0.1:" + mysqlPort + "/";
 	    
@@ -91,6 +97,11 @@ public class LPRIntegrationTestConfiguration extends LPRConfiguration {
 	public JdbcTemplate jdbcTemplate(@Qualifier("lprDataSource") DataSource ds) {
 		return new JdbcTemplate(ds);
 	}
+
+	@Bean
+	public JdbcTemplate classificationJdbcTemplate(@Qualifier("classificationDataSource") DataSource ds) {
+	    return new JdbcTemplate(ds);
+	}
 	
 	@Bean
 	public JdbcTemplate minipasJdbcTemplate(@Qualifier("lprDataSourceMinipas") DataSource ds) {
@@ -98,19 +109,16 @@ public class LPRIntegrationTestConfiguration extends LPRConfiguration {
 	}
 
 	@Bean
-	@Qualifier("lprTransactionManager")
-	public PlatformTransactionManager transactionManager(@Qualifier("lprDataSource") DataSource ds) {
+	public PlatformTransactionManager lprTransactionManager(@Qualifier("lprDataSource") DataSource ds) {
 		return new DataSourceTransactionManager(ds);
 	}
 
 	@Bean
-	@Qualifier("minipasLprTransactionManager")
 	public PlatformTransactionManager miniPasTransactionManager(@Qualifier("lprDataSourceMinipas") DataSource ds) {
 	    return new DataSourceTransactionManager(ds);
 	}
 
 	@Bean
-	@Qualifier("haibaDataSource")
 	public DataSource haibaDataSource() throws Exception{
 		String jdbcUrlPrefix = "jdbc:mysql://127.0.0.1:" + mysqlPort + "/";
 
@@ -123,7 +131,6 @@ public class LPRIntegrationTestConfiguration extends LPRConfiguration {
 	}
 
 	@Bean
-	@Qualifier("haibaTransactionManager")
 	public PlatformTransactionManager haibaTransactionManager(@Qualifier("haibaDataSource") DataSource ds) {
 		return new DataSourceTransactionManager(ds);
 	}

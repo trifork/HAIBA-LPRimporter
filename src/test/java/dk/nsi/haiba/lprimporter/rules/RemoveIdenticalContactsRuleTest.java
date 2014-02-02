@@ -62,9 +62,9 @@ public class RemoveIdenticalContactsRuleTest {
 	RemoveIdenticalContactsRule removeIdenticalContactsRule;
 
 	String cpr;
-	long recordNummer;
-	long recordNummer2;
-	long recordNummer3;
+	String recordNummer;
+	String recordNummer2;
+	String recordNummer3;
 	String sygehusCode;
 	String afdelingsCode;
 	DateTime in;
@@ -82,9 +82,9 @@ public class RemoveIdenticalContactsRuleTest {
 	public void init() {
     	// Init Administration data
 		cpr = "1111111111";
-    	recordNummer = 1234;
-    	recordNummer2 = 4321;
-    	recordNummer3 = 5678;
+    	recordNummer = "1234";
+    	recordNummer2 = "4321";
+    	recordNummer3 = "5678";
     	sygehusCode = "csgh";
     	sygehusCode3 = "hgfd";
     	afdelingsCode = "afd";
@@ -116,7 +116,7 @@ public class RemoveIdenticalContactsRuleTest {
 		
 		// check if there still is a reference to the removed contacts
 		for (Administration contact : contacts) {
-			if(contact.getRecordNumber() == recordNummer) {
+			if(contact.getRecordNumber().equals(recordNummer)) {
 				assertTrue("Expect recordnumber2 to be in list of references", contact.getLprReferencer().contains(new LPRReference(recordNummer2)));
 			}
 		}
