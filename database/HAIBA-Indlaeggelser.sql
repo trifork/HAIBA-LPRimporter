@@ -1,6 +1,37 @@
 CREATE DATABASE IF NOT EXISTS HAIBA;
 USE HAIBA;
  
+CREATE TABLE IF NOT EXISTS Klass_SHAK (
+    ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    sygehuskode VARCHAR(10),
+    afdelingskode VARCHAR(10),
+    H_ITA_gruppe float,
+    H_kir_gruppe float,
+    H_med_gruppe float,
+    H_MiBa_prefix float,
+    H_SOR_mappet float
+
+) ENGINE=InnoDB COLLATE=utf8_bin;
+
+CREATE TABLE IF NOT EXISTS klass_procedurer (
+    ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    procedurecode VARCHAR(10),
+    tillaegskode VARCHAR(10),
+    H_HOFTE_PRO float NULL,
+    H_HOFTE_IND float NULL,
+    H_HOFTE_SPE float NULL,
+    H_HOFTE_REO float NULL
+) ENGINE=InnoDB COLLATE=utf8_bin;
+
+CREATE TABLE IF NOT EXISTS klass_diagnoser (
+    ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    Diagnoseskode VARCHAR(10),
+    tillaegskode VARCHAR(10),
+    H_BAKT_D float NULL,
+    H_UVI_D float NULL,
+    H_SAAR_D float NULL
+) ENGINE=InnoDB COLLATE=utf8_bin;
+
 CREATE TABLE IF NOT EXISTS Indlaeggelser (
     IndlaeggelsesID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     CPR VARCHAR(10),
@@ -49,7 +80,7 @@ CREATE TABLE IF NOT EXISTS Indlaeggelsesforloeb (
 CREATE TABLE LPR_Reference (
     ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     IndlaeggelsesID BIGINT(15) NOT NULL,
-    LPR_recordnummer BIGINT(15) NOT NULL,
+    LPR_recordnummer varchar(255) NOT NULL,
     LPR_dbid BIGINT(15) NOT NULL,
     FOREIGN KEY (IndlaeggelsesID) REFERENCES Indlaeggelser(IndlaeggelsesID)
 ) ENGINE=InnoDB COLLATE=utf8_bin;
@@ -57,7 +88,7 @@ CREATE TABLE LPR_Reference (
 CREATE TABLE IF NOT EXISTS RegelFejlbeskeder (
     ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     LPR_dbid BIGINT(15) NOT NULL,
-    LPR_recordnummer BIGINT(15) NOT NULL,
+    LPR_recordnummer varchar(255) NOT NULL,
     AfbrudtForretningsregel VARCHAR(50),
     Fejlbeskrivelse VARCHAR(500),
     Fejltidspunkt datetime
@@ -116,7 +147,7 @@ CREATE TABLE IF NOT EXISTS AmbulantProcedurer (
 CREATE TABLE AmbulantLPR_Reference (
     ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     AmbulantKontaktID BIGINT(15) NOT NULL,
-    LPR_recordnummer BIGINT(15) NOT NULL,
+    LPR_recordnummer varchar(255) NOT NULL,
     LPR_dbid BIGINT(15) NOT NULL,
     FOREIGN KEY (AmbulantKontaktID) REFERENCES AmbulantKontakt(AmbulantKontaktID)
 ) ENGINE=InnoDB COLLATE=utf8_bin;
