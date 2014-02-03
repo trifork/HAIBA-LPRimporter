@@ -80,16 +80,21 @@ public class EmailSender {
                 messageHelper.setSubject("LPR: Notification on unknown table entries");
                 String not_html = "After the recent import, the following unknown table entries are discovered:\n";
                 if (!newSygehusClassifications.isEmpty()) {
-                    printCheckStructures(newSygehusClassifications, "sygehus", "afdeling");
-                    printCheckStructures(newProcedureCheckClassifications, "procedure", "tillaegskode");
-                    printCheckStructures(newDiagnoseCheckClassifications, "diagnose", "tillaegskode");
+                    not_html += printCheckStructures(newSygehusClassifications, "sygehus", "afdeling");
                 }
+                if (!newProcedureCheckClassifications.isEmpty()) {
+                    not_html += printCheckStructures(newProcedureCheckClassifications, "procedure", "tillaegskode");
+                }
+                if (!newDiagnoseCheckClassifications.isEmpty()) {
+                    not_html += printCheckStructures(newDiagnoseCheckClassifications, "diagnose", "tillaegskode");
+                }
+
                 messageHelper.setText(not_html, false);
             }
 
             private String printCheckStructures(Collection<CheckStructure> checkStructures, String codeLabel,
                     String secondaryCodeLabel) {
-                String returnValue = null;
+                String returnValue = "";
                 for (CheckStructure cs : checkStructures) {
                     returnValue += codeLabel + ":" + cs.getCode() + ", " + secondaryCodeLabel + ":"
                             + (cs.getSecondaryCode() != null ? cs.getSecondaryCode() : "") + "\n";
