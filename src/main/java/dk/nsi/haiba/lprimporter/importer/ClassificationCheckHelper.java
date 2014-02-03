@@ -28,7 +28,6 @@ package dk.nsi.haiba.lprimporter.importer;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -48,7 +47,7 @@ public class ClassificationCheckHelper {
 
     @Autowired
     ClassificationCheckDAO classificationCheckDAO;
-    
+
     @Autowired
     EmailSender emailSender;
 
@@ -94,13 +93,14 @@ public class ClassificationCheckHelper {
             log.debug("send email about new sygehuse=" + newSygehusClassifications.size() + " or new procedure="
                     + newProcedureCheckClassifications.size() + " or new diagnose="
                     + newDiagnoseCheckClassifications.size());
-            emailSender.send(newSygehusClassifications, newProcedureCheckClassifications, newDiagnoseCheckClassifications);
+            emailSender.send(newSygehusClassifications, newProcedureCheckClassifications,
+                    newDiagnoseCheckClassifications);
         }
     }
 
     public void checkClassifications(List<Indlaeggelse> admissions) {
-        // TODO Auto-generated method stub
-
+        // XXX
+        log.error("not implemented");
     }
 
     public static class CheckStructureImpl implements CheckStructure {
@@ -143,7 +143,7 @@ public class ClassificationCheckHelper {
         public String getClassificationTableName() {
             return aClassificationTableName;
         }
-        
+
         @Override
         public String toString() {
             return "CheckStructureImpl [aCode=" + aCode + ", aSecondaryCode=" + aSecondaryCode
