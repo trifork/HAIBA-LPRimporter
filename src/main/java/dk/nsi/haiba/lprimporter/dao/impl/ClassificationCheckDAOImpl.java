@@ -76,7 +76,6 @@ public class ClassificationCheckDAOImpl extends CommonDAO implements Classificat
             } else {
                 objects = new Object[] { checkStructure.getCode() };
             }
-            System.out.println("code=" + checkStructure.getCode() + ", secondary=" + secondaryCode);
             SqlRowSet queryForRowSet = aClassificationJdbc.queryForRowSet(sql, objects);
             if (queryForRowSet.first()) {
                 return true;
