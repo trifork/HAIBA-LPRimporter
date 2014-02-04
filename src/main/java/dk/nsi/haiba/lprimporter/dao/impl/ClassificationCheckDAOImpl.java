@@ -26,9 +26,6 @@
  */
 package dk.nsi.haiba.lprimporter.dao.impl;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -36,7 +33,6 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 import dk.nsi.haiba.lprimporter.dao.ClassificationCheckDAO;
