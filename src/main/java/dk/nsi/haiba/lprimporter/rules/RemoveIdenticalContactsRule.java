@@ -27,6 +27,7 @@
 package dk.nsi.haiba.lprimporter.rules;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -138,7 +139,7 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 
 	private void saveAmbulantContacts(List<Administration> contacts) {
 		haibaDao.saveAmbulantIndlaeggelser(contacts);
-		classificationCheckHelper.checkClassifications(contacts);
+		classificationCheckHelper.checkClassifications((Administration[]) contacts.toArray(new Administration[contacts.size()]));
 		for (Administration contact : contacts) {
 			// Rules are complete, update LPR with the import timestamp so they are not imported again
 			for (LPRReference lprRef : contact.getLprReferencer()) {

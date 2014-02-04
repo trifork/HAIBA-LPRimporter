@@ -50,117 +50,117 @@ import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
  * See the solution document for details about this rule.
  */
 public class ConnectAdmissionsRule implements LPRRule {
-	
-	private List<Indlaeggelse> admissions;
-	
-	@Autowired
-	HAIBADAO haibaDao;
-	
-	@Autowired
-    @Qualifier(value="compositeLPRDAO")
-	LPRDAO lprDao;
-	
-	@Autowired
-	ClassificationCheckHelper classificationCheckHelper;
-	
-	public ConnectAdmissionsRule() {
-		
-	}
 
-	@Override
-	public LPRRule doProcessing(Statistics statistics) {
+    private List<Indlaeggelse> admissions;
 
-		if(admissions.size() == 1) {
-			// only 1 connection
-			saveConnectedAdmissions(admissions, statistics);
-			return null; // end rules processing
-		} 
-		
-		// Sort admissions by in date
-		Collections.sort(admissions, new IndlaeggelseInDateComparator());
+    @Autowired
+    HAIBADAO haibaDao;
 
-		// Check if admissions are connected and add a new IndlaeggelsesForloeb
-		List<Indlaeggelse> connectedAdmissions = new ArrayList<Indlaeggelse>(); 
-		Indlaeggelse previousAdmission = null;
-		for (Indlaeggelse admission : admissions) {
-			if(previousAdmission == null) {
-				connectedAdmissions.add(admission);
-				previousAdmission = admission;
-				continue;
-			}
-			
-			DateTime previousOut = new DateTime(previousAdmission.getUdskrivningsDatetime());
-			DateTime currentIn = new DateTime(admission.getIndlaeggelsesDatetime());
-			
-			if(previousOut.isEqual(currentIn)) {
-				// add admission to the connected list
-				connectedAdmissions.add(admission);
-			} else {
-				// There is a gap between previousOut and currentIn
-				// so save the connected list and start a new one.
-				saveConnectedAdmissions(connectedAdmissions, statistics);
-				connectedAdmissions.clear();
-				connectedAdmissions.add(admission);
-			}
-			previousAdmission = admission;
-		}
-		// loop has ended, save the list containing the last admission(s) from the loop
-		saveConnectedAdmissions(connectedAdmissions, statistics);
-		
-		// increment counter for CPR numbers exported
-		statistics.cprExportedCounter += 1;
+    @Autowired
+    @Qualifier(value = "compositeLPRDAO")
+    LPRDAO lprDao;
 
-		return null;
-	}
+    @Autowired
+    ClassificationCheckHelper classificationCheckHelper;
 
-	private void saveConnectedAdmissions(List<Indlaeggelse> admissions, Statistics statistics) {
-		// increment counter for admissionsseries exported
-		statistics.admissionsSeriesExportedCounter += 1;
-		// increment counter for admissions exported
-		statistics.admissionsExportedCounter += admissions.size();
-		
-		for (Indlaeggelse admission : admissions) {
-			// Rules are complete, update LPR with the import timestamp so they are not imported again
-			for (LPRReference lprRef : admission.getLprReferencer()) {
-				lprDao.updateImportTime(lprRef, Outcome.SUCCESS);
-			}
-		}
-		removeDuplicateProceduresDiagnoses(admissions);
-		haibaDao.saveIndlaeggelsesForloeb(admissions);
-		classificationCheckHelper.checkClassifications(admissions);
-	}
+    public ConnectAdmissionsRule() {
 
-	private void removeDuplicateProceduresDiagnoses(List<Indlaeggelse> admissions) {
-		for (Indlaeggelse admission : admissions) {
-			// remove duplicate diagnoses - 13. rule
-			List<Diagnose> d = new ArrayList<Diagnose>();
-			for (Diagnose diagosis : admission.getDiagnoses()) {
-				if(!d.contains(diagosis)) {
-					d.add(diagosis);
-				}
-			}
-			admission.setDiagnoses(d);
-			
-			// remove duplicate procedures  - 14. rule
-			List<Procedure> p = new ArrayList<Procedure>();
-			for (Procedure procedure : admission.getProcedures()) {
-				if(!p.contains(procedure)) {
-					p.add(procedure);
-				}
-			}
-			admission.setProcedures(p);
-		}
-	}
+    }
 
-	/*
-	 * Package scope for unittesting purpose
-	 */
-	List<Indlaeggelse> getAdmissions() {
-		return admissions;
-	}
+    @Override
+    public LPRRule doProcessing(Statistics statistics) {
 
-	public void setAdmissions(List<Indlaeggelse> admissions) {
-		this.admissions = admissions;
-	}
+        if (admissions.size() == 1) {
+            // only 1 connection
+            saveConnectedAdmissions(admissions, statistics);
+            return null; // end rules processing
+        }
+
+        // Sort admissions by in date
+        Collections.sort(admissions, new IndlaeggelseInDateComparator());
+
+        // Check if admissions are connected and add a new IndlaeggelsesForloeb
+        List<Indlaeggelse> connectedAdmissions = new ArrayList<Indlaeggelse>();
+        Indlaeggelse previousAdmission = null;
+        for (Indlaeggelse admission : admissions) {
+            if (previousAdmission == null) {
+                connectedAdmissions.add(admission);
+                previousAdmission = admission;
+                continue;
+            }
+
+            DateTime previousOut = new DateTime(previousAdmission.getUdskrivningsDatetime());
+            DateTime currentIn = new DateTime(admission.getIndlaeggelsesDatetime());
+
+            if (previousOut.isEqual(currentIn)) {
+                // add admission to the connected list
+                connectedAdmissions.add(admission);
+            } else {
+                // There is a gap between previousOut and currentIn
+                // so save the connected list and start a new one.
+                saveConnectedAdmissions(connectedAdmissions, statistics);
+                connectedAdmissions.clear();
+                connectedAdmissions.add(admission);
+            }
+            previousAdmission = admission;
+        }
+        // loop has ended, save the list containing the last admission(s) from the loop
+        saveConnectedAdmissions(connectedAdmissions, statistics);
+
+        // increment counter for CPR numbers exported
+        statistics.cprExportedCounter += 1;
+
+        return null;
+    }
+
+    private void saveConnectedAdmissions(List<Indlaeggelse> admissions, Statistics statistics) {
+        // increment counter for admissionsseries exported
+        statistics.admissionsSeriesExportedCounter += 1;
+        // increment counter for admissions exported
+        statistics.admissionsExportedCounter += admissions.size();
+
+        for (Indlaeggelse admission : admissions) {
+            // Rules are complete, update LPR with the import timestamp so they are not imported again
+            for (LPRReference lprRef : admission.getLprReferencer()) {
+                lprDao.updateImportTime(lprRef, Outcome.SUCCESS);
+            }
+        }
+        removeDuplicateProceduresDiagnoses(admissions);
+        haibaDao.saveIndlaeggelsesForloeb(admissions);
+        classificationCheckHelper.checkClassifications(admissions.toArray(new Indlaeggelse[0]));
+    }
+
+    private void removeDuplicateProceduresDiagnoses(List<Indlaeggelse> admissions) {
+        for (Indlaeggelse admission : admissions) {
+            // remove duplicate diagnoses - 13. rule
+            List<Diagnose> d = new ArrayList<Diagnose>();
+            for (Diagnose diagosis : admission.getDiagnoses()) {
+                if (!d.contains(diagosis)) {
+                    d.add(diagosis);
+                }
+            }
+            admission.setDiagnoses(d);
+
+            // remove duplicate procedures - 14. rule
+            List<Procedure> p = new ArrayList<Procedure>();
+            for (Procedure procedure : admission.getProcedures()) {
+                if (!p.contains(procedure)) {
+                    p.add(procedure);
+                }
+            }
+            admission.setProcedures(p);
+        }
+    }
+
+    /*
+     * Package scope for unittesting purpose
+     */
+    List<Indlaeggelse> getAdmissions() {
+        return admissions;
+    }
+
+    public void setAdmissions(List<Indlaeggelse> admissions) {
+        this.admissions = admissions;
+    }
 
 }

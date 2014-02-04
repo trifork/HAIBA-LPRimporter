@@ -37,7 +37,9 @@ import dk.nsi.haiba.lprimporter.dao.ClassificationCheckDAO;
 import dk.nsi.haiba.lprimporter.dao.ClassificationCheckDAO.CheckStructure;
 import dk.nsi.haiba.lprimporter.email.EmailSender;
 import dk.nsi.haiba.lprimporter.log.Log;
+import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
+import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
@@ -51,31 +53,31 @@ public class ClassificationCheckHelper {
     @Autowired
     EmailSender emailSender;
 
-    public void checkClassifications(Collection<Administration> collection) {
+    private void check(Collection<Wrapper> wrappers) {
         List<CheckStructure> sygehusCheckStructures = new ArrayList<ClassificationCheckDAO.CheckStructure>();
         List<CheckStructure> diagnoseCheckStructures = new ArrayList<ClassificationCheckDAO.CheckStructure>();
         List<CheckStructure> procedureCheckStructures = new ArrayList<ClassificationCheckDAO.CheckStructure>();
 
-        for (Administration administration : collection) {
-            String sygehusCode = administration.getSygehusCode();
-            String afdelingsCode = administration.getAfdelingsCode();
+        for (Wrapper wrapper : wrappers) {
+            String sygehusCode = wrapper.getSygehusCode();
+            String afdelingsCode = wrapper.getAfdelingsCode();
 
             CheckStructureImpl csi = new CheckStructureImpl(sygehusCode, afdelingsCode, "sygehuskode", "afdelingskode",
                     "Klass_SHAK");
             sygehusCheckStructures.add(csi);
 
-            List<LPRDiagnose> lprDiagnoses = administration.getLprDiagnoses();
-            for (LPRDiagnose lprDiagnose : lprDiagnoses) {
-                String diagnoseCode = lprDiagnose.getDiagnoseCode();
-                String tillaegsDiagnose = lprDiagnose.getTillaegsDiagnose();
+            List<Codes> lprDiagnoses = wrapper.getDiagnoseCodes();
+            for (Codes lprDiagnose : lprDiagnoses) {
+                String diagnoseCode = lprDiagnose.aCode;
+                String tillaegsDiagnose = lprDiagnose.aSecondaryCode;
                 csi = new CheckStructureImpl(diagnoseCode, tillaegsDiagnose, "Diagnoseskode", "tillaegskode",
                         "klass_diagnoser");
                 diagnoseCheckStructures.add(csi);
             }
-            List<LPRProcedure> lprProcedures = administration.getLprProcedures();
-            for (LPRProcedure lprProcedure : lprProcedures) {
-                String procedureCode = lprProcedure.getProcedureCode();
-                String tillaegsProcedureCode = lprProcedure.getTillaegsProcedureCode();
+            List<Codes> lprProcedures = wrapper.getProcedureCodes();
+            for (Codes lprProcedure : lprProcedures) {
+                String procedureCode = lprProcedure.aCode;
+                String tillaegsProcedureCode = lprProcedure.aSecondaryCode;
                 csi = new CheckStructureImpl(procedureCode, tillaegsProcedureCode, "procedurekode", "tillaegskode",
                         "klass_procedurer");
                 procedureCheckStructures.add(csi);
@@ -98,9 +100,28 @@ public class ClassificationCheckHelper {
         }
     }
 
-    public void checkClassifications(List<Indlaeggelse> admissions) {
-        // XXX
-        log.error("not implemented");
+    public void checkClassifications(Administration[] array) {
+        check(wrap(array));
+    }
+
+    public void checkClassifications(Indlaeggelse[] array) {
+        check(wrap(array));
+    }
+
+    private Collection<Wrapper> wrap(Administration[] admissions) {
+        Collection<Wrapper> returnValue = new ArrayList<ClassificationCheckHelper.Wrapper>();
+        for (Administration administration : admissions) {
+            returnValue.add(new Wrapper(administration));
+        }
+        return returnValue;
+    }
+
+    private Collection<Wrapper> wrap(Indlaeggelse[] indlaeggelser) {
+        Collection<Wrapper> returnValue = new ArrayList<ClassificationCheckHelper.Wrapper>();
+        for (Indlaeggelse indlaeggelse : indlaeggelser) {
+            returnValue.add(new Wrapper(indlaeggelse));
+        }
+        return returnValue;
     }
 
     public static class CheckStructureImpl implements CheckStructure {
@@ -150,6 +171,102 @@ public class ClassificationCheckHelper {
                     + ", aCodeClasificationColumnName=" + aCodeClasificationColumnName
                     + ", aSecondaryCodeClasificationColumnName=" + aSecondaryCodeClasificationColumnName
                     + ", aClassificationTableName=" + aClassificationTableName + "]";
+        }
+    }
+
+    public static class Wrapper {
+        private Administration aAdministration;
+        private Indlaeggelse aIndlaeggelse;
+
+        public Wrapper(Indlaeggelse indlaeggelse) {
+            aIndlaeggelse = indlaeggelse;
+        }
+
+        public List<Codes> getProcedureCodes() {
+            List<Codes> returnValue = null;
+            if (aAdministration != null) {
+                returnValue = wrap(aAdministration.getLprProcedures().toArray(new LPRProcedure[0]));
+            } else {
+                returnValue = wrap(aIndlaeggelse.getProcedures().toArray(new Procedure[0]));
+            }
+            return returnValue;
+        }
+
+
+        private List<Codes> wrap(Procedure[] array) {
+            List<Codes> returnValue = new ArrayList<ClassificationCheckHelper.Codes>();
+            for (Procedure procedure : array) {
+                returnValue.add(new Codes(procedure.getProcedureCode(), procedure.getTillaegsProcedureCode()));
+            }
+            return returnValue;
+        }
+
+        private List<Codes> wrap(LPRProcedure[] array) {
+            List<Codes> returnValue = new ArrayList<ClassificationCheckHelper.Codes>();
+            for (LPRProcedure procedure : array) {
+                returnValue.add(new Codes(procedure.getProcedureCode(), procedure.getTillaegsProcedureCode()));
+            }
+            return returnValue;
+        }
+
+        public List<Codes> getDiagnoseCodes() {
+            List<Codes> returnValue = null;
+            if (aAdministration != null) {
+                returnValue = wrap(aAdministration.getLprDiagnoses().toArray(new LPRDiagnose[0]));
+            } else {
+                returnValue = wrap(aIndlaeggelse.getDiagnoses().toArray(new Diagnose[0]));
+            }
+            return returnValue;
+        }
+
+        private List<Codes> wrap(Diagnose[] array) {
+            List<Codes> returnValue = new ArrayList<ClassificationCheckHelper.Codes>();
+            for (Diagnose diagnose : array) {
+                returnValue.add(new Codes(diagnose.getDiagnoseCode(), diagnose.getTillaegsDiagnose()));
+            }
+            return returnValue;
+        }
+
+        private List<Codes> wrap(LPRDiagnose[] array) {
+            List<Codes> returnValue = new ArrayList<ClassificationCheckHelper.Codes>();
+            for (LPRDiagnose diagnose : array) {
+                returnValue.add(new Codes(diagnose.getDiagnoseCode(), diagnose.getTillaegsDiagnose()));
+            }
+            return returnValue;
+        }
+
+        public Wrapper(Administration administration) {
+            aAdministration = administration;
+        }
+
+        public String getAfdelingsCode() {
+            String returnValue = null;
+            if (aAdministration != null) {
+                returnValue = aAdministration.getAfdelingsCode();
+            } else {
+                returnValue = aIndlaeggelse.getAfdelingsCode();
+            }
+            return returnValue;
+        }
+
+        String getSygehusCode() {
+            String returnValue = null;
+            if (aAdministration != null) {
+                returnValue = aAdministration.getSygehusCode();
+            } else {
+                returnValue = aIndlaeggelse.getSygehusCode();
+            }
+            return returnValue;
+        }
+    }
+
+    public static class Codes {
+        private String aCode;
+        private String aSecondaryCode;
+
+        public Codes(String code, String secondary) {
+            aCode = code;
+            aSecondaryCode = secondary;
         }
     }
 }
