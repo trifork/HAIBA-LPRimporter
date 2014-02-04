@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS Klass_SHAK (
 
 CREATE TABLE IF NOT EXISTS klass_procedurer (
     ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    procedurecode VARCHAR(10),
+    procedurekode VARCHAR(10),
     tillaegskode VARCHAR(10),
     H_HOFTE_PRO float NULL,
     H_HOFTE_IND float NULL,
