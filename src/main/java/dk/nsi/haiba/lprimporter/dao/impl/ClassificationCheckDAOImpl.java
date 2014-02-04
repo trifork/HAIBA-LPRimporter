@@ -54,18 +54,30 @@ public class ClassificationCheckDAOImpl extends CommonDAO implements Classificat
 
     private boolean rowExists(CheckStructure checkStructure, String tableName) {
         String sql = null;
+        String secondaryQualifier = "=?";
+        String secondaryCode = checkStructure.getSecondaryCode();
+        if (secondaryCode == null) {
+            secondaryQualifier = " IS NULL";
+        }
         if (MYSQL.equals(getDialect())) {
             sql = "SELECT * FROM " + tableName + " WHERE " + checkStructure.getCodeClasificationColumnName()
-                    + "=? AND " + checkStructure.getSecondaryCodeClasificationColumnName() + "=? LIMIT 1";
+                    + "=? AND " + checkStructure.getSecondaryCodeClasificationColumnName() + secondaryQualifier
+                    + " LIMIT 1";
         } else {
             // MSSQL
             sql = "SELECT TOP 1 * FROM " + tableName + " WHERE " + checkStructure.getCodeClasificationColumnName()
-                    + "=? AND " + checkStructure.getSecondaryCodeClasificationColumnName() + "=?";
+                    + "=? AND " + checkStructure.getSecondaryCodeClasificationColumnName() + secondaryQualifier;
         }
 
         try {
-            SqlRowSet queryForRowSet = aClassificationJdbc.queryForRowSet(sql, checkStructure.getCode(),
-                    checkStructure.getSecondaryCode());
+            Object[] objects = null;
+            if (secondaryCode != null) {
+                objects = new Object[] { checkStructure.getCode(), secondaryCode };
+            } else {
+                objects = new Object[] { checkStructure.getCode() };
+            }
+            System.out.println("code=" + checkStructure.getCode() + ", secondary=" + secondaryCode);
+            SqlRowSet queryForRowSet = aClassificationJdbc.queryForRowSet(sql, objects);
             if (queryForRowSet.first()) {
                 return true;
             } else {

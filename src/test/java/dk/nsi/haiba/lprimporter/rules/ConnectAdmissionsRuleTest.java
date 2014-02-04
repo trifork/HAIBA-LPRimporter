@@ -47,6 +47,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
+import dk.nsi.haiba.lprimporter.dao.ClassificationCheckDAO;
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
@@ -63,8 +64,12 @@ public class ConnectAdmissionsRuleTest {
     @Import({LPRTestConfiguration.class})
 	static class TestConfiguration {
 		@Bean
+		public ClassificationCheckDAO classificationCheckDAO() {
+			return Mockito.mock(ClassificationCheckDAO.class);
+		}
+		@Bean
 		public HAIBADAO haibaDao() {
-			return Mockito.mock(HAIBADAO.class);
+		    return Mockito.mock(HAIBADAO.class);
 		}
 		@Bean
 		@Qualifier(value="compositeLPRDAO")
