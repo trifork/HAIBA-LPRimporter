@@ -28,7 +28,9 @@ package dk.nsi.haiba.lprimporter.importer;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,9 +56,9 @@ public class ClassificationCheckHelper {
     EmailSender emailSender;
 
     private void check(Collection<Wrapper> wrappers) {
-        List<CheckStructure> sygehusCheckStructures = new ArrayList<ClassificationCheckDAO.CheckStructure>();
-        List<CheckStructure> diagnoseCheckStructures = new ArrayList<ClassificationCheckDAO.CheckStructure>();
-        List<CheckStructure> procedureCheckStructures = new ArrayList<ClassificationCheckDAO.CheckStructure>();
+        Set<CheckStructure> sygehusCheckStructures = new HashSet<ClassificationCheckDAO.CheckStructure>();
+        Set<CheckStructure> diagnoseCheckStructures = new HashSet<ClassificationCheckDAO.CheckStructure>();
+        Set<CheckStructure> procedureCheckStructures = new HashSet<ClassificationCheckDAO.CheckStructure>();
 
         for (Wrapper wrapper : wrappers) {
             String sygehusCode = wrapper.getSygehusCode();
@@ -125,6 +127,37 @@ public class ClassificationCheckHelper {
     }
 
     public static class CheckStructureImpl implements CheckStructure {
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((aCode == null) ? 0 : aCode.hashCode());
+            result = prime * result + ((aSecondaryCode == null) ? 0 : aSecondaryCode.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            CheckStructureImpl other = (CheckStructureImpl) obj;
+            if (aCode == null) {
+                if (other.aCode != null)
+                    return false;
+            } else if (!aCode.equals(other.aCode))
+                return false;
+            if (aSecondaryCode == null) {
+                if (other.aSecondaryCode != null)
+                    return false;
+            } else if (!aSecondaryCode.equals(other.aSecondaryCode))
+                return false;
+            return true;
+        }
+
         private String aCode;
         private String aSecondaryCode;
         private String aCodeClasificationColumnName;
@@ -191,7 +224,6 @@ public class ClassificationCheckHelper {
             }
             return returnValue;
         }
-
 
         private List<Codes> wrap(Procedure[] array) {
             List<Codes> returnValue = new ArrayList<ClassificationCheckHelper.Codes>();
