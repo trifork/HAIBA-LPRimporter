@@ -94,12 +94,11 @@ public class EmailSender {
 
             private String printCheckStructures(Collection<CheckStructure> checkStructures, String codeLabel,
                     String secondaryCodeLabel) {
-                String returnValue = "";
+                String returnValue = "-----\n";
                 for (CheckStructure cs : checkStructures) {
                     returnValue += codeLabel + ":" + cs.getCode() + ", " + secondaryCodeLabel + ":"
                             + (cs.getSecondaryCode() != null ? cs.getSecondaryCode() : "") + "\n";
                 }
-                returnValue += "-----\n";
                 return returnValue;
             }
         };
