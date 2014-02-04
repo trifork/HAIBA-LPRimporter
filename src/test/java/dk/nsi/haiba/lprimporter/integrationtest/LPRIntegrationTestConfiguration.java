@@ -99,7 +99,7 @@ public class LPRIntegrationTestConfiguration extends LPRConfiguration {
 	}
 
 	@Bean
-	public JdbcTemplate classificationJdbcTemplate(@Qualifier("classificationDataSource") DataSource ds) {
+	public JdbcTemplate classificationJdbcTemplate(@Qualifier("haibaDataSource") DataSource ds) {
 	    return new JdbcTemplate(ds);
 	}
 	
