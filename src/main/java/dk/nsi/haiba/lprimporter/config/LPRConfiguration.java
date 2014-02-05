@@ -114,7 +114,7 @@ public class LPRConfiguration {
         propertySourcesPlaceholderConfigurer.setIgnoreUnresolvablePlaceholders(false);
 
         propertySourcesPlaceholderConfigurer.setLocations(new Resource[] {
-                new ClassPathResource("default-config.properties"), new ClassPathResource("config.properties") });
+                new ClassPathResource("default-config.properties"), new ClassPathResource("lprconfig.properties") });
 
         return propertySourcesPlaceholderConfigurer;
     }
