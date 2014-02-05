@@ -1,3 +1,34 @@
+CREATE TABLE Klass_SHAK (
+    ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    sygehuskode VARCHAR(10),
+    afdelingskode VARCHAR(10),
+    H_ITA_gruppe float,
+    H_kir_gruppe float,
+    H_med_gruppe float,
+    H_MiBa_prefix float,
+    H_SOR_mappet float
+
+);
+
+CREATE TABLE klass_procedurer (
+    ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    procedurekode VARCHAR(10),
+    tillaegskode VARCHAR(10),
+    H_HOFTE_PRO float NULL,
+    H_HOFTE_IND float NULL,
+    H_HOFTE_SPE float NULL,
+    H_HOFTE_REO float NULL
+);
+
+CREATE TABLE klass_diagnoser (
+    ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    Diagnoseskode VARCHAR(10),
+    tillaegskode VARCHAR(10),
+    H_BAKT_D float NULL,
+    H_UVI_D float NULL,
+    H_SAAR_D float NULL
+);
+
 CREATE TABLE Indlaeggelser (
     IndlaeggelsesID BIGINT NOT NULL IDENTITY PRIMARY KEY,
     CPR VARCHAR(10),
@@ -41,13 +72,13 @@ CREATE TABLE Indlaeggelsesforloeb (
 CREATE TABLE LPR_Reference (
     ID BIGINT NOT NULL IDENTITY  PRIMARY KEY,
     IndlaeggelsesID BIGINT NOT NULL FOREIGN KEY REFERENCES Indlaeggelser(IndlaeggelsesID),
-    LPR_recordnummer BIGINT NOT NULL
+    LPR_recordnummer varchar(255) NOT NULL
 );
 
 CREATE TABLE RegelFejlbeskeder (
     ID BIGINT NOT NULL IDENTITY  PRIMARY KEY,
     LPR_dbid BIGINT NOT NULL,
-    LPR_recordnummer BIGINT NOT NULL,
+    LPR_recordnummer varchar(255) NOT NULL,
     AfbrudtForretningsregel VARCHAR(50),
     Fejlbeskrivelse VARCHAR(500),
     Fejltidspunkt datetime
@@ -91,7 +122,8 @@ CREATE TABLE AmbulantProcedurer (
 CREATE TABLE AmbulantLPR_Reference (
     ID BIGINT NOT NULL IDENTITY PRIMARY KEY,
     AmbulantKontaktID BIGINT NOT NULL FOREIGN KEY (AmbulantKontaktID) REFERENCES AmbulantKontakt(AmbulantKontaktID),
-    LPR_recordnummer BIGINT NOT NULL
+    LPR_recordnummer varchar(255) NOT NULL,
+    LPR_dbid BIGINT NOT NULL
 );
 
 CREATE TABLE Statistik (
