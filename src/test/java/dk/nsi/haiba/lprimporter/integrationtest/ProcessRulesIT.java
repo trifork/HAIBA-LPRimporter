@@ -669,6 +669,9 @@ public class ProcessRulesIT {
         // expected admission enddate must be 2009-03-29 12:00:00
         assertEquals("2009-03-29 12:00:00.0", haibaJdbcTemplate.queryForObject(
                 "select Udskrivningsdatotid from Indlaeggelser where cpr =" + cpr, String.class));
+
+        assertEquals("BWDB01", haibaJdbcTemplate.queryForObject(
+                "select procedurekode from klass_procedurer where procedurekode='BWDB01' AND tillaegskode IS NULL", String.class));
     }
 
     @Test
