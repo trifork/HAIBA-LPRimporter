@@ -108,7 +108,7 @@ public class StatisticsTest {
         List<String> cprList = generateCprList(2);
         Mockito.when(lprdao.isdatabaseReadyForImport()).thenReturn(syncId);
         Mockito.when(lprdao.hasUnprocessedCPRnumbers()).thenReturn(true);
-        Mockito.when(lprdao.getCPRnumbersFromDeletedContacts(syncId)).thenReturn(cprList);
+        Mockito.when(lprdao.getCPRnumbersFromDeletedContacts()).thenReturn(cprList);
         Mockito.when(lprdao.getCPRnumberBatch(20)).thenReturn(generateCprList(20)).thenReturn(generateCprList(5))
                 .thenReturn(new ArrayList<String>());
         Mockito.when(haibadao.getCurrentPatients()).thenReturn(cprList);
