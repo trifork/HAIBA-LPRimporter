@@ -107,7 +107,7 @@ public class ImportExecutor {
 				log.info("LPR has unprocessed CPR numbers, starting import");
 				
 				//check if any contacts are deleted, and recalculate the affected CPR numbers
-				List<String> cprNumbersWithDeletedContacts = lprdao.getCPRnumbersFromDeletedContacts(syncId);
+				List<String> cprNumbersWithDeletedContacts = lprdao.getCPRnumbersFromDeletedContacts();
 				log.debug("processing "+cprNumbersWithDeletedContacts.size()+ " cprnumbers with deleted contacts");
 				// count CPR numbers with deleted contacts
 				statistics.cprNumbersWithDeletedContactsCounter += cprNumbersWithDeletedContacts.size();
