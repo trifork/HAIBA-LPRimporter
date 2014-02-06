@@ -26,7 +26,11 @@
  */
 package dk.nsi.haiba.lprimporter.email;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -40,6 +44,7 @@ import org.springframework.mail.javamail.MimeMessagePreparator;
 
 import dk.nsi.haiba.lprimporter.dao.ClassificationCheckDAO.CheckStructure;
 import dk.nsi.haiba.lprimporter.log.Log;
+import dk.nsi.haiba.lprimporter.util.AlphanumComparator;
 
 public class EmailSender {
     private static Log log = new Log(Logger.getLogger(EmailSender.class));
@@ -52,13 +57,18 @@ public class EmailSender {
     @Autowired
     private JavaMailSender javaMailSender;
 
+    private static MyNaturalCheckStructureComparator aMyNaturalCheckStructureComparator = new MyNaturalCheckStructureComparator();
+    
     public String getTo() {
         return to_commaseparated;
     }
 
-    public void send(final Collection<CheckStructure> newSygehusClassifications,
-            final Collection<CheckStructure> newProcedureCheckClassifications,
-            final Collection<CheckStructure> newDiagnoseCheckClassifications) {
+    public void send(Collection<CheckStructure> newSygehusClassifications,
+            Collection<CheckStructure> newProcedureCheckClassifications,
+            Collection<CheckStructure> newDiagnoseCheckClassifications) {
+        final Collection<CheckStructure> sygehuse = sort(newSygehusClassifications);
+        final Collection<CheckStructure> procedurer = sort(newProcedureCheckClassifications);
+        final Collection<CheckStructure> diagnoser = sort(newDiagnoseCheckClassifications);
         MimeMessagePreparator preparator = new MimeMessagePreparator() {
             @Override
             public void prepare(MimeMessage mimeMessage) throws Exception {
@@ -79,14 +89,15 @@ public class EmailSender {
                 messageHelper.setFrom(from);
                 messageHelper.setSubject("LPR: Notification on unknown table entries");
                 String not_html = "After the recent import, the following unknown table entries are discovered:\n";
-                if (!newSygehusClassifications.isEmpty()) {
-                    not_html += printCheckStructures(newSygehusClassifications, "sygehus", "afdeling");
+
+                if (!sygehuse.isEmpty()) {
+                    not_html += printCheckStructures(sygehuse, "sygehus", "afdeling");
                 }
-                if (!newProcedureCheckClassifications.isEmpty()) {
-                    not_html += printCheckStructures(newProcedureCheckClassifications, "procedure", "tillaegskode");
+                if (!procedurer.isEmpty()) {
+                    not_html += printCheckStructures(procedurer, "procedure", "tillaegskode");
                 }
-                if (!newDiagnoseCheckClassifications.isEmpty()) {
-                    not_html += printCheckStructures(newDiagnoseCheckClassifications, "diagnose", "tillaegskode");
+                if (!diagnoser.isEmpty()) {
+                    not_html += printCheckStructures(diagnoser, "diagnose", "tillaegskode");
                 }
 
                 messageHelper.setText(not_html, false);
@@ -103,5 +114,29 @@ public class EmailSender {
             }
         };
         javaMailSender.send(preparator);
+    }
+
+    public static List<CheckStructure> sort(Collection<CheckStructure> c) {
+        List<CheckStructure> list = new ArrayList<CheckStructure>(c);
+        Collections.sort(list, aMyNaturalCheckStructureComparator);
+        return list;
+    }
+    
+    public static class MyNaturalCheckStructureComparator implements Comparator<CheckStructure> {
+        @Override
+        public int compare(CheckStructure o1, CheckStructure o2) {
+            return AlphanumComparator.INSTANCE.compare(getString(o1), getString(o2));
+        }
+
+        private String getString(CheckStructure cs) {
+            String s = "";
+            if (cs.getCode() != null) {
+                s += cs.getCode();
+            }
+            if (cs.getSecondaryCode() != null) {
+                s += cs.getSecondaryCode();
+            }
+            return s;
+        }
     }
 }
