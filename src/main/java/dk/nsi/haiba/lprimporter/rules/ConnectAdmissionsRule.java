@@ -119,15 +119,15 @@ public class ConnectAdmissionsRule implements LPRRule {
         // increment counter for admissions exported
         statistics.admissionsExportedCounter += admissions.size();
 
+        classificationCheckHelper.checkClassifications(admissions.toArray(new Indlaeggelse[0]));
+        removeDuplicateProceduresDiagnoses(admissions);
+        haibaDao.saveIndlaeggelsesForloeb(admissions);
         for (Indlaeggelse admission : admissions) {
             // Rules are complete, update LPR with the import timestamp so they are not imported again
             for (LPRReference lprRef : admission.getLprReferencer()) {
                 lprDao.updateImportTime(lprRef, Outcome.SUCCESS);
             }
         }
-        removeDuplicateProceduresDiagnoses(admissions);
-        haibaDao.saveIndlaeggelsesForloeb(admissions);
-        classificationCheckHelper.checkClassifications(admissions.toArray(new Indlaeggelse[0]));
     }
 
     private void removeDuplicateProceduresDiagnoses(List<Indlaeggelse> admissions) {
