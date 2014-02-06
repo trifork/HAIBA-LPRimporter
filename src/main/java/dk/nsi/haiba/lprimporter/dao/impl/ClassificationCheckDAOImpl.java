@@ -26,11 +26,15 @@
  */
 package dk.nsi.haiba.lprimporter.dao.impl;
 
+import java.text.RuleBasedCollator;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -43,6 +47,9 @@ import dk.nsi.haiba.lprimporter.log.Log;
 public class ClassificationCheckDAOImpl extends CommonDAO implements ClassificationCheckDAO {
     private static Log log = new Log(Logger.getLogger(ClassificationCheckDAOImpl.class));
     private JdbcTemplate aClassificationJdbc;
+
+    @Value("${jdbc.classificationtableprefix:}")
+    String tableprefix;
 
     public ClassificationCheckDAOImpl(JdbcTemplate classificationJdbc) {
         aClassificationJdbc = classificationJdbc;
@@ -61,8 +68,9 @@ public class ClassificationCheckDAOImpl extends CommonDAO implements Classificat
                     + " LIMIT 1";
         } else {
             // MSSQL
-            sql = "SELECT TOP 1 * FROM " + tableName + " WHERE " + checkStructure.getCodeClasificationColumnName()
-                    + "=? AND " + checkStructure.getSecondaryCodeClasificationColumnName() + secondaryQualifier;
+            sql = "SELECT TOP 1 * FROM " + tableprefix + tableName + " WHERE "
+                    + checkStructure.getCodeClasificationColumnName() + "=? AND "
+                    + checkStructure.getSecondaryCodeClasificationColumnName() + secondaryQualifier;
         }
 
         try {
@@ -96,13 +104,14 @@ public class ClassificationCheckDAOImpl extends CommonDAO implements Classificat
         }
         if (!returnValue.isEmpty()) {
             for (CheckStructure unknownStructure : returnValue) {
-                String sql = "INSERT INTO " + unknownStructure.getClassificationTableName() + "("
+                String sql = "INSERT INTO " + tableprefix + unknownStructure.getClassificationTableName() + "("
                         + unknownStructure.getCodeClasificationColumnName() + ","
                         + unknownStructure.getSecondaryCodeClasificationColumnName() + ") VALUES (?,?)";
                 log.debug("checkClassifications: insert sql=" + sql);
                 aClassificationJdbc.update(sql, unknownStructure.getCode(), unknownStructure.getSecondaryCode());
             }
         }
+
         return returnValue;
     }
 }
