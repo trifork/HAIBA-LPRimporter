@@ -137,8 +137,8 @@ public class RemoveIdenticalContactsRule implements LPRRule {
 	}
 
 	private void saveAmbulantContacts(List<Administration> contacts) {
-		haibaDao.saveAmbulantIndlaeggelser(contacts);
 		classificationCheckHelper.checkClassifications((Administration[]) contacts.toArray(new Administration[contacts.size()]));
+		haibaDao.saveAmbulantIndlaeggelser(contacts);
 		for (Administration contact : contacts) {
 			// Rules are complete, update LPR with the import timestamp so they are not imported again
 			for (LPRReference lprRef : contact.getLprReferencer()) {
