@@ -26,13 +26,10 @@
  */
 package dk.nsi.haiba.lprimporter.dao.impl;
 
-import java.text.RuleBasedCollator;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;

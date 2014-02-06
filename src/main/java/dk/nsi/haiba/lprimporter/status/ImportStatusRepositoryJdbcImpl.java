@@ -43,161 +43,162 @@ import dk.nsi.haiba.lprimporter.dao.CommonDAO;
 import dk.nsi.haiba.lprimporter.log.Log;
 
 public class ImportStatusRepositoryJdbcImpl extends CommonDAO implements ImportStatusRepository {
-	private static Log log = new Log(Logger.getLogger(ImportStatusRepositoryJdbcImpl.class));
+    private static Log log = new Log(Logger.getLogger(ImportStatusRepositoryJdbcImpl.class));
 
-	@Value("${max.days.between.runs}")
-	private int maxDaysBetweenRuns;
+    @Value("${max.days.between.runs}")
+    private int maxDaysBetweenRuns;
 
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
-	@Autowired
-	private JdbcTemplate haibaJdbcTemplate;
+    @Autowired
+    private JdbcTemplate haibaJdbcTemplate;
 
-	@Autowired
-	private TimeSource timeSource;
+    @Autowired
+    private TimeSource timeSource;
 
-	@Override
-	@Transactional(value="haibaTransactionManager")
-	public void importStartedAt(DateTime startTime) {
-		log.debug("Starting import");
-		haibaJdbcTemplate.update("INSERT INTO ImporterStatus (StartTime) values (?)", startTime.toDate());
-	}
+    @Value("${jdbc.haibareplicatableprefix:haiba_replica.}")
+    String hr_tableprefix;
 
-	@Override
-	@Transactional(value="haibaTransactionManager")
-	public void importEndedWithSuccess(DateTime endTime) {
-		log.debug("Import ended with success");
-		importEndedAt(endTime, ImportStatus.Outcome.SUCCESS, null);
-	}
+    @Override
+    @Transactional(value = "haibaTransactionManager")
+    public void importStartedAt(DateTime startTime) {
+        log.debug("Starting import");
+        haibaJdbcTemplate.update("INSERT INTO ImporterStatus (StartTime) values (?)", startTime.toDate());
+    }
 
-	@Override
-	@Transactional(value="haibaTransactionManager")
-	public void importEndedWithFailure(DateTime endTime, String errorMessage) {
-		log.debug("Import ended with failure");
-		importEndedAt(endTime, ImportStatus.Outcome.FAILURE, errorMessage);
-	}
+    @Override
+    @Transactional(value = "haibaTransactionManager")
+    public void importEndedWithSuccess(DateTime endTime) {
+        log.debug("Import ended with success");
+        importEndedAt(endTime, ImportStatus.Outcome.SUCCESS, null);
+    }
 
-	private void importEndedAt(DateTime endTime, ImportStatus.Outcome outcome, String errorMessage) {
-		String sql = null;
-		if(MYSQL.equals(getDialect())) {
-			sql = "SELECT Id from ImporterStatus ORDER BY StartTime DESC LIMIT 1";
-		} else {
-			// MSSQL
-			sql = "SELECT Top 1 Id from ImporterStatus ORDER BY StartTime DESC";
-		}
+    @Override
+    @Transactional(value = "haibaTransactionManager")
+    public void importEndedWithFailure(DateTime endTime, String errorMessage) {
+        log.debug("Import ended with failure");
+        importEndedAt(endTime, ImportStatus.Outcome.FAILURE, errorMessage);
+    }
 
-		Long newestOpenId;
-		try {
-			newestOpenId = haibaJdbcTemplate.queryForLong(sql);
-		} catch (EmptyResultDataAccessException e) {
-			log.debug("it seems we do not have any open statuses, let's not update");
-			return;
-		}
+    private void importEndedAt(DateTime endTime, ImportStatus.Outcome outcome, String errorMessage) {
+        String sql = null;
+        if (MYSQL.equals(getDialect())) {
+            sql = "SELECT Id from ImporterStatus ORDER BY StartTime DESC LIMIT 1";
+        } else {
+            // MSSQL
+            sql = "SELECT Top 1 Id from ImporterStatus ORDER BY StartTime DESC";
+        }
 
-		haibaJdbcTemplate.update("UPDATE ImporterStatus SET EndTime=?, Outcome=?, ErrorMessage=? WHERE Id=?", endTime.toDate(), outcome.toString(), errorMessage, newestOpenId);
-	}
+        Long newestOpenId;
+        try {
+            newestOpenId = haibaJdbcTemplate.queryForLong(sql);
+        } catch (EmptyResultDataAccessException e) {
+            log.debug("it seems we do not have any open statuses, let's not update");
+            return;
+        }
 
-	@Override
-	public ImportStatus getLatestStatus() {
-		String sql = null;
-		if(MYSQL.equals(getDialect())) {
-			sql = "SELECT * from ImporterStatus ORDER BY StartTime DESC LIMIT 1";
-		} else {
-			// MSSQL
-			sql = "SELECT Top 1 * from ImporterStatus ORDER BY StartTime DESC";
-		}
+        haibaJdbcTemplate.update("UPDATE ImporterStatus SET EndTime=?, Outcome=?, ErrorMessage=? WHERE Id=?",
+                endTime.toDate(), outcome.toString(), errorMessage, newestOpenId);
+    }
 
-		try {
-			return haibaJdbcTemplate.queryForObject(sql, new ImportStatusRowMapper());
-		} catch (EmptyResultDataAccessException ignored) {
-			// that's not a problem, we just don't have any statuses
-			return null;
-		}
-	}
+    @Override
+    public ImportStatus getLatestStatus() {
+        String sql = null;
+        if (MYSQL.equals(getDialect())) {
+            sql = "SELECT * from ImporterStatus ORDER BY StartTime DESC LIMIT 1";
+        } else {
+            // MSSQL
+            sql = "SELECT Top 1 * from ImporterStatus ORDER BY StartTime DESC";
+        }
 
-	@Override
-	/**
-	 *        {maxDaysBetweenRuns}
-	 *     <-----------------------------
-	 *
-	 * ____'________|________'___________|___________
-	 *           lastRun                now
-	 *     ^                 ^
-	 *   !overdue         overdue
-	 */
-	public boolean isOverdue() {
-		ImportStatus latestStatus = getLatestStatus();
-		if (latestStatus == null) {
-			// we're not overdue if we have never run
-			return false;
-		}
+        try {
+            return haibaJdbcTemplate.queryForObject(sql, new ImportStatusRowMapper());
+        } catch (EmptyResultDataAccessException ignored) {
+            // that's not a problem, we just don't have any statuses
+            return null;
+        }
+    }
 
+    @Override
+    /**
+     *        {maxDaysBetweenRuns}
+     *     <-----------------------------
+     *
+     * ____'________|________'___________|___________
+     *           lastRun                now
+     *     ^                 ^
+     *   !overdue         overdue
+     */
+    public boolean isOverdue() {
+        ImportStatus latestStatus = getLatestStatus();
+        if (latestStatus == null) {
+            // we're not overdue if we have never run
+            return false;
+        }
 
-		DateTime lastRun = latestStatus.getStartTime();
-		DateTime now = timeSource.now();
-		return (now.minusDays(maxDaysBetweenRuns).isAfter(lastRun));
-	}
+        DateTime lastRun = latestStatus.getStartTime();
+        DateTime now = timeSource.now();
+        return (now.minusDays(maxDaysBetweenRuns).isAfter(lastRun));
+    }
 
+    private class ImportStatusRowMapper implements RowMapper<ImportStatus> {
 
-	private class ImportStatusRowMapper implements RowMapper<ImportStatus> {
+        @Override
+        public ImportStatus mapRow(ResultSet rs, int rowNum) throws SQLException {
+            ImportStatus status = new ImportStatus();
+            status.setStartTime(new DateTime(rs.getTimestamp("StartTime")));
+            Timestamp endTime = rs.getTimestamp("EndTime");
+            if (endTime != null) {
+                status.setEndTime(new DateTime(endTime));
+            }
+            String dbOutcome = rs.getString("Outcome");
+            if (dbOutcome != null) {
+                status.setOutcome(ImportStatus.Outcome.valueOf(dbOutcome));
+            }
+            status.setErrorMessage(rs.getString("ErrorMessage"));
 
-		@Override
-		public ImportStatus mapRow(ResultSet rs, int rowNum) throws SQLException {
-			ImportStatus status = new ImportStatus();
-			status.setStartTime(new DateTime(rs.getTimestamp("StartTime")));
-			Timestamp endTime = rs.getTimestamp("EndTime");
-			if (endTime != null) {
-				status.setEndTime(new DateTime(endTime));
-			}
-			String dbOutcome = rs.getString("Outcome");
-			if (dbOutcome != null) {
-				status.setOutcome(ImportStatus.Outcome.valueOf(dbOutcome));
-			}
-			status.setErrorMessage(rs.getString("ErrorMessage"));
+            return status;
+        }
+    }
 
-			return status;
-		}
-	}
+    public boolean isHAIBADBAlive() {
+        String sql = null;
+        if (MYSQL.equals(getDialect())) {
+            sql = "SELECT indlaeggelsesid from Indlaeggelser LIMIT 1";
+        } else {
+            // MSSQL
+            sql = "SELECT Top 1 indlaeggelsesid from Indlaeggelser";
+        }
 
-	
-	public boolean isHAIBADBAlive() {
-		String sql = null;
-		if(MYSQL.equals(getDialect())) {
-			sql = "SELECT indlaeggelsesid from Indlaeggelser LIMIT 1";
-		} else {
-			// MSSQL
-			sql = "SELECT Top 1 indlaeggelsesid from Indlaeggelser";
-		}
+        try {
+            haibaJdbcTemplate.queryForObject(sql, Long.class);
+        } catch (EmptyResultDataAccessException e) {
+            // no data was found, but table exists, so everything is ok
+        } catch (Exception someError) {
+            log.debug("isHAIBADBAlive", someError);
+            return false;
+        }
+        return true;
+    }
 
-		try {
-			haibaJdbcTemplate.queryForObject(sql, Long.class);
-        } catch(EmptyResultDataAccessException e) {
-        	// no data was found, but table exists, so everything is ok
-		} catch (Exception someError) {
-			log.debug("isHAIBADBAlive", someError);
-			return false;
-		}
-		return true;
-	}
-	
-	public boolean isLPRDBAlive() {
-		String sql = null;
-		if(MYSQL.equals(getDialect())) {
-			sql = "SELECT v_recnum from T_ADM  LIMIT 1";
-		} else {
-			// MSSQL
-			sql = "SELECT Top 1 v_recnum from haiba_replica.T_ADM";
-		}
+    public boolean isLPRDBAlive() {
+        String sql = null;
+        if (MYSQL.equals(getDialect())) {
+            sql = "SELECT v_recnum from T_ADM  LIMIT 1";
+        } else {
+            // MSSQL
+            sql = "SELECT Top 1 v_recnum from " + hr_tableprefix + "T_ADM";
+        }
 
-		try {
-			jdbcTemplate.queryForObject(sql, Long.class);
-        } catch(EmptyResultDataAccessException e) {
-        	// no data was found, but table exists, so everything is ok
-		} catch (Exception someError) {
-			log.debug("isLPRDBAlive", someError);
-			return false;
-		}
-		return true;
-	}
+        try {
+            jdbcTemplate.queryForObject(sql, Long.class);
+        } catch (EmptyResultDataAccessException e) {
+            // no data was found, but table exists, so everything is ok
+        } catch (Exception someError) {
+            log.debug("isLPRDBAlive", someError);
+            return false;
+        }
+        return true;
+    }
 }
