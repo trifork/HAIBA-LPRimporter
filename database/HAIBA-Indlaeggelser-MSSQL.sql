@@ -1,5 +1,5 @@
 CREATE TABLE Klass_SHAK (
-    ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    ID BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     sygehuskode VARCHAR(10),
     afdelingskode VARCHAR(10),
     H_ITA_gruppe float,
@@ -11,7 +11,7 @@ CREATE TABLE Klass_SHAK (
 );
 
 CREATE TABLE klass_procedurer (
-    ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    ID BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     procedurekode VARCHAR(10),
     tillaegskode VARCHAR(10),
     H_HOFTE_PRO float NULL,
@@ -21,7 +21,7 @@ CREATE TABLE klass_procedurer (
 );
 
 CREATE TABLE klass_diagnoser (
-    ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    ID BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     Diagnoseskode VARCHAR(10),
     tillaegskode VARCHAR(10),
     H_BAKT_D float NULL,
