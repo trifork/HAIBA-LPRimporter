@@ -109,9 +109,9 @@ public class EmailSender {
                 for (String emailAddress : split) {
                     emailAddress = emailAddress.trim();
                     try {
-                        log.debug("adding " + emailAddress);
+                        log.trace("adding " + emailAddress);
                         messageHelper.addTo(emailAddress);
-                        log.debug("added " + emailAddress);
+                        log.trace("added " + emailAddress);
                     } catch (MessagingException e) {
                         log.error("unable to parse email address from " + emailAddress, e);
                     }
