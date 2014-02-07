@@ -29,6 +29,7 @@ package dk.nsi.haiba.lprimporter.importer;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
+import dk.nsi.haiba.lprimporter.email.EmailSender;
 import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
@@ -69,7 +71,10 @@ public class ImportExecutor {
 	@Autowired
 	ImportStatusRepository statusRepo;
 	
-	public ImportExecutor(LPRDAO lprdao) {
+    @Autowired
+    EmailSender emailSender;
+	
+    public ImportExecutor(LPRDAO lprdao) {
         this.lprdao = lprdao;
     }
 
@@ -77,7 +82,7 @@ public class ImportExecutor {
 	public void run() {
 		if(!isManualOverride()) {
 			log.debug("Running Importer: " + new Date().toString());
-			doProcess();
+			doProcess(false);
 		} else {
 			log.debug("Importer must be started manually");
 		}
@@ -86,12 +91,14 @@ public class ImportExecutor {
 	/*
 	 * Separated into its own method for testing purpose, because testing a scheduled method isn't good
 	 */
-	public void doProcess() {
+	public void doProcess(boolean manual) {
 		log.info("Started processing, manual="+isManualOverride());
 		// Fetch new records from LPR contact table
 		try {
 			statusRepo.importStartedAt(new DateTime());
-
+            if (manual) {
+                emailSender.sendHello();
+            }
 			// if syncId > 0, the Carecom job is finished, and the database is ready for import.
 			long syncId = lprdao.isdatabaseReadyForImport();
 			if(syncId == 0) {
@@ -138,7 +145,9 @@ public class ImportExecutor {
 					unprocessedCPRnumbers = lprdao.getCPRnumberBatch(batchsize);
 				}
 				statusRepo.importEndedWithSuccess(new DateTime());
-				
+	            if (manual) {
+	                emailSender.sendDone(null);
+	            }
 				haibaDao.saveStatistics(statistics);
 				statistics.resetInstance();
 			} else {
@@ -149,6 +158,9 @@ public class ImportExecutor {
 		} catch(Exception e) {
 			log.error("", e);
 			statusRepo.importEndedWithFailure(new DateTime(), e.getMessage());
+            if (manual) {
+                emailSender.sendDone(ExceptionUtils.getStackTrace(e));
+            }
 		}
 	}
 

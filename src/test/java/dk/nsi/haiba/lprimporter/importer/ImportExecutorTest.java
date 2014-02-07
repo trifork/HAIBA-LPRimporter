@@ -99,7 +99,7 @@ public class ImportExecutorTest {
 		Mockito.when(lprdao.getCPRnumberBatch(20)).thenReturn(new ArrayList<String>());
 		Mockito.when(lprdao.isdatabaseReadyForImport()).thenReturn(1l);
 		
-		executor.doProcess();
+		executor.doProcess(true);
 		
 		Mockito.verify(lprdao).hasUnprocessedCPRnumbers();
 		Mockito.verify(lprdao, Mockito.never()).getContactsByCPR(null);
@@ -115,7 +115,7 @@ public class ImportExecutorTest {
 		Mockito.when(lprdao.getCPRnumberBatch(20)).thenReturn(cprList).thenReturn(new ArrayList<String>());
 		Mockito.when(lprdao.isdatabaseReadyForImport()).thenReturn(1l);
 		
-		executor.doProcess();
+		executor.doProcess(true);
 		Mockito.verify(lprdao, Mockito.atLeastOnce()).getCPRnumberBatch(20);
 		Mockito.verify(lprdao, Mockito.atLeastOnce()).getContactsByCPR(cprList.get(0));
 		Mockito.verify(rulesEngine, Mockito.atLeastOnce()).processRuleChain(Mockito.anyListOf(Administration.class), Mockito.any(Statistics.class));
@@ -126,7 +126,7 @@ public class ImportExecutorTest {
 		// return 0 for isdatabaseReadyForImport, which means Carecom job isn't finished yet
 		Mockito.when(lprdao.isdatabaseReadyForImport()).thenReturn(0l);
 		
-		executor.doProcess();
+		executor.doProcess(true);
 		
 		// this should not be called, when LPR database isn't ready for import
 		Mockito.verify(lprdao, Mockito.never()).hasUnprocessedCPRnumbers();

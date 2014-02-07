@@ -114,7 +114,7 @@ public class StatisticsTest {
         Mockito.when(haibadao.getCurrentPatients()).thenReturn(cprList);
 
         Statistics statistics = Statistics.getInstance();
-        executor.doProcess();
+        executor.doProcess(true);
         System.out.println(statistics);
         assertEquals("Statistics contactCounter", 0, statistics.contactCounter);
         assertEquals("Statistics cprNumbersWithDeletedContactsCounter counter", 2,

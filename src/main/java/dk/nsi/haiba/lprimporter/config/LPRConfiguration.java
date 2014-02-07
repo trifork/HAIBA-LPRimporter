@@ -99,12 +99,14 @@ public class LPRConfiguration {
     private String smtpHost;
     @Value("${smtp.port}")
     private int smtpPort;
-    @Value("${smtp.user}")
+    @Value("${smtp.user:}")
     private String smtpUser;
-    @Value("${smtp.password}")
+    @Value("${smtp.password:}")
     private String smtpPassword;
     @Value("${smtp.auth}")
-    private String smtpAuth;
+    private boolean smtpAuth;
+    @Value("${smtp.starttls}")
+    private String smtpStartTLS;
 
     // this is not automatically registered, see https://jira.springsource.org/browse/SPR-8539
     @Bean
@@ -319,14 +321,16 @@ public class LPRConfiguration {
     public JavaMailSender javaMailSender() {
         Properties javaMailProperties = new Properties();
         javaMailProperties.put("mail.smtp.auth", smtpAuth);
-        javaMailProperties.put("mail.smtp.starttls.enable", true);
+        javaMailProperties.put("mail.smtp.starttls.enable", smtpStartTLS);
         javaMailProperties.put("mail.smtp.host", smtpHost);
         javaMailProperties.put("mail.smtp.port", smtpPort);
 
         JavaMailSenderImpl sender = new JavaMailSenderImpl();
         sender.setJavaMailProperties(javaMailProperties);
-        sender.setUsername(smtpUser);
-        sender.setPassword(smtpPassword);
+        if (smtpAuth) {
+            sender.setUsername(smtpUser);
+            sender.setPassword(smtpPassword);
+        }   
 
         return sender;
     }

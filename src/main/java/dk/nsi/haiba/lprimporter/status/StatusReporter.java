@@ -75,7 +75,7 @@ public class StatusReporter {
 				importExecutor.setManualOverride(true);
 		        Runnable importer = new Runnable() {
 		            public void run() {
-		            	importExecutor.doProcess();
+		            	importExecutor.doProcess(true);
 		            }
 		        }; 
 		        importer.run();

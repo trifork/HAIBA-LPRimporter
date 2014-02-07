@@ -26,10 +26,12 @@
  */
 package dk.nsi.haiba.lprimporter.email;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import javax.mail.MessagingException;
@@ -53,12 +55,14 @@ public class EmailSender {
     private String from;
     @Value("${smtp.to_commaseparated}")
     private String to_commaseparated;
+    @Value("${smtp.sendhello}")
+    private boolean sendHello;
 
     @Autowired
     private JavaMailSender javaMailSender;
 
     private static MyNaturalCheckStructureComparator aMyNaturalCheckStructureComparator = new MyNaturalCheckStructureComparator();
-    
+
     public String getTo() {
         return to_commaseparated;
     }
@@ -66,9 +70,35 @@ public class EmailSender {
     public void send(Collection<CheckStructure> newSygehusClassifications,
             Collection<CheckStructure> newProcedureCheckClassifications,
             Collection<CheckStructure> newDiagnoseCheckClassifications) {
-        final Collection<CheckStructure> sygehuse = sort(newSygehusClassifications);
-        final Collection<CheckStructure> procedurer = sort(newProcedureCheckClassifications);
-        final Collection<CheckStructure> diagnoser = sort(newDiagnoseCheckClassifications);
+        Collection<CheckStructure> sygehuse = sort(newSygehusClassifications);
+        Collection<CheckStructure> procedurer = sort(newProcedureCheckClassifications);
+        Collection<CheckStructure> diagnoser = sort(newDiagnoseCheckClassifications);
+
+        String not_html = "After the recent import, the following unknown table entries are discovered:\n";
+
+        if (!sygehuse.isEmpty()) {
+            not_html += printCheckStructures(sygehuse, "sygehus", "afdeling");
+        }
+        if (!procedurer.isEmpty()) {
+            not_html += printCheckStructures(procedurer, "procedure", "tillaegskode");
+        }
+        if (!diagnoser.isEmpty()) {
+            not_html += printCheckStructures(diagnoser, "diagnose", "tillaegskode");
+        }
+        sendText("LPR: Notification on unknown table entries", not_html);
+    }
+
+    private String printCheckStructures(Collection<CheckStructure> checkStructures, String codeLabel,
+            String secondaryCodeLabel) {
+        String returnValue = "-----\n";
+        for (CheckStructure cs : checkStructures) {
+            returnValue += codeLabel + ":" + cs.getCode() + ", " + secondaryCodeLabel + ":"
+                    + (cs.getSecondaryCode() != null ? cs.getSecondaryCode() : "") + "\n";
+        }
+        return returnValue;
+    }
+
+    private void sendText(final String subject, final String nonHtml) {
         MimeMessagePreparator preparator = new MimeMessagePreparator() {
             @Override
             public void prepare(MimeMessage mimeMessage) throws Exception {
@@ -87,30 +117,8 @@ public class EmailSender {
                     }
                 }
                 messageHelper.setFrom(from);
-                messageHelper.setSubject("LPR: Notification on unknown table entries");
-                String not_html = "After the recent import, the following unknown table entries are discovered:\n";
-
-                if (!sygehuse.isEmpty()) {
-                    not_html += printCheckStructures(sygehuse, "sygehus", "afdeling");
-                }
-                if (!procedurer.isEmpty()) {
-                    not_html += printCheckStructures(procedurer, "procedure", "tillaegskode");
-                }
-                if (!diagnoser.isEmpty()) {
-                    not_html += printCheckStructures(diagnoser, "diagnose", "tillaegskode");
-                }
-
-                messageHelper.setText(not_html, false);
-            }
-
-            private String printCheckStructures(Collection<CheckStructure> checkStructures, String codeLabel,
-                    String secondaryCodeLabel) {
-                String returnValue = "-----\n";
-                for (CheckStructure cs : checkStructures) {
-                    returnValue += codeLabel + ":" + cs.getCode() + ", " + secondaryCodeLabel + ":"
-                            + (cs.getSecondaryCode() != null ? cs.getSecondaryCode() : "") + "\n";
-                }
-                return returnValue;
+                messageHelper.setSubject(subject);
+                messageHelper.setText(nonHtml, false);
             }
         };
         javaMailSender.send(preparator);
@@ -121,7 +129,7 @@ public class EmailSender {
         Collections.sort(list, aMyNaturalCheckStructureComparator);
         return list;
     }
-    
+
     public static class MyNaturalCheckStructureComparator implements Comparator<CheckStructure> {
         @Override
         public int compare(CheckStructure o1, CheckStructure o2) {
@@ -137,6 +145,24 @@ public class EmailSender {
                 s += cs.getSecondaryCode();
             }
             return s;
+        }
+    }
+
+    public void sendHello() {
+        if (sendHello) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            sendText("EPIMIBA: Import started at " + dateFormat.format(new Date()), "");
+        }
+    }
+
+    public void sendDone(String error) {
+        if (sendHello) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            if (error == null) {
+                sendText("EPIMIBA: Import done at " + dateFormat.format(new Date()), "No errors");
+            } else {
+                sendText("EPIMIBA: Import done at " + dateFormat.format(new Date()), "Errors found\n:" + error);
+            }
         }
     }
 }
