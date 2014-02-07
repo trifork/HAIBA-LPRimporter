@@ -120,7 +120,7 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
                 // MSSQL
                 sql = "SELECT a.v_recnum,a.c_sgh,a.c_afd,a.c_pattype,a.v_cpr,a.d_inddto,a.d_uddto,"
                         + "k.c_kode,k.c_tilkode,k.c_kodeart,k.d_pdto,k.c_psgh,k.c_pafd,k.v_type FROM "
-                        + hr_tableprefix + "T_ADM a LEFT JOIN" + hr_tableprefix
+                        + hr_tableprefix + "T_ADM a LEFT JOIN " + hr_tableprefix
                         + "T_KODER k ON a.v_recnum = k.v_recnum WHERE a.v_cpr=?";
             }
             lprContacts = jdbcTemplate.query(sql, new Object[] { cpr }, new LPRContactRowMapper());
