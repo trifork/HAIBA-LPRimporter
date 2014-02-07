@@ -145,16 +145,15 @@ public class ImportExecutor {
 					unprocessedCPRnumbers = lprdao.getCPRnumberBatch(batchsize);
 				}
 				statusRepo.importEndedWithSuccess(new DateTime());
-	            if (manual) {
-	                emailSender.sendDone(null);
-	            }
 				haibaDao.saveStatistics(statistics);
 				statistics.resetInstance();
 			} else {
 				log.info("No unprocessed CPR numbers found");
 				statusRepo.importEndedWithSuccess(new DateTime());
 			}
-			
+			if (manual) {
+			    emailSender.sendDone(null);
+			}
 		} catch(Exception e) {
 			log.error("", e);
 			statusRepo.importEndedWithFailure(new DateTime(), e.getMessage());
