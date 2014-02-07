@@ -60,11 +60,15 @@ public class ImportStatusRepositoryJdbcImpl extends CommonDAO implements ImportS
     @Value("${jdbc.haibareplicatableprefix:haiba_replica.}")
     String hr_tableprefix;
 
+    @Value("${jdbc.haibatableprefix:}")
+    String tableprefix;
+
     @Override
     @Transactional(value = "haibaTransactionManager")
     public void importStartedAt(DateTime startTime) {
         log.debug("Starting import");
-        haibaJdbcTemplate.update("INSERT INTO ImporterStatus (StartTime) values (?)", startTime.toDate());
+        haibaJdbcTemplate.update("INSERT INTO " + tableprefix + "ImporterStatus (StartTime) values (?)",
+                startTime.toDate());
     }
 
     @Override
@@ -87,7 +91,7 @@ public class ImportStatusRepositoryJdbcImpl extends CommonDAO implements ImportS
             sql = "SELECT Id from ImporterStatus ORDER BY StartTime DESC LIMIT 1";
         } else {
             // MSSQL
-            sql = "SELECT Top 1 Id from ImporterStatus ORDER BY StartTime DESC";
+            sql = "SELECT Top 1 Id from " + tableprefix + "ImporterStatus ORDER BY StartTime DESC";
         }
 
         Long newestOpenId;
@@ -98,8 +102,9 @@ public class ImportStatusRepositoryJdbcImpl extends CommonDAO implements ImportS
             return;
         }
 
-        haibaJdbcTemplate.update("UPDATE ImporterStatus SET EndTime=?, Outcome=?, ErrorMessage=? WHERE Id=?",
-                endTime.toDate(), outcome.toString(), errorMessage, newestOpenId);
+        haibaJdbcTemplate.update("UPDATE " + tableprefix
+                + "ImporterStatus SET EndTime=?, Outcome=?, ErrorMessage=? WHERE Id=?", endTime.toDate(),
+                outcome.toString(), errorMessage, newestOpenId);
     }
 
     @Override
@@ -109,7 +114,7 @@ public class ImportStatusRepositoryJdbcImpl extends CommonDAO implements ImportS
             sql = "SELECT * from ImporterStatus ORDER BY StartTime DESC LIMIT 1";
         } else {
             // MSSQL
-            sql = "SELECT Top 1 * from ImporterStatus ORDER BY StartTime DESC";
+            sql = "SELECT Top 1 * from " + tableprefix + "ImporterStatus ORDER BY StartTime DESC";
         }
 
         try {
@@ -168,7 +173,7 @@ public class ImportStatusRepositoryJdbcImpl extends CommonDAO implements ImportS
             sql = "SELECT indlaeggelsesid from Indlaeggelser LIMIT 1";
         } else {
             // MSSQL
-            sql = "SELECT Top 1 indlaeggelsesid from Indlaeggelser";
+            sql = "SELECT Top 1 indlaeggelsesid from " + tableprefix + "Indlaeggelser";
         }
 
         try {
