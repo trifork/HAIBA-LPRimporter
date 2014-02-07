@@ -151,7 +151,7 @@ public class EmailSender {
     public void sendHello() {
         if (sendHello) {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            sendText("EPIMIBA: Import started at " + dateFormat.format(new Date()), "");
+            sendText("LPR: Import started at " + dateFormat.format(new Date()), "");
         }
     }
 
@@ -159,9 +159,9 @@ public class EmailSender {
         if (sendHello) {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             if (error == null) {
-                sendText("EPIMIBA: Import done at " + dateFormat.format(new Date()), "No errors");
+                sendText("LPR: Import done at " + dateFormat.format(new Date()), "No errors");
             } else {
-                sendText("EPIMIBA: Import done at " + dateFormat.format(new Date()), "Errors found\n:" + error);
+                sendText("LPR: Import done at " + dateFormat.format(new Date()), "Errors found\n:" + error);
             }
         }
     }
