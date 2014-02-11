@@ -160,7 +160,7 @@ public class ImportExecutor {
 			}
 		} catch(Exception e) {
 			log.error("", e);
-			statusRepo.importEndedWithFailure(new DateTime(), e.getMessage());
+			statusRepo.importEndedWithFailure(new DateTime(), e.getClass().getName());
             if (manual) {
                 emailSender.sendDone(ExceptionUtils.getStackTrace(e));
             }
