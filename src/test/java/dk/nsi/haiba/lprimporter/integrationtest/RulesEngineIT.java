@@ -43,6 +43,7 @@ import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -55,6 +56,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.Transactional;
 
+import dk.nsi.haiba.lprimporter.email.EmailSender;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
 import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
@@ -79,7 +81,11 @@ public class RulesEngineIT {
         public RulesEngine rulesEngine() {
             return new LPRRulesEngine();
         }
-        
+
+        @Bean
+        public EmailSender mailSender() {
+            return Mockito.mock(EmailSender.class);
+        }
 	}
 
     @Autowired

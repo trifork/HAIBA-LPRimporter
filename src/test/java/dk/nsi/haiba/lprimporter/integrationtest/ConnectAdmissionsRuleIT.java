@@ -38,8 +38,10 @@ import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -54,6 +56,7 @@ import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.dao.impl.HAIBADAOImpl;
 import dk.nsi.haiba.lprimporter.dao.impl.LPRDAOImpl;
+import dk.nsi.haiba.lprimporter.email.EmailSender;
 import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.LPRReference;
@@ -70,7 +73,6 @@ import dk.nsi.haiba.lprimporter.rules.LPRRule;
 @Transactional("haibaTransactionManager")
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class)
 public class ConnectAdmissionsRuleIT {
-	
     @Configuration
     @PropertySource("classpath:test.properties")
     @Import(LPRIntegrationTestConfiguration.class)
@@ -84,7 +86,11 @@ public class ConnectAdmissionsRuleIT {
         }
         @Bean
         public LPRDAO lprDao() {
-            return new LPRDAOImpl(lprDataSource);
+            return new LPRDAOImpl(lprDataSource, "hr", "etl");
+        }
+        @Bean
+        public EmailSender mailSender() {
+            return Mockito.mock(EmailSender.class);
         }
     }
 

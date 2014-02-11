@@ -38,6 +38,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -54,6 +55,7 @@ import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.dao.LPRDAO;
 import dk.nsi.haiba.lprimporter.dao.impl.HAIBADAOImpl;
 import dk.nsi.haiba.lprimporter.dao.impl.LPRDAOImpl;
+import dk.nsi.haiba.lprimporter.email.EmailSender;
 import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.rules.LPRPrepareDataRule;
@@ -75,9 +77,13 @@ public class ProcessRulesIT {
         public HAIBADAO haibaDao() {
             return new HAIBADAOImpl();
         }
-
+        @Bean
         public LPRDAO lprDao() {
-            return new LPRDAOImpl(lprDataSource);
+            return new LPRDAOImpl(lprDataSource, "hr", "etl");
+        }
+        @Bean
+        public EmailSender mailSender() {
+            return Mockito.mock(EmailSender.class);
         }
     }
 

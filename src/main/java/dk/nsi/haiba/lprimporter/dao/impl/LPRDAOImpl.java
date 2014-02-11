@@ -48,19 +48,16 @@ import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.status.ImportStatus.Outcome;
 
 public class LPRDAOImpl extends CommonDAO implements LPRDAO {
-
     private static Log log = new Log(Logger.getLogger(LPRDAOImpl.class));
 
-    JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
+    private String hr_tableprefix;
+    private String etl_tableprefix;
 
-    @Value("${jdbc.haibareplicatableprefix:haiba_replica.}")
-    String hr_tableprefix;
-
-    @Value("${jdbc.haibaetlprefix:haiba_etl.}")
-    String etl_tableprefix;
-
-    public LPRDAOImpl(DataSource ds) {
+    public LPRDAOImpl(DataSource ds, String haibareplicaPrefix, String etlPrefix) {
         jdbcTemplate = new JdbcTemplate(ds);
+        hr_tableprefix = haibareplicaPrefix;
+        etl_tableprefix = etlPrefix;
     }
 
     @Override
@@ -119,8 +116,8 @@ public class LPRDAOImpl extends CommonDAO implements LPRDAO {
             } else {
                 // MSSQL
                 sql = "SELECT a.v_recnum,a.c_sgh,a.c_afd,a.c_pattype,a.v_cpr,a.d_inddto,a.d_uddto,"
-                        + "k.c_kode,k.c_tilkode,k.c_kodeart,k.d_pdto,k.c_psgh,k.c_pafd,k.v_type FROM "
-                        + hr_tableprefix + "T_ADM a LEFT JOIN " + hr_tableprefix
+                        + "k.c_kode,k.c_tilkode,k.c_kodeart,k.d_pdto,k.c_psgh,k.c_pafd,k.v_type FROM " + hr_tableprefix
+                        + "T_ADM a LEFT JOIN " + hr_tableprefix
                         + "T_KODER k ON a.v_recnum = k.v_recnum WHERE a.v_cpr=?";
             }
             lprContacts = jdbcTemplate.query(sql, new Object[] { cpr }, new LPRContactRowMapper());

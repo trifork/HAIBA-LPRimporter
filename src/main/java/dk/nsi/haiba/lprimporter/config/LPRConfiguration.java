@@ -94,6 +94,15 @@ public class LPRConfiguration {
 
     @Value("${jdbc.classificationJNDIName}")
     private String classificationJdbcJNDIName;
+    
+    @Value("${jdbc.haibareplicatableprefix:haiba_replica.}")
+    private String hr_tableprefix;
+    @Value("${jdbc.haibaetlprefix:haiba_etl.}")
+    private String etl_tableprefix;
+    @Value("${jdbc.minipas_haibareplicatableprefix:haiba_replica.}")
+    private String minipas_hr_tableprefix;
+    @Value("${jdbc.minipas_haibaetlprefix:haiba_etl.}")
+    private String minipas_etl_tableprefix;
 
     @Value("${smtp.host}")
     private String smtpHost;
@@ -122,7 +131,6 @@ public class LPRConfiguration {
     }
 
     @Bean
-    @Qualifier("lprDataSource")
     public DataSource lprDataSource() throws Exception {
         JndiObjectFactoryBean factory = new JndiObjectFactoryBean();
         factory.setJndiName(lprJdbcJNDIName);
@@ -228,7 +236,7 @@ public class LPRConfiguration {
 
     @Bean(name = "ssiLPRDAO")
     public LPRDAO lprdao(@Qualifier("lprDataSource") DataSource ds) {
-        return new LPRDAOImpl(ds);
+        return new LPRDAOImpl(ds, hr_tableprefix, etl_tableprefix);
     }
 
     @Bean
@@ -238,7 +246,7 @@ public class LPRConfiguration {
 
     @Bean(name = "minipasLPRDAO")
     public LPRDAO minipasLPRDAO(@Qualifier("lprDataSourceMinipas") DataSource ds) {
-        return new LPRDAOImpl(ds);
+        return new LPRDAOImpl(ds, minipas_hr_tableprefix, minipas_etl_tableprefix);
     }
 
     @Bean(name = "compositeLPRDAO")

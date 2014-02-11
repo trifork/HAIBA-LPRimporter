@@ -76,7 +76,7 @@ public class LPRDAOIT {
         
         @Bean
         public LPRDAO lprdao() {
-            return new LPRDAOImpl(lprDataSource);
+            return new LPRDAOImpl(lprDataSource, "hr", "etl");
         }
     }
 
