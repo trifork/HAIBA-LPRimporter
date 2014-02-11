@@ -107,7 +107,7 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
                 } else {
                     throw new DAOException("Unknown SQL dialect: " + getDialect());
                 }
-
+                log.trace("indlaeggelsesId is " + indlaeggelsesId);
                 indlaeggelserInForloeb.add(new Long(indlaeggelsesId));
 
                 saveDiagnoses(indlaeggelse.getDiagnoses(), indlaeggelsesId);
@@ -342,6 +342,7 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
                 } else {
                     throw new DAOException("Unknown SQL dialect: " + getDialect());
                 }
+                log.trace("ambulantContactId is " + ambulantContactId);
 
                 saveAmbulantDiagnoses(contact.getLprDiagnoses(), ambulantContactId);
                 saveAmbulantProcedures(contact.getLprProcedures(), ambulantContactId);
