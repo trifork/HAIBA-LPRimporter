@@ -61,6 +61,16 @@ public class LPRDAOComposite implements LPRDAO {
         return null;
     }
 
+    public static String getDbIdText(int dbId) {
+        String returnValue = "NA";
+        if (dbId == SSI_DB) {
+            returnValue = "LPR";
+        } else if (dbId == MINIPAS_DB) {
+            returnValue = "MINIPAS";
+        }
+        return returnValue;
+    }
+
     @Override
     public List<String> getCPRnumberBatch(int batchsize) throws DAOException {
         List<String> returnValue = ssiLPRDAO.getCPRnumberBatch(batchsize);

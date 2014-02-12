@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
+import dk.nsi.haiba.lprimporter.dao.impl.LPRDAOComposite;
 import dk.nsi.haiba.lprimporter.message.MessageResolver;
 import dk.nsi.haiba.lprimporter.rules.BusinessRuleError;
 
@@ -52,9 +53,9 @@ public class BusinessRuleErrorLog {
 			// Save Businessrule error in database
 			haibaDao.saveBusinessRuleError(be);
 		}
-		
+		String dbIdText = LPRDAOComposite.getDbIdText(be.getDbId());
         businessRuleErrorLog.info(resolver.getMessage("errorlog.rule.message", be.getLprReference(),
-                be.getAbortedRuleName(), be.getDescription(), be.getDbId()));
+                be.getAbortedRuleName(), be.getDescription(), dbIdText));
 	}
 
 }

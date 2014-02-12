@@ -38,6 +38,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import dk.nsi.haiba.lprimporter.config.LPRTestConfiguration;
+import dk.nsi.haiba.lprimporter.dao.impl.LPRDAOComposite;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class)
@@ -52,7 +53,7 @@ public class MessageTest {
 
     @Test
     public void errorRuleMessage() throws Exception {
-        String message = messageResolver.getMessage("errorlog.rule.message", 1, 2, 3, 4);
-        assertEquals("LPR Recordnummer [1], Regel [2], fejlbesked [3], db [4]", message);
+        String message = messageResolver.getMessage("errorlog.rule.message", 1, 2, 3, LPRDAOComposite.getDbIdText(2));
+        assertEquals("LPR Recordnummer [1], Regel [2], fejlbesked [3], db [MINIPAS]", message);
     }
 }
