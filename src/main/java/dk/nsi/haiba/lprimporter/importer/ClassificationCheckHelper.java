@@ -99,6 +99,11 @@ public class ClassificationCheckHelper {
                     + newDiagnoseCheckClassifications.size());
             emailSender.send(newSygehusClassifications, newProcedureCheckClassifications,
                     newDiagnoseCheckClassifications);
+            // now the email is away. if we should die now, worst case is that this information would be send again on
+            // the next run. better this than storing, then die and never make the notification
+            classificationCheckDAO.storeClassifications(newSygehusClassifications);
+            classificationCheckDAO.storeClassifications(newProcedureCheckClassifications);
+            classificationCheckDAO.storeClassifications(newDiagnoseCheckClassifications);
         }
     }
 

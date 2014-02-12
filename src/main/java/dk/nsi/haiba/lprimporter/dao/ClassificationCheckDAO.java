@@ -30,13 +30,15 @@ import java.util.Collection;
 
 public interface ClassificationCheckDAO {
     /**
-     * Returns a list of classification ids not found but copied into the classification db
+     * Returns a list of classification ids not found in the classification db
      * 
      * @param checkStructures
      *            - the id's (combined values) and corresponding column names to test in the classification table
-     * @return a filtered list of classificationIds not present at the time of the invokation (but copied now)
+     * @return a filtered list of classificationIds not present at the time of the invokation
      */
     public Collection<CheckStructure> checkClassifications(Collection<CheckStructure> checkStructures);
+
+    public void storeClassifications(Collection<CheckStructure> checkStructures);
 
     public interface CheckStructure {
         public String getCodeClasificationColumnName();

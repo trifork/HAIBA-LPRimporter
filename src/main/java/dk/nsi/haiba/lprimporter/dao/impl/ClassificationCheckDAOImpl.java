@@ -99,8 +99,13 @@ public class ClassificationCheckDAOImpl extends CommonDAO implements Classificat
                 returnValue.add(checkStructure);
             }
         }
-        if (!returnValue.isEmpty()) {
-            for (CheckStructure unknownStructure : returnValue) {
+        return returnValue;
+    }
+    
+    @Override
+    public void storeClassifications(Collection<CheckStructure> checkStructures) {
+        if (!checkStructures.isEmpty()) {
+            for (CheckStructure unknownStructure : checkStructures) {
                 String sql = "INSERT INTO " + tableprefix + unknownStructure.getClassificationTableName() + "("
                         + unknownStructure.getCodeClasificationColumnName() + ","
                         + unknownStructure.getSecondaryCodeClasificationColumnName() + ") VALUES (?,?)";
@@ -108,7 +113,5 @@ public class ClassificationCheckDAOImpl extends CommonDAO implements Classificat
                 aClassificationJdbc.update(sql, unknownStructure.getCode(), unknownStructure.getSecondaryCode());
             }
         }
-
-        return returnValue;
     }
 }
