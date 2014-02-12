@@ -53,7 +53,8 @@ public class BusinessRuleErrorLog {
 			haibaDao.saveBusinessRuleError(be);
 		}
 		
-		businessRuleErrorLog.info(resolver.getMessage("errorlog.rule.message", new Object[] {""+be.getLprReference(), be.getAbortedRuleName(), be.getDescription()}));
+        businessRuleErrorLog.info(resolver.getMessage("errorlog.rule.message", be.getLprReference(),
+                be.getAbortedRuleName(), be.getDescription(), be.getDbId()));
 	}
 
 }

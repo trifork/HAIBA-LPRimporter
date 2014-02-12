@@ -44,7 +44,7 @@ public class MessageResolver {
 		return messageSource.getMessage(name, null, new Locale("DA_DK"));
 	} 
 
-	public String getMessage(String name, Object[] args) {
+	public String getMessage(String name, Object... args) {
 		return messageSource.getMessage(name, args, new Locale("DA_DK"));
 	} 
 
