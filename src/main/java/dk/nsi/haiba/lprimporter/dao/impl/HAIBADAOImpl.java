@@ -213,11 +213,11 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
         // TODO - this can be cached
         String sql = null;
         if (MYSQL.equals(getDialect())) {
-            sql = "SELECT Navn FROM Organisation WHERE Nummer=? AND ValidFrom <= ? AND ValidTo >= ?";
+            sql = "SELECT Navn FROM klass_shak WHERE Nummer=? AND ValidFrom <= ? AND ValidTo >= ?";
         } else {
             // MSSQL
             sql = "SELECT Navn FROM " + fgrtableprefix
-                    + "Organisation WHERE Nummer=? AND ValidFrom <= ? AND ValidTo >= ?";
+                    + "klass_shak WHERE Nummer=? AND ValidFrom <= ? AND ValidTo >= ?";
         }
 
         try {
