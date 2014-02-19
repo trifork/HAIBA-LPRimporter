@@ -197,8 +197,8 @@ public class ConnectAdmissionsRuleIT {
 		Long admissionId2 = jdbc.queryForLong("Select indlaeggelsesId from LPR_Reference where LPR_recordnummer =" +recordNummer2);
 		assertEquals("Expected 1 diagnosis connected to admission2", 1, jdbc.queryForInt("Select count(*) from Diagnoser where IndlaeggelsesID = "+admissionId2));
 
-		assertEquals(1, jdbc.queryForInt("Select count(*) from klass_diagnoser where Diagnoseskode='d345' AND tillaegskode='B'"));
-		assertEquals(1, jdbc.queryForInt("Select count(*) from klass_procedurer where procedurekode='J03.9' AND tillaegskode='tilA'"));
+		assertEquals(1, jdbc.queryForInt("Select count(*) from Anvendt_klass_diagnoser where Diagnoseskode='d345' AND tillaegskode='B'"));
+		assertEquals(1, jdbc.queryForInt("Select count(*) from Anvendt_klass_procedurer where procedurekode='J03.9' AND tillaegskode='tilA'"));
 	}
 
 	private List<Indlaeggelse> setupAdmissions() {

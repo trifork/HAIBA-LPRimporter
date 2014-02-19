@@ -65,7 +65,7 @@ public class ClassificationCheckHelper {
             String afdelingsCode = wrapper.getAfdelingsCode();
 
             CheckStructureImpl csi = new CheckStructureImpl(sygehusCode, afdelingsCode, "sygehuskode", "afdelingskode",
-                    "Klass_SHAK");
+                    "Anvendt_Klass_SHAK");
             sygehusCheckStructures.add(csi);
 
             List<Codes> lprDiagnoses = wrapper.getDiagnoseCodes();
@@ -73,7 +73,7 @@ public class ClassificationCheckHelper {
                 String diagnoseCode = lprDiagnose.aCode;
                 String tillaegsDiagnose = lprDiagnose.aSecondaryCode;
                 csi = new CheckStructureImpl(diagnoseCode, tillaegsDiagnose, "Diagnoseskode", "tillaegskode",
-                        "klass_diagnoser");
+                        "Anvendt_klass_diagnoser");
                 diagnoseCheckStructures.add(csi);
             }
             List<Codes> lprProcedures = wrapper.getProcedureCodes();
@@ -81,7 +81,7 @@ public class ClassificationCheckHelper {
                 String procedureCode = lprProcedure.aCode;
                 String tillaegsProcedureCode = lprProcedure.aSecondaryCode;
                 csi = new CheckStructureImpl(procedureCode, tillaegsProcedureCode, "procedurekode", "tillaegskode",
-                        "klass_procedurer");
+                        "Anvendt_klass_procedurer");
                 procedureCheckStructures.add(csi);
             }
         }

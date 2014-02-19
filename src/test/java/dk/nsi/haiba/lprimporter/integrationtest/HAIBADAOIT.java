@@ -270,7 +270,7 @@ public class HAIBADAOIT {
     @Test 
     public void fetchSygehusWhenSygehusCodeIs3800() {
     	
-    	jdbc.update("insert into Organisation (Nummer, Navn, Organisationstype, CreatedDate, ModifiedDate, ValidFrom, ValidTo) values ('3800999', 'TST Testafdeling', 'test', '2009-01-01', '2009-01-01', '2009-01-01', '2045-01-01')");
+    	jdbc.update("insert into klass_shak (Nummer, Navn, Organisationstype, CreatedDate, ModifiedDate, ValidFrom, ValidTo) values ('3800999', 'TST Testafdeling', 'test', '2009-01-01', '2009-01-01', '2009-01-01', '2045-01-01')");
     	
     	String sygehusInitials = haibaDao.getSygehusInitials("3800", "999", new Date());
     	
