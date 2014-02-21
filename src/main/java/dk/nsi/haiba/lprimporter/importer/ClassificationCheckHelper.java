@@ -70,7 +70,7 @@ public class ClassificationCheckHelper {
             String afdelingsCode = wrapper.getAfdelingsCode();
 
             CheckStructureImpl csi = new CheckStructureImpl(sygehusCode, afdelingsCode, "sygehuskode", "afdelingskode",
-                    "Anvendt_Klass_SHAK");
+                    "anvendt_klass_shak");
             sygehusCheckStructures.add(csi);
 
             List<Codes> lprDiagnoses = wrapper.getDiagnoseCodes();

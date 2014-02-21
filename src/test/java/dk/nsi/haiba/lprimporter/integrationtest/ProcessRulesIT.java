@@ -177,7 +177,7 @@ public class ProcessRulesIT {
         // Spring junit doesn't support rollback for multiple transaction managers - roll back data manually
         lprJdbcTemplate.execute("delete from T_ADM");
         lprJdbcTemplate.execute("delete from T_KODER");
-        haibaJdbcTemplate.execute("delete from Anvendt_Klass_SHAK");
+        haibaJdbcTemplate.execute("delete from anvendt_klass_shak");
     }
 
     @Test
@@ -556,7 +556,7 @@ public class ProcessRulesIT {
         assertEquals("2010-04-26 13:00:00.0", haibaJdbcTemplate.queryForObject(
                 "select Udskrivningsdatotid from Indlaeggelser where afdelingskode ='B00'", String.class));
 
-        assertEquals(5, haibaJdbcTemplate.queryForInt("select count(*) from Anvendt_Klass_SHAK"));
+        assertEquals(5, haibaJdbcTemplate.queryForInt("select count(*) from anvendt_klass_shak"));
     }
 
     @Test
