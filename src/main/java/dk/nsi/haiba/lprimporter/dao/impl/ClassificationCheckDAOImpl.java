@@ -60,13 +60,13 @@ public class ClassificationCheckDAOImpl extends CommonDAO implements Classificat
             secondaryQualifier = " IS NULL";
         }
         if (MYSQL.equals(getDialect())) {
-            sql = "SELECT * FROM " + tableName + " WHERE " + checkStructure.getCodeClasificationColumnName()
+            sql = "SELECT * FROM " + tableName + " WHERE " + checkStructure.getCodeClassificationColumnName()
                     + "=? AND " + checkStructure.getSecondaryCodeClasificationColumnName() + secondaryQualifier
                     + " LIMIT 1";
         } else {
             // MSSQL
             sql = "SELECT TOP 1 * FROM " + tableprefix + tableName + " WHERE "
-                    + checkStructure.getCodeClasificationColumnName() + "=? AND "
+                    + checkStructure.getCodeClassificationColumnName() + "=? AND "
                     + checkStructure.getSecondaryCodeClasificationColumnName() + secondaryQualifier;
         }
 
@@ -107,7 +107,7 @@ public class ClassificationCheckDAOImpl extends CommonDAO implements Classificat
         if (!checkStructures.isEmpty()) {
             for (CheckStructure unknownStructure : checkStructures) {
                 String sql = "INSERT INTO " + tableprefix + unknownStructure.getClassificationTableName() + "("
-                        + unknownStructure.getCodeClasificationColumnName() + ","
+                        + unknownStructure.getCodeClassificationColumnName() + ","
                         + unknownStructure.getSecondaryCodeClasificationColumnName() + ") VALUES (?,?)";
                 log.debug("checkClassifications: insert sql=" + sql);
                 aClassificationJdbc.update(sql, unknownStructure.getCode(), unknownStructure.getSecondaryCode());

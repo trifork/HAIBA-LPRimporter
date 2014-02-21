@@ -189,7 +189,7 @@ public class ClassificationCheckHelper {
         }
 
         @Override
-        public String getCodeClasificationColumnName() {
+        public String getCodeClassificationColumnName() {
             return aCodeClasificationColumnName;
         }
 

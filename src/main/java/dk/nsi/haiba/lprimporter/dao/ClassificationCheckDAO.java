@@ -41,7 +41,7 @@ public interface ClassificationCheckDAO {
     public void storeClassifications(Collection<CheckStructure> checkStructures);
 
     public interface CheckStructure {
-        public String getCodeClasificationColumnName();
+        public String getCodeClassificationColumnName();
 
         public String getSecondaryCodeClasificationColumnName();
 
