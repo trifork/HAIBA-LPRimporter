@@ -37,11 +37,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import dk.nsi.haiba.lprimporter.dao.ClassificationCheckDAO;
 import dk.nsi.haiba.lprimporter.dao.ClassificationCheckDAO.CheckStructure;
+import dk.nsi.haiba.lprimporter.dao.HAIBADAO;
 import dk.nsi.haiba.lprimporter.email.EmailSender;
 import dk.nsi.haiba.lprimporter.log.Log;
 import dk.nsi.haiba.lprimporter.model.haiba.Diagnose;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
 import dk.nsi.haiba.lprimporter.model.haiba.Procedure;
+import dk.nsi.haiba.lprimporter.model.haiba.ShakRegionValues;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRDiagnose;
 import dk.nsi.haiba.lprimporter.model.lpr.LPRProcedure;
@@ -51,6 +53,9 @@ public class ClassificationCheckHelper {
 
     @Autowired
     ClassificationCheckDAO classificationCheckDAO;
+
+    @Autowired
+    HAIBADAO haibaDAO;
 
     @Autowired
     EmailSender emailSender;
@@ -104,7 +109,20 @@ public class ClassificationCheckHelper {
             classificationCheckDAO.storeClassifications(newSygehusClassifications);
             classificationCheckDAO.storeClassifications(newProcedureCheckClassifications);
             classificationCheckDAO.storeClassifications(newDiagnoseCheckClassifications);
+
+            // addon, enrich shak with shakregion values
+            Collection<String> sygehusNumre = getSygehusNumre(newSygehusClassifications);
+            Collection<ShakRegionValues> shakRegionValuesForSygehusNumre = haibaDAO.getShakRegionValuesForSygehusNumre(sygehusNumre);
+            classificationCheckDAO.storeShakRegionValues(shakRegionValuesForSygehusNumre);
         }
+    }
+
+    private Collection<String> getSygehusNumre(Collection<CheckStructure> newSygehusClassifications) {
+        Collection<String> returnValue = new HashSet<String>();
+        for (CheckStructure checkStructure : newSygehusClassifications) {
+            returnValue.add(checkStructure.getCode());
+        }
+        return returnValue;
     }
 
     public void checkClassifications(Administration[] array) {

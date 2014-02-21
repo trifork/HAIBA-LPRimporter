@@ -1,10 +1,13 @@
 CREATE DATABASE IF NOT EXISTS HAIBA;
 USE HAIBA;
  
-CREATE TABLE IF NOT EXISTS Klass_SHAK (
+CREATE TABLE IF NOT EXISTS anvendt_klass_shak (
     ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     sygehuskode VARCHAR(10),
     afdelingskode VARCHAR(10),
+    Ejerforhold VARCHAR(20),
+    Institutionsart VARCHAR(20),
+    Regionskode VARCHAR(20),
     H_ITA_gruppe float,
     H_kir_gruppe float,
     H_med_gruppe float,
@@ -13,7 +16,7 @@ CREATE TABLE IF NOT EXISTS Klass_SHAK (
 
 ) ENGINE=InnoDB COLLATE=utf8_bin;
 
-CREATE TABLE IF NOT EXISTS klass_procedurer (
+CREATE TABLE IF NOT EXISTS anvendt_klass_procedurer (
     ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     procedurekode VARCHAR(10),
     tillaegskode VARCHAR(10),
@@ -23,7 +26,7 @@ CREATE TABLE IF NOT EXISTS klass_procedurer (
     H_HOFTE_REO float NULL
 ) ENGINE=InnoDB COLLATE=utf8_bin;
 
-CREATE TABLE IF NOT EXISTS klass_diagnoser (
+CREATE TABLE IF NOT EXISTS anvendt_klass_diagnoser (
     ID BIGINT(15) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     Diagnoseskode VARCHAR(10),
     tillaegskode VARCHAR(10),

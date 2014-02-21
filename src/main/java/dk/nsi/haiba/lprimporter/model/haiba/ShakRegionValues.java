@@ -24,35 +24,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package dk.nsi.haiba.lprimporter.dao;
+package dk.nsi.haiba.lprimporter.model.haiba;
 
-import java.util.Collection;
+public class ShakRegionValues {
+    private String nummer;
+    private String ejerForhold;
+    private String institutionsArt;
+    private String regionsKode;
 
-import dk.nsi.haiba.lprimporter.model.haiba.ShakRegionValues;
-
-public interface ClassificationCheckDAO {
-    /**
-     * Returns a list of classification ids not found in the classification db
-     * 
-     * @param checkStructures
-     *            - the id's (combined values) and corresponding column names to test in the classification table
-     * @return a filtered list of classificationIds not present at the time of the invokation
-     */
-    public Collection<CheckStructure> checkClassifications(Collection<CheckStructure> checkStructures);
-
-    public void storeClassifications(Collection<CheckStructure> checkStructures);
-
-    public interface CheckStructure {
-        public String getCodeClassificationColumnName();
-
-        public String getSecondaryCodeClasificationColumnName();
-
-        public String getSecondaryCode();
-
-        public String getCode();
-
-        public String getClassificationTableName();
+    public String getNummer() {
+        return nummer;
     }
 
-    public void storeShakRegionValues(Collection<ShakRegionValues> shakRegionValuesForSygehusNumre);
+    public void setNummer(String nummer) {
+        this.nummer = nummer;
+    }
+
+    public String getEjerForhold() {
+        return ejerForhold;
+    }
+
+    public void setEjerForhold(String ejerForhold) {
+        this.ejerForhold = ejerForhold;
+    }
+
+    public String getInstitutionsArt() {
+        return institutionsArt;
+    }
+
+    public void setInstitutionsArt(String institutionsArt) {
+        this.institutionsArt = institutionsArt;
+    }
+
+    public String getRegionsKode() {
+        return regionsKode;
+    }
+
+    public void setRegionsKode(String regionsKode) {
+        this.regionsKode = regionsKode;
+    }
 }

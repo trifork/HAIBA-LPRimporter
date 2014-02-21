@@ -26,11 +26,13 @@
  */
 package dk.nsi.haiba.lprimporter.dao;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
 import dk.nsi.haiba.lprimporter.exception.DAOException;
 import dk.nsi.haiba.lprimporter.model.haiba.Indlaeggelse;
+import dk.nsi.haiba.lprimporter.model.haiba.ShakRegionValues;
 import dk.nsi.haiba.lprimporter.model.haiba.Statistics;
 import dk.nsi.haiba.lprimporter.model.lpr.Administration;
 import dk.nsi.haiba.lprimporter.rules.BusinessRuleError;
@@ -101,5 +103,7 @@ public interface HAIBADAO {
 	 * @param the collected counters
 	 */
 	public void saveStatistics(Statistics statistics);
+
+    Collection<ShakRegionValues> getShakRegionValuesForSygehusNumre(Collection<String> sygehusNumre);
 	
 }

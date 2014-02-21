@@ -40,6 +40,7 @@ import dk.nsi.haiba.lprimporter.dao.ClassificationCheckDAO;
 import dk.nsi.haiba.lprimporter.dao.CommonDAO;
 import dk.nsi.haiba.lprimporter.exception.DAOException;
 import dk.nsi.haiba.lprimporter.log.Log;
+import dk.nsi.haiba.lprimporter.model.haiba.ShakRegionValues;
 
 public class ClassificationCheckDAOImpl extends CommonDAO implements ClassificationCheckDAO {
     private static Log log = new Log(Logger.getLogger(ClassificationCheckDAOImpl.class));
@@ -101,17 +102,25 @@ public class ClassificationCheckDAOImpl extends CommonDAO implements Classificat
         }
         return returnValue;
     }
-    
+
     @Override
     public void storeClassifications(Collection<CheckStructure> checkStructures) {
-        if (!checkStructures.isEmpty()) {
-            for (CheckStructure unknownStructure : checkStructures) {
-                String sql = "INSERT INTO " + tableprefix + unknownStructure.getClassificationTableName() + "("
-                        + unknownStructure.getCodeClassificationColumnName() + ","
-                        + unknownStructure.getSecondaryCodeClasificationColumnName() + ") VALUES (?,?)";
-                log.debug("checkClassifications: insert sql=" + sql);
-                aClassificationJdbc.update(sql, unknownStructure.getCode(), unknownStructure.getSecondaryCode());
-            }
+        for (CheckStructure unknownStructure : checkStructures) {
+            String sql = "INSERT INTO " + tableprefix + unknownStructure.getClassificationTableName() + "("
+                    + unknownStructure.getCodeClassificationColumnName() + ","
+                    + unknownStructure.getSecondaryCodeClasificationColumnName() + ") VALUES (?,?)";
+            log.debug("checkClassifications: insert sql=" + sql);
+            aClassificationJdbc.update(sql, unknownStructure.getCode(), unknownStructure.getSecondaryCode());
+        }
+    }
+
+    @Override
+    public void storeShakRegionValues(Collection<ShakRegionValues> shakRegionValuesForSygehusNumre) {
+        for (ShakRegionValues srv : shakRegionValuesForSygehusNumre) {
+            String sql = "UPDATE " + tableprefix
+                    + "anvendt_klass_shak SET Ejerforhold=?, Institutionsart=?, Regionskode=? WHERE sygehuskode=?";
+            aClassificationJdbc.update(sql, srv.getEjerForhold(), srv.getInstitutionsArt(), srv.getRegionsKode(),
+                    srv.getNummer());
         }
     }
 }

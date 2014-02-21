@@ -1,7 +1,10 @@
-CREATE TABLE Klass_SHAK (
+CREATE TABLE anvendt_klass_shak (
     ID BIGINT NOT NULL IDENTITY PRIMARY KEY,
     sygehuskode VARCHAR(10),
     afdelingskode VARCHAR(10),
+    Ejerforhold VARCHAR(20),
+    Institutionsart VARCHAR(20),
+    Regionskode VARCHAR(20),
     H_ITA_gruppe float,
     H_kir_gruppe float,
     H_med_gruppe float,
@@ -10,7 +13,7 @@ CREATE TABLE Klass_SHAK (
 
 );
 
-CREATE TABLE klass_procedurer (
+CREATE TABLE anvendt_klass_procedurer (
     ID BIGINT NOT NULL IDENTITY PRIMARY KEY,
     procedurekode VARCHAR(10),
     tillaegskode VARCHAR(10),
@@ -20,7 +23,7 @@ CREATE TABLE klass_procedurer (
     H_HOFTE_REO float NULL
 );
 
-CREATE TABLE klass_diagnoser (
+CREATE TABLE anvendt_klass_diagnoser (
     ID BIGINT NOT NULL IDENTITY PRIMARY KEY,
     Diagnoseskode VARCHAR(10),
     tillaegskode VARCHAR(10),
