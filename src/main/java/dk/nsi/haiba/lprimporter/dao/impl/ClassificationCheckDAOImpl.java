@@ -118,7 +118,7 @@ public class ClassificationCheckDAOImpl extends CommonDAO implements Classificat
     public void storeShakRegionValues(Collection<ShakRegionValues> shakRegionValuesForSygehusNumre) {
         for (ShakRegionValues srv : shakRegionValuesForSygehusNumre) {
             String sql = "UPDATE " + tableprefix
-                    + "anvendt_klass_shak SET Ejerforhold=?, Institutionsart=?, Regionskode=? WHERE sygehuskode=?";
+                    + "Anvendt_Klass_SHAK SET Ejerforhold=?, Institutionsart=?, Regionskode=? WHERE sygehuskode=?";
             aClassificationJdbc.update(sql, srv.getEjerForhold(), srv.getInstitutionsArt(), srv.getRegionsKode(),
                     srv.getNummer());
         }
