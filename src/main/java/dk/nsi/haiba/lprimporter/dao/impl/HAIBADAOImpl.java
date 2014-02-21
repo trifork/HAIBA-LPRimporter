@@ -429,7 +429,7 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
                 shakRegionValues.setNummer(nummer);
                 returnValue.add(shakRegionValues);
             } catch (RuntimeException e) {
-                throw new DAOException("Error fetching shakregion values from sygehus nummer " + nummer, e);
+                log.error("Error fetching shakregion values from sygehus nummer " + nummer, e);
             }
         }
         return returnValue;
