@@ -73,9 +73,10 @@ CREATE TABLE Indlaeggelsesforloeb (
 );
 
 CREATE TABLE LPR_Reference (
-    ID BIGINT NOT NULL IDENTITY  PRIMARY KEY,
+    ID BIGINT NOT NULL IDENTITY PRIMARY KEY,
     IndlaeggelsesID BIGINT NOT NULL FOREIGN KEY REFERENCES Indlaeggelser(IndlaeggelsesID),
-    LPR_recordnummer varchar(255) NOT NULL
+    LPR_recordnummer varchar(255) NOT NULL,
+    LPR_dbid BIGINT NOT NULL
 );
 
 CREATE TABLE RegelFejlbeskeder (
