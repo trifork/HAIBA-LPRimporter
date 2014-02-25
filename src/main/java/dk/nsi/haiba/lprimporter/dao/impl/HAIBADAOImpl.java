@@ -85,7 +85,8 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 
                 final String sql = "INSERT INTO " + tableprefix + "Indlaeggelser (CPR, Sygehuskode, Afdelingskode, Indlaeggelsesdatotid, Udskrivningsdatotid, aktuel) VALUES (?,?,?,?,?,?)";
 
-                final Object[] args = new Object[] { indlaeggelse.getCpr(), 
+                final Object[] args = new Object[] { 
+                        indlaeggelse.getCpr(), 
                         indlaeggelse.getSygehusCode(),
                         indlaeggelse.getAfdelingsCode(), 
                         indlaeggelse.getIndlaeggelsesDatetime(),
@@ -111,7 +112,6 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
                 } else {
                     throw new DAOException("Unknown SQL dialect: " + getDialect());
                 }
-                log.trace("indlaeggelsesId is " + indlaeggelsesId);
                 indlaeggelserInForloeb.add(new Long(indlaeggelsesId));
 
                 saveDiagnoses(indlaeggelse.getDiagnoses(), indlaeggelsesId);
