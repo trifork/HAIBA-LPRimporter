@@ -259,15 +259,15 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
 
         if (cprExists) {
             // delete earlier processed data from HAIBA indlaeggelses tables.
-            jdbc.update("DELETE FROM " + tableprefix + "Diagnoser WHERE indlaeggelsesID IN (SELECT indlaeggelsesID FROM Indlaeggelser WHERE cpr=?)", cpr);
-            jdbc.update("DELETE FROM " + tableprefix + "Procedurer WHERE indlaeggelsesID IN (SELECT indlaeggelsesID FROM Indlaeggelser WHERE cpr=?)", cpr);
-            jdbc.update("DELETE FROM " + tableprefix + "Indlaeggelsesforloeb WHERE indlaeggelsesID IN (SELECT indlaeggelsesID FROM Indlaeggelser WHERE cpr=?)", cpr);
-            jdbc.update("DELETE FROM " + tableprefix + "LPR_Reference WHERE indlaeggelsesID IN (SELECT indlaeggelsesID FROM Indlaeggelser WHERE cpr=?)", cpr);
+            jdbc.update("DELETE FROM " + tableprefix + "Diagnoser WHERE indlaeggelsesID IN (SELECT indlaeggelsesID FROM " + tableprefix + "Indlaeggelser WHERE cpr=?)", cpr);
+            jdbc.update("DELETE FROM " + tableprefix + "Procedurer WHERE indlaeggelsesID IN (SELECT indlaeggelsesID FROM " + tableprefix + "Indlaeggelser WHERE cpr=?)", cpr);
+            jdbc.update("DELETE FROM " + tableprefix + "Indlaeggelsesforloeb WHERE indlaeggelsesID IN (SELECT indlaeggelsesID FROM " + tableprefix + "Indlaeggelser WHERE cpr=?)", cpr);
+            jdbc.update("DELETE FROM " + tableprefix + "LPR_Reference WHERE indlaeggelsesID IN (SELECT indlaeggelsesID FROM " + tableprefix + "Indlaeggelser WHERE cpr=?)", cpr);
             jdbc.update("DELETE FROM " + tableprefix + "Indlaeggelser WHERE cpr=?", cpr);
             // delete ambulant contacts
-            jdbc.update("DELETE FROM " + tableprefix + "AmbulantDiagnoser WHERE AmbulantKontaktId IN (SELECT ambulantKontaktId FROM AmbulantKontakt WHERE cpr=?)", cpr);
-            jdbc.update("DELETE FROM " + tableprefix + "AmbulantProcedurer WHERE AmbulantKontaktId IN (SELECT ambulantKontaktId FROM AmbulantKontakt WHERE cpr=?)", cpr);
-            jdbc.update("DELETE FROM " + tableprefix + "AmbulantLPR_Reference WHERE AmbulantKontaktId IN (SELECT ambulantKontaktId FROM AmbulantKontakt WHERE cpr=?)", cpr);
+            jdbc.update("DELETE FROM " + tableprefix + "AmbulantDiagnoser WHERE AmbulantKontaktId IN (SELECT ambulantKontaktId FROM " + tableprefix + "AmbulantKontakt WHERE cpr=?)", cpr);
+            jdbc.update("DELETE FROM " + tableprefix + "AmbulantProcedurer WHERE AmbulantKontaktId IN (SELECT ambulantKontaktId FROM " + tableprefix + "AmbulantKontakt WHERE cpr=?)", cpr);
+            jdbc.update("DELETE FROM " + tableprefix + "AmbulantLPR_Reference WHERE AmbulantKontaktId IN (SELECT ambulantKontaktId FROM " + tableprefix + "AmbulantKontakt WHERE cpr=?)", cpr);
             jdbc.update("DELETE FROM " + tableprefix + "AmbulantKontakt WHERE cpr=?", cpr);
         }
     }
@@ -417,7 +417,7 @@ public class HAIBADAOImpl extends CommonDAO implements HAIBADAO {
             };
             try {
                 ShakRegionValues shakRegionValues = jdbc.queryForObject(
-                        "SELECT DISTINCT Ejerforhold,Institutionsart,Regionskode FROM klass_shak WHERE nummer = ?",
+                        "SELECT DISTINCT Ejerforhold,Institutionsart,Regionskode FROM " + fgrtableprefix + "klass_shak WHERE nummer = ?",
                         rowMapper, truncatedSygehusNummer);
                 // but keep the original nummer here
                 shakRegionValues.setNummer(nummer);
